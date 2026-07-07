@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Forms\LoginForm;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -12,16 +13,48 @@ new #[Layout('layouts.guest')] class extends Component
     /**
      * Handle an incoming authentication request.
      */
-    public function login(): void
-    {
-        $this->validate();
+public function login(): void
+{
+    $this->validate();
 
-        $this->form->authenticate();
+    $this->form->authenticate();
 
-        Session::regenerate();
+    Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
-    }
+    $user = Auth::user();
+
+if ($user->hasRole('owner')) {
+
+    $this->redirectIntended(
+        default: route('owner.dashboard', absolute: false),
+        navigate: true
+    );
+
+    return;
+}
+
+if ($user->hasRole('mandor')) {
+
+    $this->redirectIntended(
+        default: route('mandor.dashboard', absolute: false),
+        navigate: true
+    );
+
+    return;
+}
+
+if ($user->hasRole('pekerja')) {
+
+    $this->redirectIntended(
+        default: route('worker.dashboard', absolute: false),
+        navigate: true
+    );
+
+    return;
+}
+
+    abort(403);
+}
 }; ?>
 
 <div>

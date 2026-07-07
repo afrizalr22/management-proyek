@@ -1,15 +1,83 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Livewire\Owner\Dashboard as OwnerDashboard;
+use App\Livewire\Mandor\Dashboard as MandorDashboard;
+use App\Livewire\Worker\Dashboard as WorkerDashboard;
 
-Route::view('/', 'welcome');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Owner Routes
+|--------------------------------------------------------------------------
+*/
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+Route::middleware([
+    'auth',
+    'role:owner',
+])->group(function () {
 
-require __DIR__.'/auth.php';
+    Route::get(
+        '/owner/dashboard',
+        OwnerDashboard::class
+    )->name('owner.dashboard');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Mandor Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'role:mandor',
+])->group(function () {
+
+    Route::get(
+        '/mandor/dashboard',
+        MandorDashboard::class
+    )->name('mandor.dashboard');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Worker Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'role:pekerja',
+])->group(function () {
+
+    Route::get(
+        '/worker/dashboard',
+        WorkerDashboard::class
+    )->name('worker.dashboard');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/logout', function (Request $request) {
+
+    Auth::logout();
+
+    $request->session()->invalidate();
+
+    $request->session()->regenerateToken();
+
+    return redirect()->route('login');
+
+})->middleware('auth')->name('logout');
+
+require __DIR__ . '/auth.php';
