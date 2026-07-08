@@ -1,15 +1,23 @@
-@auth
+<div class="flex flex-col h-full">
 
-    @role('owner')
-        <x-sidebar.owner />
-    @endrole
+    <div class="flex-1">
 
-    @role('mandor')
-        <x-sidebar.mandor />
-    @endrole
+        @auth
 
-    @role('pekerja')
-        <x-sidebar.worker />
-    @endrole
+            @role('owner')
+                <x-sidebar.owner />
+            @endrole
 
-@endauth
+            @role('mandor')
+                <x-sidebar.mandor />
+            @endrole
+
+            @role('pekerja')
+                <x-sidebar.worker />
+            @endrole
+
+        @endauth
+
+    </div>
+
+</div>

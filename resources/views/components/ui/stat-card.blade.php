@@ -9,9 +9,9 @@
 
     <div class="flex items-start justify-between">
 
-        <div>
+        <div class="flex-1">
 
-            <p class="text-sm text-gray-500">
+            <p class="text-sm font-medium text-gray-500">
                 {{ $title }}
             </p>
 
@@ -28,8 +28,10 @@
         </div>
 
         @if($icon)
-            <div class="text-blue-600">
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 text-blue-600">
+
                 {{ $icon }}
+
             </div>
         @endif
 

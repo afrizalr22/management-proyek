@@ -3,45 +3,80 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>{{ $title ?? config('app.name') }}</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite([
+        'resources/css/app.css',
+        'resources/js/app.js'
+    ])
 
     @livewireStyles
 </head>
 
-<body class="bg-gray-100">
+<body
+    class="bg-gray-100"
+    x-data="{ sidebarOpen:false }"
+>
 
-    <div class="min-h-screen flex">
+<div class="h-screen flex overflow-hidden">
 
-        {{-- Sidebar --}}
-        <x-sidebar.index/>
+    {{-- Overlay --}}
+    <div
+        x-show="sidebarOpen"
+        x-transition.opacity
+        @click="sidebarOpen = false"
+        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        x-cloak
+    ></div>
 
-        <div class="flex flex-col flex-1">
+    {{-- Mobile Sidebar --}}
+    <aside
+        class="fixed inset-y-0 left-0 w-72 bg-white z-50 transform transition-transform duration-300 lg:hidden"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    >
 
-            {{-- Navbar --}}
-            <x-navbar />
+        <x-sidebar.index />
 
-            {{-- Breadcrumb --}}
-            <x-breadcrumb />
+    </aside>
 
-            {{-- Main Content --}}
-            <main class="flex-1 p-6">
+    {{-- Desktop Sidebar --}}
+    <aside class="hidden lg:flex lg:w-72 lg:flex-col border-r bg-white">
+
+        <x-sidebar.index />
+
+    </aside>
+
+    {{-- Main Area --}}
+    <div class="flex flex-1 flex-col overflow-hidden">
+
+        {{-- Navbar --}}
+        <x-navbar />
+
+        {{-- Breadcrumb --}}
+        <x-breadcrumb />
+
+        {{-- Scroll Area --}}
+        <main class="flex-1 overflow-y-auto">
+
+            <div class="p-6">
 
                 {{ $slot }}
 
-            </main>
+            </div>
 
-            {{-- Footer --}}
+            {{-- Footer ikut scroll --}}
             <x-footer />
 
-        </div>
+        </main>
 
     </div>
 
-    @livewireScripts
+</div>
+
+@livewireScripts
 
 </body>
 
