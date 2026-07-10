@@ -4,10 +4,10 @@ namespace App\Livewire\Owner\Clients;
 
 use Livewire\Component;
 
-class Show extends Component
+class Delete extends Component
 {
     public function render()
     {
-        return view('livewire.owner.clients.show');
+        return view('livewire.owner.clients.delete');
     }
 }

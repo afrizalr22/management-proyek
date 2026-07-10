@@ -7,6 +7,9 @@ use App\Livewire\Owner\Dashboard as OwnerDashboard;
 use App\Livewire\Mandor\Dashboard as MandorDashboard;
 use App\Livewire\Worker\Dashboard as WorkerDashboard;
 use App\Livewire\Owner\Clients\Index as ClientsIndex;
+use App\Livewire\Owner\Clients\Show as ClientsShow;
+use App\Livewire\Owner\Clients\Form as Form;
+use App\Livewire\Owner\Clients\Delete;
 
 
 /*
@@ -20,12 +23,12 @@ Route::middleware([
     'role:owner',
 ])->group(function () {
 
-    Route::get(
-        '/owner/dashboard',
-        OwnerDashboard::class
-    )->name('owner.dashboard');
-
+    Route::get('/owner/dashboard',OwnerDashboard::class)->name('owner.dashboard');
     Route::get('/owner/clients', ClientsIndex::class)->name('owner.clients.index');
+    Route::get('/owner/clients/create', Form::class)->name('owner.clients.create');
+    Route::get('/owner/clients/{client}/edit', Form::class)->name('owner.clients.edit');
+    Route::get('/owner/clients/{client}',ClientsShow::class)->name('owner.clients.show');
+    Route::get('/clients/{client}/delete', Delete::class)->name('owner.clients.delete');
 
 });
 

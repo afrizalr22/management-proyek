@@ -7,9 +7,15 @@
 
         <x-slot:actions>
 
-            <x-ui.button>
-                Tambah Client
-            </x-ui.button>
+            <a href="{{ route('owner.clients.create') }}">
+
+    <x-ui.button>
+
+        Tambah Client
+
+    </x-ui.button>
+
+</a>
 
         </x-slot:actions>
 
@@ -93,14 +99,16 @@
     <div class="flex items-center justify-center gap-2">
 
         <x-ui.icon-button-view
-            href="#"
+            :href="route('owner.clients.show', 1)"
         />
 
         <x-ui.icon-button-edit
-            href="#"
+            :href="route('owner.clients.edit', 1)"
         />
 
-        <x-ui.icon-button-delete />
+        <x-ui.icon-button-delete 
+            :href="route('owner.clients.delete', 1)"
+        />
 
     </div>
 
@@ -134,14 +142,16 @@
   <div class="flex items-center justify-center gap-2">
 
         <x-ui.icon-button-view
-            href="#"
+            :href="route('owner.clients.show', 2)"
         />
 
         <x-ui.icon-button-edit
-            href="#"
+            href="{{ route('owner.clients.edit', 2) }}"
         />
 
-        <x-ui.icon-button-delete />
+        <x-ui.icon-button-delete 
+            :href="route('owner.clients.delete', 2)"
+        />
 
     </div>
 
@@ -175,14 +185,16 @@
    <div class="flex items-center justify-center gap-2">
 
         <x-ui.icon-button-view
-            href="#"
+            :href="route('owner.clients.show', 3)"
         />
 
         <x-ui.icon-button-edit
-            href="#"
+            :href="route('owner.clients.edit', 3)"
         />
 
-        <x-ui.icon-button-delete />
+        <x-ui.icon-button-delete 
+            :href="route('owner.clients.delete', 3)"
+        />
 
     </div>
 
