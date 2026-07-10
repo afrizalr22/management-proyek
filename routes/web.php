@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Livewire\Owner\Dashboard as OwnerDashboard;
 use App\Livewire\Mandor\Dashboard as MandorDashboard;
 use App\Livewire\Worker\Dashboard as WorkerDashboard;
+use App\Livewire\Owner\Clients\Index as ClientsIndex;
 
 
 /*
@@ -23,6 +24,8 @@ Route::middleware([
         '/owner/dashboard',
         OwnerDashboard::class
     )->name('owner.dashboard');
+
+    Route::get('/owner/clients', ClientsIndex::class)->name('owner.clients.index');
 
 });
 
