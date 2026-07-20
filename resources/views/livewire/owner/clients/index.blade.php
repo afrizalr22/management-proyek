@@ -9,13 +9,13 @@
 
             <a href="{{ route('owner.clients.create') }}">
 
-    <x-ui.button>
+                <x-ui.button>
 
-        Tambah Client
+                    Tambah Client
 
-    </x-ui.button>
+                </x-ui.button>
 
-</a>
+            </a>
 
         </x-slot:actions>
 
@@ -146,7 +146,7 @@
         />
 
         <x-ui.icon-button-edit
-            href="{{ route('owner.clients.edit', 2) }}"
+            :href="route('owner.clients.edit', 2)"
         />
 
         <x-ui.icon-button-delete 

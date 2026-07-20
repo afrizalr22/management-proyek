@@ -84,11 +84,11 @@
 
                         </label>
 
-<input
-    type="text"
-    wire:model="name"
-    class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-/>
+                            <input
+                                type="text"
+                                wire:model="name"
+                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                            />
 
                     </div>
 
@@ -101,11 +101,11 @@
 
                         </label>
 
- <input
-    type="text"
-    wire:model="company"
-    class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-/>
+                            <input
+                                type="text"
+                                wire:model="company"
+                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                            />
 
                     </div>
 
@@ -118,11 +118,11 @@
 
                         </label>
 
-<input
-    type="email"
-    wire:model="email"
-    class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-/>
+                            <input
+                                type="email"
+                                wire:model="email"
+                                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                            />
 
                     </div>
 
@@ -142,11 +142,11 @@
 
                             </span>
 
-<input
-    type="text"
-    wire:model="phone"
-    class="w-full rounded-r-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-/>
+                            <input
+                                type="text"
+                                wire:model="phone"
+                                class="w-full rounded-r-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                            />
 
                         </div>
 
@@ -182,16 +182,16 @@
 
                         </label>
 
-<select
-    wire:model="city"
-    class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
->
-    <option value="">Pilih Kota</option>
-    <option>Jakarta</option>
-    <option>Bandung</option>
-    <option>Surabaya</option>
-    <option>Medan</option>
-</select>
+                        <select
+                            wire:model="city"
+                            class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                        >
+                            <option value="">Pilih Kota</option>
+                            <option>Jakarta</option>
+                            <option>Bandung</option>
+                            <option>Surabaya</option>
+                            <option>Medan</option>
+                        </select>
 
                     </div>
 
@@ -241,11 +241,11 @@
 
                     </label>
 
- <textarea
-    wire:model="address"
-    rows="5"
-    class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-></textarea>
+                        <textarea
+                            wire:model="address"
+                            rows="5"
+                            class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                        ></textarea>
 
                 </div>
 

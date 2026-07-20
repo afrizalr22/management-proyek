@@ -1,8 +1,10 @@
-<button
-    type="button"
-    {{ $attributes->merge([
-        'class' => 'inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-100 text-red-600 transition hover:bg-red-200',
-    ]) }}
+@props([
+    'href',
+])
+
+<a
+    href="{{ $href }}"
+    class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-100 text-red-600 transition hover:bg-red-200"
     title="Delete"
 >
 
@@ -49,4 +51,4 @@
 
     </svg>
 
-</button>
+</a>
