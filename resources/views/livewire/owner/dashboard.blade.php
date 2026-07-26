@@ -5,13 +5,6 @@
         title="Dashboard"
         description="Ringkasan aktivitas perusahaan."
     >
-        <x-slot:actions>
-
-            <x-ui.button>
-                Tambah Project
-            </x-ui.button>
-
-        </x-slot:actions>
     </x-ui.page-header>
 
     {{-- Stat Card --}}

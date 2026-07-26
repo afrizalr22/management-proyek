@@ -41,11 +41,11 @@
         </a>
 
         <a
-            href="#"
+            href="{{ route('owner.quotations.index') }}"
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
         >
-            Project Administration
+            Quotation Management
         </a>
 
         <a

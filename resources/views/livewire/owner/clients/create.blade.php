@@ -33,7 +33,7 @@
 
                 <a href="{{ route('owner.clients.index') }}">
 
-                    <x-ui.button color="gray">
+                    <x-ui.button variant="danger">
 
                         Batal
 
@@ -43,7 +43,7 @@
 
                 <x-ui.button>
 
-                    {{ $buttonText }}
+                    Tambah Client
 
                 </x-ui.button>
 

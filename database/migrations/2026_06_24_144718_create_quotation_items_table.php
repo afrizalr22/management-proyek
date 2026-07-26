@@ -12,15 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('quotation_items', function (Blueprint $table) {
+
             $table->id();
             $table->foreignId('quotation_id')
                 ->constrained()
                 ->cascadeOnDelete();
             $table->string('item_name');
+            $table->text('description')->nullable();
             $table->decimal('qty', 10, 2);
             $table->string('unit', 50);
             $table->decimal('price', 15, 2);
             $table->decimal('total', 15, 2);
+            $table->unsignedInteger('sort_order')->default(1);
             $table->timestamps();
         });
     }

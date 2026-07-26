@@ -19,6 +19,11 @@ use App\Livewire\Owner\Projects\Create as ProjectCreate;
 use App\Livewire\Owner\Projects\Delete as ProjectsDelete;
 use App\Livewire\Owner\Projects\Edit as ProjectEdit;
 
+use App\Livewire\Owner\Quotations\Create as QuotationsCreate;
+use App\Livewire\Owner\Quotations\Show as QuotationsShow;
+use App\Livewire\Owner\Quotations\Edit as QuotationsEdit;
+use App\Livewire\Owner\Quotations\Delete as QuotationsDelete;
+use App\Livewire\Owner\Quotations\Index as QuotationsIndex;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +51,13 @@ Route::middleware([
         Route::get('/{project}/delete', ProjectsDelete::class)->name('delete');
     });
 
+    Route::prefix('quotations')->name('owner.quotations.')->group(function(){
+        Route::get('', QuotationsIndex::class)->name('index');
+        Route::get('/create', QuotationsCreate::class)->name('create');
+        Route::get('/{quotation}', QuotationsShow::class)->name('show');
+        Route::get('/{quotation}/edit', QuotationsEdit::class)->name('edit');
+        Route::get('/{quotation}/delete', QuotationsDelete::class)->name('delete');
+    }); 
 });
 
 /*
