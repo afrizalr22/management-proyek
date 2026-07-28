@@ -8,7 +8,7 @@
             class="transition hover:text-blue-600"
         >
             Quotation Management
-        </a>
+        </a>    
 
         <span class="mx-2">></span>
 

@@ -25,11 +25,18 @@ use App\Livewire\Owner\Quotations\Edit as QuotationsEdit;
 use App\Livewire\Owner\Quotations\Delete as QuotationsDelete;
 use App\Livewire\Owner\Quotations\Index as QuotationsIndex;
 
+use App\Livewire\Owner\Monitoring\Index as MonitoringIndex;
+use App\Livewire\Owner\Monitoring\Show as MonitoringShow;
+use App\Livewire\Owner\Monitoring\Documentation as MonitoringDocumentation;
+
 /*
 |--------------------------------------------------------------------------
 | Owner Routes
 |--------------------------------------------------------------------------
 */
+Route::get('/', function(){
+    return redirect()->route('login');
+});
 
 Route::middleware([
     'auth',
@@ -57,7 +64,13 @@ Route::middleware([
         Route::get('/{quotation}', QuotationsShow::class)->name('show');
         Route::get('/{quotation}/edit', QuotationsEdit::class)->name('edit');
         Route::get('/{quotation}/delete', QuotationsDelete::class)->name('delete');
-    }); 
+    });
+    
+    Route::prefix('monitoring')->name('owner.monitoring.')->group(function(){
+        Route::get('', MonitoringIndex::class)->name('index');
+        Route::get('/monitoring/{project}', MonitoringShow::class)->name('show');
+        Route::get('/{project}/documentation', MonitoringDocumentation::class)->name('documentation');
+    });
 });
 
 /*
