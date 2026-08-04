@@ -29,6 +29,12 @@ use App\Livewire\Owner\Monitoring\Index as MonitoringIndex;
 use App\Livewire\Owner\Monitoring\Show as MonitoringShow;
 use App\Livewire\Owner\Monitoring\Documentation as MonitoringDocumentation;
 
+use App\Livewire\Owner\Users\Index as UsersIndex;
+use App\Livewire\Owner\Users\Create as UsersCreate;
+use App\Livewire\Owner\Users\Edit as UsersEdit;
+use App\Livewire\Owner\Users\Show as UsersShow;
+use App\Livewire\Owner\Users\Delete as UsersDelete;
+
 /*
 |--------------------------------------------------------------------------
 | Owner Routes
@@ -70,6 +76,14 @@ Route::middleware([
         Route::get('', MonitoringIndex::class)->name('index');
         Route::get('/monitoring/{project}', MonitoringShow::class)->name('show');
         Route::get('/{project}/documentation', MonitoringDocumentation::class)->name('documentation');
+    });
+
+    Route::prefix('users')->name('owner.users.')->group(function(){
+        Route::get('', UsersIndex::class)->name('index');
+        Route::get('/create', UsersCreate::class)->name('create');
+        Route::get('/{user}/edit', UsersEdit::class)->name('edit');
+        Route::get('/{user}', UsersShow::class)->name('show');
+        Route::get('/{user}/delete', UsersDelete::class)->name('delete');
     });
 });
 

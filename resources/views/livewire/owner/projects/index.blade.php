@@ -22,7 +22,7 @@
     </x-ui.page-header>
 
     {{-- Summary --}}
-    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4"> 
 
         <x-ui.stat-card
             title="Total Project"

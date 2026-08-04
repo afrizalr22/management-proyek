@@ -15,7 +15,7 @@
                 {{ $title }}
             </p>
 
-            <h2 class="mt-2 text-3xl font-bold text-gray-900">
+            <h2 class="mt-2 text-xl font-bold text-gray-900">
                 {{ $value }}
             </h2>
 

@@ -126,7 +126,7 @@
 
         </div>
 
-        <x-ui.table>
+                <x-ui.table>
 
             <x-slot:head>
 
@@ -242,7 +242,7 @@
 
             </x-slot:body>
 
-        </x-ui.table>
+        </x-ui.table>   
 
     </div>
 

@@ -33,7 +33,7 @@
 
                 <a href="{{ route('owner.clients.index') }}">
 
-                    <x-ui.button variant="sda">
+                    <x-ui.button variant="danger">
 
                         Batal
 

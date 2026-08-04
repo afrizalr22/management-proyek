@@ -57,7 +57,7 @@
         </a>
 
         <a
-            href="#"
+            href="{{ route('owner.users.index') }}"
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
         >

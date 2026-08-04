@@ -96,23 +96,23 @@
 
                     <td class="px-6 py-4">
 
-    <div class="flex items-center justify-center gap-2">
+                        <div class="flex items-center justify-center gap-2">
 
-        <x-ui.icon-button-view
-            :href="route('owner.clients.show', 1)"
-        />
+                            <x-ui.icon-button-view
+                                :href="route('owner.clients.show', 1)"
+                            />
 
-        <x-ui.icon-button-edit
-            :href="route('owner.clients.edit', 1)"
-        />
+                            <x-ui.icon-button-edit
+                                :href="route('owner.clients.edit', 1)"
+                            />
 
-        <x-ui.icon-button-delete 
-            :href="route('owner.clients.delete', 1)"
-        />
+                            <x-ui.icon-button-delete 
+                                :href="route('owner.clients.delete', 1)"
+                            />
 
-    </div>
+                        </div>
 
-</td>
+                    </td>
 
                 </tr>
 
@@ -139,23 +139,23 @@
 
                     <td class="px-6 py-4">
 
-  <div class="flex items-center justify-center gap-2">
+                    <div class="flex items-center justify-center gap-2">
 
-        <x-ui.icon-button-view
-            :href="route('owner.clients.show', 2)"
-        />
+                            <x-ui.icon-button-view
+                                :href="route('owner.clients.show', 2)"
+                            />
 
-        <x-ui.icon-button-edit
-            :href="route('owner.clients.edit', 2)"
-        />
+                            <x-ui.icon-button-edit
+                                :href="route('owner.clients.edit', 2)"
+                            />
 
-        <x-ui.icon-button-delete 
-            :href="route('owner.clients.delete', 2)"
-        />
+                            <x-ui.icon-button-delete 
+                                :href="route('owner.clients.delete', 2)"
+                            />
 
-    </div>
+                        </div>
 
-</td>
+                    </td>
 
                 </tr>
 
@@ -182,23 +182,23 @@
 
                    <td class="px-6 py-4">
 
-   <div class="flex items-center justify-center gap-2">
+                    <div class="flex items-center justify-center gap-2">
 
-        <x-ui.icon-button-view
-            :href="route('owner.clients.show', 3)"
-        />
+                            <x-ui.icon-button-view
+                                :href="route('owner.clients.show', 3)"
+                            />
 
-        <x-ui.icon-button-edit
-            :href="route('owner.clients.edit', 3)"
-        />
+                            <x-ui.icon-button-edit
+                                :href="route('owner.clients.edit', 3)"
+                            />
 
-        <x-ui.icon-button-delete 
-            :href="route('owner.clients.delete', 3)"
-        />
+                            <x-ui.icon-button-delete 
+                                :href="route('owner.clients.delete', 3)"
+                            />
 
-    </div>
+                        </div>
 
-</td>
+                    </td>
 
                 </tr>
 
