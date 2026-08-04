@@ -14,9 +14,21 @@
     };
 @endphp
 
-<div class="flex items-center gap-3">
+<div class="w-full">
 
-    <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+    <div class="mb-2 flex items-center justify-between">
+
+        <span class="text-xs font-medium text-gray-500">
+            Progress
+        </span>
+
+        <span class="text-xs font-semibold text-gray-700">
+            {{ $value }}%
+        </span>
+
+    </div>
+
+    <div class="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
 
         <div
             class="{{ $color }} h-full rounded-full transition-all duration-500"
@@ -24,9 +36,5 @@
         ></div>
 
     </div>
-
-    <span class="text-sm font-medium text-gray-600 w-10 text-right">
-        {{ $value }}%
-    </span>
 
 </div>

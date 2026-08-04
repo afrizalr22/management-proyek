@@ -77,6 +77,9 @@
 </div>
 
 @livewireScripts
+@vite(['resources/css/app.css','resources/js/app.js'])
+
+@stack('scripts')
 
 </body>
 
