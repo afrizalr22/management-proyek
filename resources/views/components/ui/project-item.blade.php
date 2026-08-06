@@ -1,70 +1,55 @@
-@props([
-    'title',
-    'progress' => 0,
-    'status' => 'Active',
-    'date',
-])
+<div class="rounded-xl border border-gray-200 p-5 hover:border-blue-200 hover:bg-blue-50/30 transition">
 
-<div class="rounded-xl border border-gray-200 bg-white p-5 transition hover:shadow-md">
-
+    {{-- Header --}}
     <div class="flex items-start justify-between">
 
         <div>
 
-            <h4 class="text-lg font-semibold text-gray-800">
-
+            <h3 class="font-semibold text-gray-900">
                 {{ $title }}
+            </h3>
 
-            </h4>
+            <p class="mt-1 text-sm text-gray-500">
+                {{ $date }}
+            </p>
 
-            <div class="mt-4">
+        </div>
 
-                <div class="flex items-center justify-between text-sm">
+        <div class="text-right">
 
-                    <span class="text-gray-500">
-
-                        Progress
-
-                    </span>
-
-                    <span class="font-semibold">
-
-                        {{ $progress }}%
-
-                    </span>
-
-                </div>
-
-                <div class="mt-2 h-2 overflow-hidden rounded-full bg-gray-200">
-
-                    <div
-                        class="h-full rounded-full bg-blue-600"
-                        style="width: {{ $progress }}%"
-                    ></div>
-
-                </div>
-
-            </div>
+            <x-ui.badge
+                :color="$status === 'Finished' ? 'green' : 'blue'"
+            >
+                {{ $status }}
+            </x-ui.badge>
 
         </div>
 
     </div>
 
-    <div class="mt-5 flex items-center justify-between">
+    {{-- Progress --}}
+    <div class="mt-5">
 
-        <x-ui.badge
-            :color="$status === 'Finished' ? 'green' : 'blue'"
-        >
+        <div class="mb-2 flex items-center justify-between">
 
-            {{ $status }}
+            <span class="text-sm text-gray-500">
+                Progress
+            </span>
 
-        </x-ui.badge>
+            <span class="text-sm font-semibold text-blue-600">
+                {{ $progress }}%
+            </span>
 
-        <span class="text-sm text-gray-500">
+        </div>
 
-            {{ $date }}
+        <div class="h-3 overflow-hidden rounded-full bg-gray-200">
 
-        </span>
+            <div
+                class="h-full rounded-full bg-blue-600 transition-all duration-500"
+                style="width: {{ $progress }}%;"
+            ></div>
+
+        </div>
 
     </div>
 

@@ -54,7 +54,7 @@ Route::middleware([
     Route::get('/clients/create', ClientsCreate::class)->name('owner.clients.create');
     Route::get('/clients/{client}/edit', ClientsEdit::class)->name('owner.clients.edit');
     Route::get('/clients/{client}',ClientsShow::class)->name('owner.clients.show');
-    Route::get('/clients/{client}/delete', ClientsDelete::class)->name('owner.clients.delete');
+    Route::get('/{client}/delete', ClientsDelete::class)->name('owner.clients.delete');
 
     Route::prefix('projects')->name('owner.projects.')->group(function(){
         Route::get('', ProjectsIndex::class)->name('index');

@@ -6,41 +6,37 @@ use Livewire\Component;
 
 class Edit extends Component
 {
-    public bool $isEdit = false;
-
     public string $pageTitle = '';
 
     public string $pageDescription = '';
 
     public string $buttonText = '';
 
-    public $name = '';
+    public string $name = '';
 
-    public $company = '';
+    public string $company = '';
 
-    public $email = '';
+    public string $email = '';
 
-    public $phone = '';
+    public string $phone = '';
 
-    public $city = '';
+    public string $city = '';
 
-    public $address = '';
+    public string $address = '';
 
-    public $status = 'Active';
+    public string $status = 'Active';
 
     public function mount($client = null)
     {
         if ($client) {
 
-            $this->isEdit = true;
-
             $this->pageTitle = 'Edit Client';
 
-            $this->pageDescription = 'Perbarui informasi client yang telah terdaftar.';
+            $this->pageDescription = 'Perbarui informasi client yang telah terdaftar di dalam sistem.';
 
-            $this->buttonText = 'Update Client';
+            $this->buttonText = 'Simpan Perubahan';
 
-            // Dummy Data
+            // Dummy Data UI
             $this->name = 'Budi Santoso';
 
             $this->company = 'PT Tekno Konstruksi Utama';
@@ -59,9 +55,9 @@ class Edit extends Component
 
             $this->pageTitle = 'Tambah Client Baru';
 
-            $this->pageDescription = 'Lengkapi informasi di bawah untuk mendaftarkan mitra bisnis baru.';
+            $this->pageDescription = 'Lengkapi informasi di bawah untuk mendaftarkan client baru.';
 
-            $this->buttonText = 'Simpan Data';
+            $this->buttonText = 'Tambah Client';
 
         }
     }
