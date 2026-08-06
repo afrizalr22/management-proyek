@@ -1,349 +1,191 @@
-<div class="space-y-6">
+<div
+    x-data="{ open: false }"
 
-    {{-- Breadcrumb --}}
-    <div class="text-sm text-gray-500">
+    x-on:open-delete-project-modal.window="
+        open = true
+    "
 
-        <a
-            href="{{ route('owner.projects.index') }}"
-            class="hover:text-blue-600"
+    x-show="open"
+
+    x-transition.opacity
+
+    class="fixed inset-0 z-50 flex items-center justify-center"
+
+    style="display:none;"
+>
+
+    {{-- Overlay --}}
+    <div
+        class="absolute inset-0 bg-black/50"
+        x-on:click="open=false"
+    ></div>
+
+    {{-- Modal --}}
+    <div
+        class="relative z-10 w-full max-w-lg rounded-3xl bg-white shadow-2xl"
+    >
+
+        {{-- Header --}}
+        <div
+            class="border-b border-gray-200 px-8 py-6"
         >
-            Project Management
-        </a>
 
-        <span class="mx-2">></span>
-
-        <span class="font-medium text-gray-700">
+            <h2 class="text-2xl font-bold text-gray-900">
 
             Delete Project
 
-        </span>
+            </h2>
 
-    </div>
+            <p class="mt-2 text-gray-500">
 
-    {{-- Header --}}
-    <x-ui.page-header
-        title="Delete Project"
-        description="Konfirmasi penghapusan project sebelum data dihapus dari sistem."
-    >
+                Apakah Anda yakin ingin menghapus project ini?
 
-        <x-slot:actions>
-
-            <div class="flex gap-3">
-
-                <a href="{{ route('owner.projects.index') }}">
-
-                    <x-ui.button variant="secondary">
-
-                        Batal
-
-                    </x-ui.button>
-
-                </a>
-
-                <x-ui.button variant="danger">
-
-                    Ya, Hapus Project
-
-                </x-ui.button>
-
-            </div>
-
-        </x-slot:actions>
-
-    </x-ui.page-header>
-
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-
-        {{-- Left --}}
-        <div class="space-y-6 xl:col-span-2">
-
-            <x-ui.info-card>
-
-                <div class="p-8">
-
-                    <div class="flex items-center gap-4">
-
-                        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-8 w-8 text-red-600"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
-                                />
-                            </svg>
-
-                        </div>
-
-                        <div>
-
-                            <h2 class="text-2xl font-bold text-gray-800">
-
-                                Delete Project
-
-                            </h2>
-
-                            <p class="mt-2 text-gray-500">
-
-                                Anda akan menghapus project berikut secara permanen.
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <hr class="my-8">
-
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-
-                        <div>
-
-                            <label class="text-sm font-semibold text-gray-500">
-
-                                Nama Project
-
-                            </label>
-
-                            <p class="mt-2 font-semibold text-gray-800">
-
-                                Renovasi Gedung Kantor PT ABC
-
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <label class="text-sm font-semibold text-gray-500">
-
-                                Client
-
-                            </label>
-
-                            <p class="mt-2">
-
-                                PT Tekno Konstruksi Utama
-
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <label class="text-sm font-semibold text-gray-500">
-
-                                Mandor
-
-                            </label>
-
-                            <p class="mt-2">
-
-                                Ahmad Fauzi
-
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <label class="text-sm font-semibold text-gray-500">
-
-                                Status
-
-                            </label>
-
-                            <div class="mt-2">
-
-                                <x-ui.badge color="green">
-
-                                    Active
-
-                                </x-ui.badge>
-
-                            </div>
-
-                        </div>
-
-                        <div>
-
-                            <label class="text-sm font-semibold text-gray-500">
-
-                                Budget
-
-                            </label>
-
-                            <p class="mt-2">
-
-                                Rp 850.000.000
-
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <label class="text-sm font-semibold text-gray-500">
-
-                                Progress
-
-                            </label>
-
-                            <p class="mt-2">
-
-                                35%
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </x-ui.info-card>
-
-            <x-ui.info-card>
-
-                <div class="rounded-2xl border border-red-200 bg-red-50 p-6">
-
-                    <div class="flex gap-4">
-
-                        <div class="text-2xl">
-
-                            ⚠️
-
-                        </div>
-
-                        <div>
-
-                            <h3 class="font-semibold text-red-700">
-
-                                Peringatan
-
-                            </h3>
-
-                            <p class="mt-2 leading-7 text-red-600">
-
-                                Menghapus project akan menghilangkan data project
-                                dari sistem. Nantinya data yang telah memiliki
-                                transaksi seperti quotation, invoice, laporan
-                                harian, maupun dokumentasi sebaiknya tidak dapat
-                                dihapus dan hanya dapat dinonaktifkan.
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </x-ui.info-card>
+            </p>
 
         </div>
 
-        {{-- Right --}}
-        <div class="space-y-6">
+        {{-- Body --}}
+        <div
+            class="space-y-6 p-8"
+        >
 
-            <x-ui.summary-card>
+            {{-- Warning --}}
+            <div
+                class="rounded-2xl border border-red-200 bg-red-50 p-5"
+            >
 
-                <div class="p-6">
+                <div class="flex items-start gap-4">
 
-                    <h3 class="text-lg font-bold">
+                    <div
+                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500 text-white"
+                    >
 
-                        Ringkasan
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
 
-                    </h3>
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
+                            />
 
-                    <div class="mt-6 space-y-5">
+                        </svg>
 
-                        <div class="flex justify-between">
+                    </div>
 
-                            <span class="text-gray-500">
+                    <div>
 
-                                Project Code
+                        <h3
+                            class="font-semibold text-red-700"
+                        >
 
-                            </span>
+                            Warning
 
-                            <span>
+                        </h3>
 
-                                PRJ-2026-001
+                        <p class="mt-2 text-sm text-red-600">
 
-                            </span>
+                            Project yang dihapus tidak dapat dikembalikan.
+                            Seluruh progress, dokumentasi, laporan harian,
+                            serta data lain yang berkaitan dengan project ini
+                            akan ikut terhapus.
 
-                        </div>
-
-                        <div class="flex justify-between">
-
-                            <span class="text-gray-500">
-
-                                Dibuat
-
-                            </span>
-
-                            <span>
-
-                                12 Jul 2026
-
-                            </span>
-
-                        </div>
-
-                        <div class="flex justify-between">
-
-                            <span class="text-gray-500">
-
-                                Terakhir Diubah
-
-                            </span>
-
-                            <span>
-
-                                15 Jul 2026
-
-                            </span>
-
-                        </div>
+                        </p>
 
                     </div>
 
                 </div>
 
-            </x-ui.summary-card>
+            </div>
 
-            <x-ui.summary-card>
+            {{-- Preview Project --}}
+            <div class="rounded-2xl bg-gray-50 p-6">
 
-                <div class="p-6">
+                <div class="space-y-4">
 
-                    <h3 class="text-lg font-bold">
+                    <div class="flex justify-between">
 
-                        Dampak Penghapusan
+                        <span class="text-gray-500">
+                            Nama Project
+                        </span>
 
-                    </h3>
+                        <span class="font-semibold">
+                            Renovasi Kantor Cabang Medan
+                        </span>
 
-                    <ul class="mt-5 space-y-3 text-sm text-gray-600">
+                    </div>
 
-                        <li>• Project tidak dapat dikembalikan.</li>
+                    <div class="flex justify-between">
 
-                        <li>• Riwayat project akan hilang.</li>
+                        <span class="text-gray-500">
+                            Client
+                        </span>
 
-                        <li>• Data terkait harus dipastikan tidak digunakan.</li>
+                        <span class="font-semibold">
+                            PT Maju Bersama
+                        </span>
 
-                        <li>• Disarankan melakukan backup sebelum menghapus.</li>
+                    </div>
 
-                    </ul>
+                    <div class="flex justify-between">
+
+                        <span class="text-gray-500">
+                            Mandor
+                        </span>
+
+                        <span class="font-semibold">
+                            Ahmad Fauzi
+                        </span>
+
+                    </div>
+
+                    <div class="flex justify-between">
+
+                        <span class="text-gray-500">
+                            Status
+                        </span>
+
+                        <x-ui.badge color="green">
+
+                            Active
+
+                        </x-ui.badge>
+
+                    </div>
 
                 </div>
 
-            </x-ui.summary-card>
+            </div>
+
+        </div>
+
+        {{-- Footer --}}
+        <div
+            class="flex justify-end gap-3 border-t border-gray-200 px-8 py-6"
+        >
+
+            <x-ui.button
+                variant="outline"
+                x-on:click="open=false"
+            >
+
+                Cancel
+
+            </x-ui.button>
+
+            <x-ui.button
+                variant="danger"
+            >
+
+                Delete Project
+
+            </x-ui.button>
 
         </div>
 

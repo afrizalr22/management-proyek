@@ -40,23 +40,34 @@
 
                 <div class="flex-1">
 
-                    <h3 class="font-semibold">
+                    <h3 class="font-semibold text-gray-900">
 
-                        Progress Minggu Ke-4 Ditambahkan
+                        Progress Project Diperbarui
 
                     </h3>
 
                     <p class="mt-1 text-sm text-gray-500">
 
-                        Ahmad Fauzi memperbarui progress proyek menjadi 72%.
+                        Ahmad Fauzi memperbarui progress proyek menjadi
+                        <span class="font-semibold text-blue-600">72%</span>.
 
                     </p>
 
-                    <span class="mt-2 block text-xs text-gray-400">
+                    <div class="mt-3 flex items-center justify-between">
 
-                        08 Juli 2026 • 09:30 WIB
+                        <span
+                            class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
+                        >
+                            Ahmad Fauzi • Mandor
+                        </span>
 
-                    </span>
+                        <span class="text-xs text-gray-400">
+
+                            08 Juli 2026 • 09:30 WIB
+
+                        </span>
+
+                    </div>
 
                 </div>
 
@@ -79,23 +90,33 @@
 
                 <div class="flex-1">
 
-                    <h3 class="font-semibold">
+                    <h3 class="font-semibold text-gray-900">
 
-                        Dokumentasi Proyek Diunggah
+                        Dokumentasi Project Ditambahkan
 
                     </h3>
 
                     <p class="mt-1 text-sm text-gray-500">
 
-                        12 foto dokumentasi pekerjaan berhasil ditambahkan.
+                        12 foto dokumentasi pekerjaan berhasil diunggah.
 
                     </p>
 
-                    <span class="mt-2 block text-xs text-gray-400">
+                    <div class="mt-3 flex items-center justify-between">
 
-                        05 Juli 2026 • 14:20 WIB
+                        <span
+                            class="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
+                        >
+                            Ahmad Fauzi • Mandor
+                        </span>
 
-                    </span>
+                        <span class="text-xs text-gray-400">
+
+                            05 Juli 2026 • 14:20 WIB
+
+                        </span>
+
+                    </div>
 
                 </div>
 
@@ -112,7 +133,7 @@
 
                 <div class="flex-1">
 
-                    <h3 class="font-semibold">
+                   <h3 class="font-semibold text-gray-900">
 
                         Daily Report Dibuat
 
@@ -120,15 +141,25 @@
 
                     <p class="mt-1 text-sm text-gray-500">
 
-                        Laporan harian pekerjaan berhasil dibuat oleh mandor.
+                        Laporan harian proyek berhasil dikirim.
 
                     </p>
 
-                    <span class="mt-2 block text-xs text-gray-400">
+                    <div class="mt-3 flex items-center justify-between">
 
-                        03 Juli 2026 • 17:15 WIB
+                        <span
+                            class="rounded-full bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-700"
+                        >
+                            Ahmad Fauzi • Mandor
+                        </span>
 
-                    </span>
+                        <span class="text-xs text-gray-400">
+
+                            03 Juli 2026 • 17:15 WIB
+
+                        </span>
+
+                    </div>
 
                 </div>
 

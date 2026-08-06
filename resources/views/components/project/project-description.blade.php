@@ -1,4 +1,4 @@
-a<x-ui.info-card>
+<x-ui.info-card>
 
     <div class="p-8">
 
@@ -48,6 +48,118 @@ a<x-ui.info-card>
                 serta standar keselamatan kerja yang telah ditetapkan perusahaan.
 
             </p>
+
+        </div>
+
+        <hr class="my-8">
+
+        <div>
+
+            <h3 class="text-lg font-bold text-gray-800">
+
+                Scope of Work
+
+            </h3>
+
+            <div class="mt-6 grid gap-4 md:grid-cols-2">
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                        ✓
+
+                    </div>
+
+                    <span>
+
+                        Renovasi Interior
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                        ✓
+
+                    </div>
+
+                    <span>
+
+                        Instalasi Listrik
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                        ✓
+
+                    </div>
+
+                    <span>
+
+                        Perbaikan Plumbing
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                        ✓
+
+                    </div>
+
+                    <span>
+
+                        Pengecatan Bangunan
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                        ✓
+
+                    </div>
+
+                    <span>
+
+                        Pemasangan Plafon
+
+                    </span>
+
+                </div>
+
+                <div class="flex items-center gap-3">
+
+                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                        ✓
+
+                    </div>
+
+                    <span>
+
+                        Finishing
+
+                    </span>
+
+                </div>
+
+            </div>
 
         </div>
 

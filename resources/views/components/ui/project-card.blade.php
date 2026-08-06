@@ -11,7 +11,6 @@
 
     'showUrl' => '#',
     'editUrl' => '#',
-    'deleteUrl' => '#',
 ])
 
 @php
@@ -27,12 +26,24 @@
     }
 @endphp
 
-<div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
+<div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl">
 
+    {{-- Status --}}
     {{-- Status --}}
     <div class="flex items-center justify-between">
 
         <x-ui.badge :color="$badgeColor">
+
+            <span
+                class="mr-2 inline-block h-2 w-2 rounded-full
+                {{
+                    $status == 'Active'
+                        ? 'bg-green-500'
+                        : ($status == 'Pending'
+                            ? 'bg-yellow-400'
+                            : 'bg-blue-500')
+                }}">
+            </span>
 
             {{ $status }}
 
@@ -105,34 +116,35 @@
     <hr class="my-5">
 
     {{-- Progress --}}
-    <div>
+   {{-- Progress --}}
+<div>
 
-        <div class="mb-2 flex justify-between">
+    <div class="mb-2 flex items-center justify-between">
 
-            <span class="text-gray-600">
+        <span class="text-sm font-medium text-gray-600">
 
-                Progress
+            Progress
 
-            </span>
+        </span>
 
-            <span class="font-semibold">
+        <span class="text-sm font-bold text-gray-800">
 
-                {{ $progress }}%
+            {{ $progress }}%
 
-            </span>
-
-        </div>
-
-        <div class="h-3 overflow-hidden rounded-full bg-gray-200">
-
-            <div
-                class="{{ $progressColor }} h-full rounded-full"
-                style="width: {{ $progress }}%"
-            ></div>
-
-        </div>
+        </span>
 
     </div>
+
+    <div class="h-2.5 overflow-hidden rounded-full bg-gray-200">
+
+        <div
+            class="{{ $progressColor }} h-full rounded-full transition-all duration-500"
+            style="width: {{ $progress }}%"
+        ></div>
+
+    </div>
+
+</div>
 
     <hr class="my-5">
 
@@ -172,28 +184,20 @@
     <hr class="my-5">
 
     {{-- Action --}}
-    <div class="flex gap-2">
+    {{-- Action --}}
+    <div class="flex items-center justify-end gap-2">
 
-        <a
-             href="{{ $showUrl }}"
-            class="flex-1 rounded-xl bg-blue-100 py-2 text-center text-sm font-medium text-blue-700 hover:bg-blue-200"
-        >
-            View
-        </a>
+        <x-ui.icon-button-view
+            :href="$showUrl"
+        />
 
-        <a
-            href="{{ $editUrl }}"
-            class="flex-1 rounded-xl bg-yellow-100 py-2 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200"
-        >
-            Edit
-        </a>
+        <x-ui.icon-button-edit
+            :href="$editUrl"
+        />
 
-        <a
-            href="{{ $deleteUrl }}"
-            class="flex-1 rounded-xl bg-red-100 py-2 text-center text-sm font-medium text-red-700 hover:bg-red-200"
-        >
-            Delete
-        </a>
+        <x-ui.icon-button-delete
+            x-on:click="$dispatch('open-delete-project-modal')"
+        />
 
     </div>
 

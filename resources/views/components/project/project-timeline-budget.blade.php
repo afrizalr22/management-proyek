@@ -11,15 +11,15 @@
 
             <h2 class="text-2xl font-bold text-gray-800">
 
-                Timeline & Budget
+    Timeline & Budget
 
-            </h2>
+</h2>
 
-            <p class="mt-2 text-gray-500">
+<p class="mt-2 text-gray-500">
 
-                Tentukan jadwal pelaksanaan dan estimasi anggaran proyek.
+    Tentukan jadwal pelaksanaan serta estimasi nilai proyek.
 
-            </p>
+</p>
 
         </div>
 
@@ -46,6 +46,12 @@
                         class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
                     >
 
+                    <p class="mt-2 text-xs text-gray-500">
+
+                        Tanggal dimulainya pelaksanaan proyek.
+
+                    </p>
+
                 </div>
 
                 {{-- Tanggal Selesai --}}
@@ -63,6 +69,11 @@
                         value="{{ $mode === 'edit' ? '2026-12-20' : '' }}"
                         class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
                     >
+                    <p class="mt-2 text-xs text-gray-500">
+
+                        Target penyelesaian proyek.
+
+                    </p>
 
                 </div>
 
@@ -73,7 +84,8 @@
 
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
 
-                    Estimasi Budget
+                    Estimasi Nilai Project
+
                     <span class="text-red-500">*</span>
 
                 </label>
@@ -97,107 +109,7 @@
 
                 <p class="mt-2 text-xs text-gray-500">
 
-                    Masukkan estimasi nilai kontrak atau anggaran proyek.
-
-                </p>
-
-            </div>
-
-            {{-- Status & Prioritas --}}
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-
-                {{-- Status --}}
-                <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                        Status Awal
-
-                    </label>
-
-                    <select
-                        class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                    >
-
-                        <option {{ $mode === 'edit' ? 'selected' : '' }}>
-
-                            Perencanaan
-
-                        </option>
-
-                        <option>
-
-                            Berjalan
-
-                        </option>
-
-                        <option>
-
-                            Ditunda
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-                {{-- Prioritas --}}
-                <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                        Prioritas
-
-                    </label>
-
-                    <select
-                        class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                    >
-
-                        <option>
-
-                            Tinggi
-
-                        </option>
-
-                        <option {{ $mode === 'edit' ? 'selected' : '' }}>
-
-                            Sedang
-
-                        </option>
-
-                        <option>
-
-                            Rendah
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            {{-- Catatan Timeline --}}
-            <div>
-
-                <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                    Catatan Timeline
-
-                </label>
-
-                <textarea
-                    rows="4"
-                    placeholder="Tambahkan informasi mengenai jadwal proyek..."
-                    class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                >{{ $mode === 'edit'
-                    ? 'Pekerjaan dimulai setelah material tiba di lokasi dan ditargetkan selesai dalam waktu 5 bulan.'
-                    : '' }}</textarea>
-
-                <p class="mt-2 text-xs text-gray-500">
-
-                    Catatan ini bersifat opsional dan digunakan sebagai informasi tambahan.
+                    Masukkan estimasi nilai kontrak proyek.
 
                 </p>
 

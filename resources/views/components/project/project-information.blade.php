@@ -2,73 +2,69 @@
 
     <div class="p-8">
 
-        {{-- Header --}}
-        <div class="flex items-start gap-5">
+ {{-- Header --}}
+<div class="flex items-start justify-between gap-6">
 
-            <div
-                class="flex h-16 w-16 items-center justify-center rounded-xl bg-blue-600 text-3xl text-white"
-            >
-                🏗️
-            </div>
+    <div class="flex items-start gap-5">
 
-            <div>
+        <div
+            class="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600 text-3xl text-white shadow-md"
+        >
+            🏗️
+        </div>
 
-                <h2 class="text-2xl font-bold">
+        <div>
 
-                    Renovasi Kantor Cabang Medan
+            <h2 class="text-2xl font-bold text-gray-900">
 
-                </h2>
+                Renovasi Kantor Cabang Medan
 
-                <p class="mt-2 text-gray-500">
+            </h2>
 
-                    Renovasi Gedung Perkantoran
+            <p class="mt-1 text-gray-500">
 
-                </p>
+                Renovasi Gedung Perkantoran
 
-                <div class="mt-4">
+            </p>
 
-                    <x-ui.badge color="green">
+            <div class="mt-4 flex items-center gap-3">
 
-                        Active
+                <x-ui.badge color="green">
 
-                    </x-ui.badge>
+                    <span class="mr-2 h-2 w-2 rounded-full bg-green-500 inline-block"></span>
 
-                </div>
+                    Active
+
+                </x-ui.badge>
+
+                <span
+                    class="rounded-lg bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600"
+                >
+                    PRJ-001
+                </span>
 
             </div>
 
         </div>
+
+    </div>
+
+</div>
 
         <hr class="my-8">
 
         {{-- Informasi --}}
         <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
 
-            <div>
+           <div>
 
-                <p class="text-xs font-semibold uppercase text-gray-500">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
-                    Kode Project
-
-                </p>
-
-                <p class="mt-2 text-lg font-semibold">
-
-                    PRJ-001
+                    👤 Client
 
                 </p>
 
-            </div>
-
-            <div>
-
-                <p class="text-xs font-semibold uppercase text-gray-500">
-
-                    Client
-
-                </p>
-
-                <p class="mt-2 text-lg">
+                <p class="mt-2 text-lg font-medium text-gray-800">
 
                     PT Maju Bersama
 
@@ -78,13 +74,13 @@
 
             <div>
 
-                <p class="text-xs font-semibold uppercase text-gray-500">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
-                    Mandor
+                    👷 Mandor
 
                 </p>
 
-                <p class="mt-2 text-lg">
+                <p class="mt-2 text-lg font-medium text-gray-800">
 
                     Ahmad Fauzi
 
@@ -94,13 +90,13 @@
 
             <div>
 
-                <p class="text-xs font-semibold uppercase text-gray-500">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
-                    Lokasi Project
+                    📍 Lokasi Project
 
                 </p>
 
-                <p class="mt-2 text-lg">
+                <p class="mt-2 text-lg font-medium text-gray-800">
 
                     Medan, Sumatera Utara
 
@@ -110,13 +106,13 @@
 
             <div>
 
-                <p class="text-xs font-semibold uppercase text-gray-500">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
-                    Tanggal Mulai
+                    📅 Tanggal Mulai
 
                 </p>
 
-                <p class="mt-2 text-lg">
+                <p class="mt-2 text-lg font-medium text-gray-800">
 
                     15 Juli 2026
 
@@ -124,15 +120,15 @@
 
             </div>
 
-            <div>
+           <div>
 
-                <p class="text-xs font-semibold uppercase text-gray-500">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
-                    Target Selesai
+                    🎯 Target Selesai
 
                 </p>
 
-                <p class="mt-2 text-lg">
+                <p class="mt-2 text-lg font-medium text-gray-800">
 
                     20 Desember 2026
 
@@ -145,24 +141,20 @@
         <hr class="my-8">
 
         {{-- Alamat --}}
-        <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
-            <p class="text-xs font-semibold uppercase text-gray-500">
+            📌 Alamat Project
 
-                Alamat Project
+        </p>
 
-            </p>
+        <p class="mt-3 leading-8 text-gray-700">
 
-            <p class="mt-3 text-lg leading-8">
+            Jl. Gatot Subroto No.88,
+            Kecamatan Medan Petisah,
+            Kota Medan,
+            Sumatera Utara.
 
-                Jl. Gatot Subroto No.88,
-                Kecamatan Medan Petisah,
-                Kota Medan,
-                Sumatera Utara.
-
-            </p>
-
-        </div>
+        </p>
 
     </div>
 

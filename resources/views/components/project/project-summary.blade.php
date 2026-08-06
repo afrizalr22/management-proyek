@@ -1,172 +1,173 @@
 <div class="space-y-6">
 
     {{-- Status Project --}}
-    <x-ui.summary-card>
+        <x-ui.summary-card>
 
-        <div class="p-6">
+            <div class="p-6">
 
-            <h3 class="text-lg font-bold text-gray-800">
+                <div class="flex items-center justify-between">
 
-                Status Project
+                    <h3 class="text-lg font-bold text-gray-800">
 
-            </h3>
+                        Status Project
 
-            <div class="mt-6">
+                    </h3>
 
-                <x-ui.badge color="green">
+                    <x-ui.badge color="green">
 
-                    Active
+                        <span class="mr-2 inline-block h-2 w-2 rounded-full bg-green-500"></span>
 
-                </x-ui.badge>
+                        Active
+
+                    </x-ui.badge>
+
+                </div>
+
+                <p class="mt-5 text-sm leading-7 text-gray-500">
+
+                    Proyek sedang berjalan sesuai jadwal. Seluruh aktivitas masih dalam proses pelaksanaan.
+
+                </p>
 
             </div>
 
-            <p class="mt-4 text-sm leading-6 text-gray-500">
+        </x-ui.summary-card>
 
-                Proyek sedang berjalan sesuai dengan jadwal yang telah ditentukan.
+        {{-- Progress --}}
+        <x-ui.summary-card>
 
-            </p>
+            <div class="p-6">
 
-        </div>
+                <div class="flex items-center justify-between">
 
-    </x-ui.summary-card>
+                    <h3 class="text-lg font-bold text-gray-800">
 
-    {{-- Progress --}}
-    <x-ui.summary-card>
+                        Progress Project
 
-        <div class="p-6">
+                    </h3>
 
-            <div class="flex items-center justify-between">
+                    <span class="text-2xl font-bold text-blue-600">
+
+                        72%
+
+                    </span>
+
+                </div>
+
+                <div class="mt-5">
+
+                    <div class="h-2.5 overflow-hidden rounded-full bg-gray-200">
+
+                        <div
+                            class="h-full rounded-full bg-blue-600 transition-all duration-500"
+                            style="width:72%"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+                <div class="mt-4 flex items-center justify-between text-sm">
+
+                    <span class="text-gray-500">
+
+                        Progress pekerjaan
+
+                    </span>
+
+                    <span class="font-medium text-blue-600">
+
+                        On Schedule
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </x-ui.summary-card>
+
+        {{-- Detail Project --}}
+        <x-ui.summary-card>
+
+            <div class="p-6">
 
                 <h3 class="text-lg font-bold text-gray-800">
 
-                    Progress
+                    Detail Project
 
                 </h3>
 
-                <span class="text-xl font-bold text-blue-600">
+                <div class="mt-6 space-y-5">
 
-                    72%
+                    <div class="flex items-center justify-between">
 
-                </span>
+                        <span class="text-gray-500">
 
-            </div>
+                            💰 Nilai Project
 
-            <div class="mt-5">
+                        </span>
 
-                <div class="h-3 overflow-hidden rounded-full bg-gray-200">
+                        <span class="font-bold text-gray-800">
 
-                    <div
-                        class="h-full rounded-full bg-blue-600"
-                        style="width:72%"
-                    ></div>
+                            Rp850.000.000
 
-                </div>
+                        </span>
 
-            </div>
+                    </div>
 
-            <p class="mt-4 text-sm text-gray-500">
+                    <div class="flex items-center justify-between">
 
-                Progress pekerjaan berdasarkan laporan terakhir.
+                        <span class="text-gray-500">
 
-            </p>
+                            📅 Target
 
-        </div>
+                        </span>
 
-    </x-ui.summary-card>
+                        <span class="font-semibold">
 
-    {{-- Nilai Project --}}
-    <x-ui.summary-card>
+                            20 Des 2026
 
-        <div class="rounded-2xl bg-gray-900 p-6 text-white">
+                        </span>
 
-            <p class="text-sm uppercase tracking-wide text-gray-400">
+                    </div>
 
-                Nilai Project
+                    <div class="flex items-center justify-between">
 
-            </p>
+                        <span class="text-gray-500">
 
-            <h2 class="mt-3 text-3xl font-bold">
+                            ⏳ Durasi
 
-                Rp 850 Juta
+                        </span>
 
-            </h2>
+                        <span class="font-semibold">
 
-            <p class="mt-3 text-sm text-gray-400">
+                            5 Bulan
 
-                Nilai kontrak proyek yang telah disepakati.
+                        </span>
 
-            </p>
+                    </div>
 
-        </div>
+                    <div class="flex items-center justify-between">
 
-    </x-ui.summary-card>
+                        <span class="text-gray-500">
 
-    {{-- Informasi Tambahan --}}
-    <x-ui.summary-card>
+                            👷 Pekerja
 
-        <div class="p-6">
+                        </span>
 
-            <h3 class="text-lg font-bold text-gray-800">
+                        <span class="font-semibold">
 
-                Informasi
+                            18 Orang
 
-            </h3>
+                        </span>
 
-            <div class="mt-6 space-y-5">
-
-                <div class="flex items-center justify-between">
-
-                    <span class="text-gray-500">
-
-                        Target Selesai
-
-                    </span>
-
-                    <span class="font-semibold">
-
-                        20 Des 2026
-
-                    </span>
-
-                </div>
-
-                <div class="flex items-center justify-between">
-
-                    <span class="text-gray-500">
-
-                        Durasi
-
-                    </span>
-
-                    <span class="font-semibold">
-
-                        5 Bulan
-
-                    </span>
-
-                </div>
-
-                <div class="flex items-center justify-between">
-
-                    <span class="text-gray-500">
-
-                        Jumlah Pekerja
-
-                    </span>
-
-                    <span class="font-semibold">
-
-                        18 Orang
-
-                    </span>
+                    </div>
 
                 </div>
 
             </div>
-
-        </div>
-
-    </x-ui.summary-card>
+            
+        </x-ui.summary-card>
 
 </div>

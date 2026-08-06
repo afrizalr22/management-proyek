@@ -55,7 +55,7 @@
     </x-ui.page-header>
 
     {{-- Content --}}
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
         {{-- Left Side --}}
         <div class="space-y-6 xl:col-span-2">
@@ -70,9 +70,6 @@
 
         {{-- Right Side --}}
         <div class="space-y-6">
-
-            {{-- Sidebar --}}
-            <x-project.project-form-sidebar />
 
             {{-- Administrative Note --}}
             <x-project.project-administrative-note />

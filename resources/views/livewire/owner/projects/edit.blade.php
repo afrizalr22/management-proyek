@@ -64,18 +64,15 @@
             <x-project.project-general-information mode="edit" />
 
             {{-- Timeline & Budget --}}
-            <x-project.project-timeline-budget />
+            <x-project.project-timeline-budget mode="edit"/>
 
         </div>
 
         {{-- Right Side --}}
         <div class="space-y-6">
 
-            {{-- Sidebar --}}
-            <x-project.project-form-sidebar />
-
             {{-- Administrative Note --}}
-            <x-project.project-administrative-note />
+            <x-project.project-administrative-note mode="edit"/>
 
         </div>
 

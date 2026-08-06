@@ -7,21 +7,21 @@
     <div class="p-8">
 
         {{-- Header --}}
-        <div>
+          <div>
 
-            <h2 class="text-2xl font-bold text-gray-800">
+        <h3 class="text-lg font-semibold text-gray-900">
 
-                General Information
+            Identitas Project
 
-            </h2>
+        </h3>
 
-            <p class="mt-2 text-gray-500">
+        <p class="mt-1 text-sm text-gray-500">
 
-                Lengkapi informasi dasar proyek sebelum melanjutkan ke tahap berikutnya.
+            Informasi utama mengenai project yang akan dibuat.
 
-            </p>
+        </p>
 
-        </div>
+    </div>
 
         <hr class="my-8">
 

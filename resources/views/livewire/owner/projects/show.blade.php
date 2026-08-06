@@ -72,7 +72,4 @@
     {{-- Recent Activity --}}
     <x-project.project-activity />
 
-    {{-- Quick Navigation --}}
-    <x-project.project-navigation />
-
 </div>

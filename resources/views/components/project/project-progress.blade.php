@@ -1,21 +1,25 @@
-<x-ui.info-card>
+@props([
+    'progress' => 0,
+])
 
-    <div class="p-8">
+        <x-ui.info-card>
 
-        {{-- Header --}}
-        <div class="flex items-center justify-between">
+            <div class="p-8">
+
+                {{-- Header --}}
+                <div class="flex items-center justify-between">
 
             <div>
 
-                <h2 class="text-xl font-bold">
+                <h2 class="text-xl font-bold text-gray-900">
 
-                    Progress Project
+                    Project Progress
 
                 </h2>
 
                 <p class="mt-1 text-gray-500">
 
-                    Progress pekerjaan berdasarkan laporan terakhir.
+                    Monitoring tahapan pengerjaan proyek.
 
                 </p>
 
@@ -23,7 +27,7 @@
 
             <x-ui.badge color="green">
 
-                On Track
+                On Schedule
 
             </x-ui.badge>
 
@@ -34,18 +38,14 @@
         {{-- Progress --}}
         <div>
 
-            <div class="mb-3 flex items-center justify-between">
+            <div class="mb-2 flex items-center justify-between">
 
-                <span class="font-medium text-gray-700">
-
-                    Total Progress
-
+                <span class="text-sm font-medium text-gray-600">
+                    Progress
                 </span>
 
-                <span class="text-xl font-bold text-blue-600">
-
-                    72%
-
+                <span class="text-sm font-bold text-gray-800">
+                    {{ $progress }}%
                 </span>
 
             </div>
@@ -54,65 +54,165 @@
 
                 <div
                     class="h-full rounded-full bg-blue-600 transition-all duration-500"
-                    style="width:72%"
+                    style="width: {{ $progress }}%"
                 ></div>
 
             </div>
 
         </div>
 
-        {{-- Progress Detail --}}
-        <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+       {{-- Tahapan Project --}}
+<div class="mt-10 space-y-5">
 
-            <div class="rounded-xl bg-blue-50 p-5">
+    <div class="flex items-center justify-between">
 
-                <p class="text-sm text-gray-500">
+        <div class="flex items-center gap-3">
 
-                    Progress Minggu Ini
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
 
-                </p>
-
-                <h3 class="mt-2 text-2xl font-bold text-blue-700">
-
-                    +8%
-
-                </h3>
+                ✓
 
             </div>
 
-            <div class="rounded-xl bg-green-50 p-5">
+            <span class="font-medium">
 
-                <p class="text-sm text-gray-500">
+                Planning
 
-                    Target Progress
-
-                </p>
-
-                <h3 class="mt-2 text-2xl font-bold text-green-700">
-
-                    75%
-
-                </h3>
-
-            </div>
-
-            <div class="rounded-xl bg-yellow-50 p-5">
-
-                <p class="text-sm text-gray-500">
-
-                    Sisa Progress
-
-                </p>
-
-                <h3 class="mt-2 text-2xl font-bold text-yellow-700">
-
-                    28%
-
-                </h3>
-
-            </div>
+            </span>
 
         </div>
+
+        <span class="text-sm font-semibold text-green-600">
+
+            Completed
+
+        </span>
+
+    </div>
+
+    <div class="flex items-center justify-between">
+
+        <div class="flex items-center gap-3">
+
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                ✓
+
+            </div>
+
+            <span class="font-medium">
+
+                Foundation
+
+            </span>
+
+        </div>
+
+        <span class="text-sm font-semibold text-green-600">
+
+            Completed
+
+        </span>
+
+    </div>
+
+    <div class="flex items-center justify-between">
+
+        <div class="flex items-center gap-3">
+
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+
+                ✓
+
+            </div>
+
+            <span class="font-medium">
+
+                Structure
+
+            </span>
+
+        </div>
+
+        <span class="text-sm font-semibold text-green-600">
+
+            Completed
+
+        </span>
+
+    </div>
+
+    <div class="flex items-center justify-between">
+
+        <div class="flex items-center gap-3">
+
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 text-yellow-600">
+
+                ●
+
+            </div>
+
+            <span class="font-medium">
+
+                Roofing
+
+            </span>
+
+        </div>
+
+        <span class="text-sm font-semibold text-yellow-600">
+
+            In Progress
+
+        </span>
+
+    </div>
+
+    <div class="flex items-center justify-between">
+
+        <div class="flex items-center gap-3">
+
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+
+                ○
+
+            </div>
+
+            <span class="font-medium">
+
+                Finishing
+
+            </span>
+
+        </div>
+
+        <span class="text-sm font-semibold text-gray-500">
+
+            Pending
+
+        </span>
+
+    </div>
+
+</div>
+
+<hr class="my-8">
+
+<div class="flex items-center justify-between text-sm">
+
+    <span class="text-gray-500">
+
+        Last Update
+
+    </span>
+
+    <span class="font-semibold text-gray-700">
+
+        2 Agustus 2026
+
+    </span>
+
+</div>
 
     </div>
 
