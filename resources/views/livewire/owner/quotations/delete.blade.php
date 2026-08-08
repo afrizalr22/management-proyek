@@ -1,15 +1,222 @@
-<div class="space-y-6">
+<div
+    x-data="{ open: false }"
 
-    {{-- Header --}}
-    <x-quotation.quotation-delete-header />
+    x-on:open-delete-quotation-modal.window="
+        open = true
+    "
 
-    {{-- Information --}}
-    <x-quotation.quotation-delete-information />
+    x-show="open"
 
-    {{-- Warning --}}
-    <x-quotation.quotation-delete-warning />
+    x-transition.opacity
 
-    {{-- Action --}}
-    <x-quotation.quotation-delete-action />
+    class="fixed inset-0 z-50 flex items-center justify-center"
+
+    style="display: none;"
+>
+
+    {{-- Overlay --}}
+    <div
+        class="absolute inset-0 bg-black/50"
+        x-on:click="open = false"
+    ></div>
+
+    {{-- Modal --}}
+    <div
+        class="relative z-10 w-full max-w-lg rounded-3xl bg-white shadow-2xl"
+    >
+
+        {{-- Header --}}
+        <div class="border-b border-gray-200 px-8 py-6">
+
+            <h2 class="text-2xl font-bold text-gray-900">
+
+                Delete Quotation
+
+            </h2>
+
+            <p class="mt-2 text-gray-500">
+
+                Apakah Anda yakin ingin menghapus quotation ini?
+
+            </p>
+
+        </div>
+
+        {{-- Body --}}
+        <div class="space-y-6 p-8">
+
+            {{-- Warning --}}
+            <div
+                class="rounded-2xl border border-red-200 bg-red-50 p-5"
+            >
+
+                <div class="flex items-start gap-4">
+
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white"
+                    >
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
+                            />
+
+                        </svg>
+
+                    </div>
+
+                    <div>
+
+                        <h3 class="font-semibold text-red-700">
+
+                            Warning
+
+                        </h3>
+
+                        <p class="mt-2 text-sm leading-6 text-red-600">
+
+                            Quotation yang dihapus tidak dapat digunakan
+                            kembali. Pastikan quotation masih berstatus
+                            Draft dan belum memiliki transaksi terkait.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {{-- Preview Quotation --}}
+            <div class="rounded-2xl bg-gray-50 p-6">
+
+                <div class="space-y-4">
+
+                    {{-- Quotation Number --}}
+                    <div class="flex justify-between gap-6">
+
+                        <span class="text-gray-500">
+
+                            Quotation Number
+
+                        </span>
+
+                        <span class="font-semibold text-gray-900">
+
+                            QT-2026-0001
+
+                        </span>
+
+                    </div>
+
+                    {{-- Project --}}
+                    <div class="flex justify-between gap-6">
+
+                        <span class="text-gray-500">
+
+                            Project
+
+                        </span>
+
+                        <span class="text-right font-semibold text-gray-900">
+
+                            Renovasi Gedung Kantor
+
+                        </span>
+
+                    </div>
+
+                    {{-- Client --}}
+                    <div class="flex justify-between gap-6">
+
+                        <span class="text-gray-500">
+
+                            Client
+
+                        </span>
+
+                        <span class="text-right font-semibold text-gray-900">
+
+                            PT Maju Bersama
+
+                        </span>
+
+                    </div>
+
+                    {{-- Status --}}
+                    <div class="flex items-center justify-between">
+
+                        <span class="text-gray-500">
+
+                            Status
+
+                        </span>
+
+                        <x-ui.badge color="yellow">
+
+                            Draft
+
+                        </x-ui.badge>
+
+                    </div>
+
+                    {{-- Grand Total --}}
+                    <div class="flex items-center justify-between">
+
+                        <span class="text-gray-500">
+
+                            Grand Total
+
+                        </span>
+
+                        <span class="font-semibold text-gray-900">
+
+                            Rp 125.000.000
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- Footer --}}
+        <div
+            class="flex justify-end gap-3 border-t border-gray-200 px-8 py-6"
+        >
+
+            <x-ui.button
+                variant="outline"
+                x-on:click="open = false"
+            >
+
+                Cancel
+
+            </x-ui.button>
+
+            <x-ui.button
+                variant="danger"
+            >
+
+                Delete Quotation
+
+            </x-ui.button>
+
+        </div>
+
+    </div>
 
 </div>

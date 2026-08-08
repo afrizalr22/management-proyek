@@ -54,115 +54,151 @@
 
     <table class="min-w-full divide-y divide-gray-200">
 
+        {{-- Header --}}
         <thead class="bg-gray-50">
 
             <tr>
 
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     No
-
                 </th>
 
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-
-                    Quotation Number
-
+                <th
+                    class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
+                    Quotation
                 </th>
 
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     Project
-
                 </th>
 
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     Client
-
                 </th>
 
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     Date
-
                 </th>
 
-                <th class="px-6 py-3 text-left text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     Valid Until
-
                 </th>
 
-                <th class="px-6 py-3 text-right text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     Grand Total
-
                 </th>
 
-                <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     Status
-
                 </th>
 
-                <th class="px-6 py-3 text-center text-xs font-semibold uppercase">
-
+                <th
+                    class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
                     Action
-
                 </th>
 
             </tr>
 
         </thead>
 
+        {{-- Body --}}
         <tbody class="divide-y divide-gray-100 bg-white">
 
             @foreach ($quotations as $quotation)
 
-                <tr class="hover:bg-gray-50 transition">
+                <tr class="transition hover:bg-gray-50">
 
-                    <td class="px-6 py-4">
+                    {{-- No --}}
+                    <td class="whitespace-nowrap px-6 py-5 text-sm text-gray-500">
 
                         {{ $loop->iteration }}
 
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-blue-600">
+                    {{-- Quotation --}}
+                    <td class="whitespace-nowrap px-6 py-5">
 
-                        {{ $quotation['number'] }}
+                        <div>
+
+                            <p class="font-semibold text-gray-900">
+
+                                {{ $quotation['number'] }}
+
+                            </p>
+
+                            <p class="mt-1 text-xs text-gray-500">
+
+                                Quotation
+
+                            </p>
+
+                        </div>
 
                     </td>
 
-                    <td class="px-6 py-4">
+                    {{-- Project --}}
+                    <td class="px-6 py-5">
 
-                        {{ $quotation['project'] }}
+                        <p class="font-medium text-gray-800">
+
+                            {{ $quotation['project'] }}
+
+                        </p>
 
                     </td>
 
-                    <td class="px-6 py-4">
+                    {{-- Client --}}
+                    <td class="px-6 py-5">
 
-                        {{ $quotation['client'] }}
+                        <p class="font-medium text-gray-800">
+
+                            {{ $quotation['client'] }}
+
+                        </p>
 
                     </td>
 
-                    <td class="px-6 py-4">
+                    {{-- Date --}}
+                    <td class="whitespace-nowrap px-6 py-5 text-sm text-gray-600">
 
                         {{ $quotation['date'] }}
 
                     </td>
 
-                    <td class="px-6 py-4">
+                    {{-- Valid Until --}}
+                    <td class="whitespace-nowrap px-6 py-5 text-sm text-gray-600">
 
                         {{ $quotation['valid_until'] }}
 
                     </td>
 
-                    <td class="px-6 py-4 font-semibold text-right whitespace-nowrap">
+                    {{-- Grand Total --}}
+                    <td
+                        class="whitespace-nowrap px-6 py-5 text-right font-semibold text-gray-900"
+                    >
+
                         {{ $quotation['total'] }}
+
                     </td>
 
-                    <td class="px-6 py-4 text-center">
+                    {{-- Status --}}
+                    <td class="px-6 py-5 text-center">
 
                         @switch($quotation['status'])
 
@@ -196,7 +232,7 @@
 
                             @break
 
-                            @default
+                            @case('Rejected')
 
                                 <x-ui.badge color="red">
 
@@ -204,24 +240,34 @@
 
                                 </x-ui.badge>
 
+                            @break
+
                         @endswitch
 
                     </td>
 
-                    <td class="px-6 py-4">
+                    {{-- Action --}}
+                    <td class="px-6 py-5">
 
                         <div class="flex items-center justify-center gap-2">
 
                             <x-ui.icon-button-view
-                                :href="route('owner.quotations.show', $quotation['id'])"
+                                :href="route(
+                                    'owner.quotations.show',
+                                    $quotation['id']
+                                )"
                             />
 
                             <x-ui.icon-button-edit
-                                :href="route('owner.quotations.edit', $quotation['id'])"
+                                :href="route(
+                                    'owner.quotations.edit',
+                                    $quotation['id']
+                                )"
                             />
 
                             <x-ui.icon-button-delete
-                                :href="route('owner.quotations.delete', $quotation['id'])"
+                                href="#"
+                                x-on:click.prevent="$dispatch('open-delete-quotation-modal')"
                             />
 
                         </div>
@@ -238,34 +284,56 @@
 
 </x-ui.table>
 
-<div class="flex items-center justify-between text-sm text-gray-500">
+{{-- Table Footer --}}
+<div
+    class="flex flex-col gap-4 border-t border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+>
 
-    <p>
+    <p class="text-sm text-gray-500">
 
-        Showing 1 - {{ count($quotations) }} of {{ count($quotations) }} Quotations
+        Showing
+        <span class="font-medium text-gray-700">
+            1
+        </span>
+
+        -
+        <span class="font-medium text-gray-700">
+            {{ count($quotations) }}
+        </span>
+
+        of
+        <span class="font-medium text-gray-700">
+            {{ count($quotations) }}
+        </span>
+
+        Quotations
 
     </p>
 
-    <div class="flex gap-2">
+    <div class="flex items-center gap-2">
 
-        <button class="rounded-lg border px-3 py-1">
-
+        <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-400"
+            disabled
+        >
             Previous
-
         </button>
 
-        <button class="rounded-lg border bg-blue-600 px-3 py-1 text-white">
-
+        <button
+            type="button"
+            class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white"
+        >
             1
-
         </button>
 
-        <button class="rounded-lg border px-3 py-1">
-
+        <button
+            type="button"
+            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+        >
             Next
-
         </button>
 
     </div>
 
-</div>  
+</div>

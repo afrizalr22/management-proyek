@@ -31,4 +31,7 @@
     {{-- Table --}}
     <x-quotation.quotation-table />
 
+    {{-- Delete Modal --}}
+<livewire:owner.quotations.delete />
+
 </div>

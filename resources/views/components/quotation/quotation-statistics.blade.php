@@ -1,11 +1,11 @@
 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
 
     {{-- Total Quotation --}}
-    <x-ui.stat-card
-        title="Total Quotation"
-        value="25"
-        description="+5 quotation bulan ini"
-    >
+<x-ui.stat-card
+    title="Total Quotation"
+    value="25"
+    description="Seluruh quotation"
+>
 
         <x-slot:icon>
 

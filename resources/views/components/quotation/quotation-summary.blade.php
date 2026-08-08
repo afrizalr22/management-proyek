@@ -1,6 +1,7 @@
 @props([
     'mode' => 'create',
 ])
+
 <x-ui.info-card>
 
     <div class="p-6">
@@ -8,13 +9,13 @@
         {{-- Header --}}
         <div>
 
-            <h2 class="text-xl font-bold text-gray-800">
+            <h2 class="text-xl font-bold text-gray-900">
 
                 Financial Summary
 
             </h2>
 
-            <p class="mt-2 text-sm text-gray-500">
+            <p class="mt-2 text-sm leading-6 text-gray-500">
 
                 Ringkasan nilai quotation berdasarkan item pekerjaan.
 
@@ -22,10 +23,12 @@
 
         </div>
 
-        <hr class="my-6">
+        <hr class="my-6 border-gray-200">
 
+        {{-- Summary --}}
         <div class="space-y-5">
 
+            {{-- Total Item --}}
             <div class="flex items-center justify-between">
 
                 <span class="text-gray-500">
@@ -34,7 +37,7 @@
 
                 </span>
 
-                <span class="font-semibold text-gray-800">
+                <span class="font-semibold text-gray-900">
 
                     1 Item
 
@@ -42,15 +45,16 @@
 
             </div>
 
+            {{-- Total Quantity --}}
             <div class="flex items-center justify-between">
 
                 <span class="text-gray-500">
 
-                    Total Quantity
+                    Total Qty
 
                 </span>
 
-                <span class="font-semibold text-gray-800">
+                <span class="font-semibold text-gray-900">
 
                     1
 
@@ -58,6 +62,7 @@
 
             </div>
 
+            {{-- Subtotal --}}
             <div class="flex items-center justify-between">
 
                 <span class="text-gray-500">
@@ -66,7 +71,7 @@
 
                 </span>
 
-                <span class="font-semibold text-gray-800">
+                <span class="font-semibold text-gray-900">
 
                     Rp 0
 
@@ -74,26 +79,37 @@
 
             </div>
 
-            <hr>
+            <hr class="border-gray-200">
 
-            <div class="flex items-center justify-between">
+            {{-- Grand Total --}}
+            <div class="rounded-2xl bg-blue-50 p-5">
 
-                <span class="text-lg font-semibold text-gray-800">
+                <div class="flex items-center justify-between gap-4">
 
-                    Grand Total
+                    <span class="text-lg font-semibold text-gray-900">
 
-                </span>
+                        Grand Total
 
-                <span class="text-2xl font-bold text-blue-600">
+                    </span>
 
-                    Rp 0
+                    <span class="text-2xl font-bold text-blue-600">
 
-                </span>
+                        Rp 0
+
+                    </span>
+
+                </div>
+
+                <p class="mt-2 text-xs leading-5 text-gray-500">
+
+                    Total akhir berdasarkan seluruh item quotation.
+
+                </p>
 
             </div>
 
         </div>
 
     </div>
-L
+
 </x-ui.info-card>

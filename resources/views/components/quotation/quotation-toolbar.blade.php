@@ -1,91 +1,71 @@
 <x-ui.toolbar>
 
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <x-slot:left>
 
-        {{-- Left --}}
-        <div class="flex flex-1 flex-col gap-4 md:flex-row">
+        {{-- Search --}}
+        <x-ui.search
+            placeholder="Cari Quotation..."
+        />
 
-            {{-- Search --}}
-            <div class="relative w-full md:max-w-sm">
+        {{-- Status --}}
+        <x-ui.dropdown label="Semua Status">
 
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
+            <x-ui.dropdown-item
+                value="Semua Status"
+            />
 
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
-                    />
+            <x-ui.dropdown-item
+                value="Draft"
+            />
 
-                </svg>
+            <x-ui.dropdown-item
+                value="Sent"
+            />
 
-                <input
-                    type="text"
-                    placeholder="Cari quotation..."
-                    class="w-full rounded-xl border-gray-300 py-3 pl-10 pr-4 focus:border-blue-500 focus:ring-blue-500"
-                >
+            <x-ui.dropdown-item
+                value="Approved"
+            />
 
-            </div>
+            <x-ui.dropdown-item
+                value="Rejected"
+            />
 
-            {{-- Status --}}
-            <select
-                class="rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+        </x-ui.dropdown>
 
-                <option>Semua Status</option>
+        {{-- Project --}}
+        <x-ui.dropdown label="Semua Project">
 
-                <option>Draft</option>
+            <x-ui.dropdown-item
+                value="Semua Project"
+            />
 
-                <option>Sent</option>
+            <x-ui.dropdown-item
+                value="Renovasi Gudang"
+            />
 
-                <option>Approved</option>
+            <x-ui.dropdown-item
+                value="Pembangunan Ruko"
+            />
 
-                <option>Rejected</option>
+            <x-ui.dropdown-item
+                value="Renovasi Kantor"
+            />
 
-            </select>
+        </x-ui.dropdown>
 
-            {{-- Project --}}
-            <select
-                class="rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+    </x-slot:left>
 
-                <option>Semua Project</option>
+    <x-slot:right>
 
-                <option>Renovasi Gudang</option>
+        <button
+            type="button"
+            class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+        >
 
-                <option>Pembangunan Ruko</option>
+            Reset Filter
 
-                <option>Renovasi Kantor</option>
+        </button>
 
-            </select>
-
-        </div>
-
-        {{-- Right --}}
-        <div class="flex items-center gap-3">
-
-            <button
-                class="rounded-xl border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
-
-                Reset Filter
-
-            </button>
-
-            <a href="{{ route('owner.quotations.create') }}">
-
-                <x-ui.button>
-
-                    + Create Quotation
-
-                </x-ui.button>
-
-            </a>
-
-        </div>
-
-    </div>
+    </x-slot:right>
 
 </x-ui.toolbar>

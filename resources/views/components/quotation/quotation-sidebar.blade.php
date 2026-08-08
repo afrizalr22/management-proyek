@@ -1,17 +1,17 @@
 <x-ui.info-card>
 
-    <div class="p-6 space-y-6">
+    <div class="space-y-6 p-6">
 
         {{-- Header --}}
         <div>
 
-            <h2 class="text-xl font-bold text-gray-800">
+            <h2 class="text-xl font-bold text-gray-900">
 
                 Quotation Summary
 
             </h2>
 
-            <p class="mt-2 text-sm text-gray-500">
+            <p class="mt-2 text-sm leading-6 text-gray-500">
 
                 Ringkasan informasi quotation yang sedang dibuat.
 
@@ -51,7 +51,7 @@
 
             </p>
 
-            <p class="mt-1 font-semibold text-gray-800">
+            <p class="mt-1 font-semibold text-gray-900">
 
                 Renovasi Gedung PT ABC
 
@@ -68,7 +68,7 @@
 
             </p>
 
-            <p class="mt-1 font-semibold text-gray-800">
+            <p class="mt-1 font-semibold text-gray-900">
 
                 PT ABC Indonesia
 
@@ -77,8 +77,9 @@
         </div>
 
         {{-- Date --}}
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
+            {{-- Quotation Date --}}
             <div>
 
                 <p class="text-sm text-gray-500">
@@ -87,7 +88,7 @@
 
                 </p>
 
-                <p class="mt-1 font-semibold">
+                <p class="mt-1 font-semibold text-gray-900">
 
                     20 Jul 2026
 
@@ -95,6 +96,7 @@
 
             </div>
 
+            {{-- Valid Until --}}
             <div>
 
                 <p class="text-sm text-gray-500">
@@ -103,7 +105,7 @@
 
                 </p>
 
-                <p class="mt-1 font-semibold">
+                <p class="mt-1 font-semibold text-gray-900">
 
                     27 Jul 2026
 
@@ -115,54 +117,67 @@
 
         <hr>
 
-        {{-- Summary --}}
-        <div class="space-y-4">
+        {{-- Items Summary --}}
+        <div>
 
-            <div class="flex items-center justify-between">
+            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
 
-                <span class="text-gray-500">
+                Summary
 
-                    Total Item
+            </h3>
 
-                </span>
+            <div class="space-y-4">
 
-                <span class="font-semibold">
+                {{-- Total Item --}}
+                <div class="flex items-center justify-between">
 
-                    1
+                    <span class="text-gray-500">
 
-                </span>
+                        Total Item
 
-            </div>
+                    </span>
 
-            <div class="flex items-center justify-between">
+                    <span class="font-semibold text-gray-900">
 
-                <span class="text-gray-500">
+                        1
 
-                    Total Qty
+                    </span>
 
-                </span>
+                </div>
 
-                <span class="font-semibold">
+                {{-- Total Qty --}}
+                <div class="flex items-center justify-between">
 
-                    1
+                    <span class="text-gray-500">
 
-                </span>
+                        Total Qty
 
-            </div>
+                    </span>
 
-            <div class="flex items-center justify-between">
+                    <span class="font-semibold text-gray-900">
 
-                <span class="text-gray-500">
+                        1
 
-                    Subtotal
+                    </span>
 
-                </span>
+                </div>
 
-                <span class="font-semibold">
+                {{-- Subtotal --}}
+                <div class="flex items-center justify-between">
 
-                    Rp 0
+                    <span class="text-gray-500">
 
-                </span>
+                        Subtotal
+
+                    </span>
+
+                    <span class="font-semibold text-gray-900">
+
+                        Rp 0
+
+                    </span>
+
+                </div>
 
             </div>
 
@@ -173,7 +188,7 @@
         {{-- Grand Total --}}
         <div class="rounded-2xl bg-blue-50 p-5">
 
-            <p class="text-sm text-gray-500">
+            <p class="text-sm font-medium text-gray-500">
 
                 Grand Total
 
@@ -185,19 +200,25 @@
 
             </h2>
 
+            <p class="mt-2 text-xs leading-5 text-gray-500">
+
+                Total nilai quotation berdasarkan seluruh item yang ditambahkan.
+
+            </p>
+
         </div>
 
         {{-- Action --}}
         <div class="space-y-3">
 
-            <x-ui.button
-                class="w-full"
-            >
+            {{-- Save --}}
+            <x-ui.button class="w-full">
 
                 Simpan Quotation
 
             </x-ui.button>
 
+            {{-- Cancel --}}
             <a
                 href="{{ route('owner.quotations.index') }}"
                 class="block"

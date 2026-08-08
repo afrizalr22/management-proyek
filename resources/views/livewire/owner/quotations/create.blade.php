@@ -5,19 +5,15 @@
 
         <a
             href="{{ route('owner.quotations.index') }}"
-            class="hover:text-blue-600"
+            class="transition hover:text-blue-600"
         >
-
             Quotation Management
-
         </a>
 
         <span class="mx-2">></span>
 
         <span class="font-medium text-gray-700">
-
             {{ $pageTitle }}
-
         </span>
 
     </div>
@@ -32,20 +28,18 @@
 
             <div class="flex gap-3">
 
-                <a
-                    href="{{ route('owner.quotations.index') }}"
-                >
+                {{-- Cancel --}}
+                <a href="{{ route('owner.quotations.index') }}">
 
                     <x-ui.button
-                        variant="danger"
+                        variant="outline"
                     >
-
                         Batal
-
                     </x-ui.button>
 
                 </a>
 
+                {{-- Submit --}}
                 <x-ui.button>
 
                     {{ $buttonText }}
@@ -76,7 +70,7 @@
         </div>
 
         {{-- Right Side --}}
-        <div class="space-y-6 xl:sticky xl:top-6 self-start">
+        <div class="space-y-6">
 
             {{-- Sidebar --}}
             <x-quotation.quotation-sidebar />

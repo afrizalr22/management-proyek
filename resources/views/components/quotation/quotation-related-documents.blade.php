@@ -21,28 +21,29 @@
 
         <hr class="my-8">
 
+        {{-- Documents --}}
         <div class="grid gap-6 md:grid-cols-2">
 
             {{-- Invoice --}}
-            <div class="rounded-2xl border border-gray-200 p-6">
+            <div class="flex flex-col rounded-2xl border border-gray-200 p-6">
 
-                <div class="flex items-center justify-between">
+                <div class="flex items-start justify-between gap-4">
 
                     <div>
 
-                        <p class="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
                             Invoice
 
                         </p>
 
-                        <h3 class="mt-2 text-xl font-bold text-gray-900">
+                        <h3 class="mt-2 text-lg font-bold text-gray-900">
 
                             Belum Dibuat
 
                         </h3>
 
-                        <p class="mt-2 text-gray-500">
+                        <p class="mt-2 text-sm leading-6 text-gray-500">
 
                             Invoice belum tersedia untuk quotation ini.
 
@@ -60,7 +61,7 @@
 
                 <div class="mt-6">
 
-                    <x-ui.button>
+                    <x-ui.button class="w-full">
 
                         Create Invoice
 
@@ -71,25 +72,25 @@
             </div>
 
             {{-- Delivery Order --}}
-            <div class="rounded-2xl border border-gray-200 p-6">
+            <div class="flex flex-col rounded-2xl border border-gray-200 p-6">
 
-                <div class="flex items-center justify-between">
+                <div class="flex items-start justify-between gap-4">
 
                     <div>
 
-                        <p class="text-sm font-semibold uppercase tracking-wide text-gray-500">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
 
                             Delivery Order
 
                         </p>
 
-                        <h3 class="mt-2 text-xl font-bold text-gray-900">
+                        <h3 class="mt-2 text-lg font-bold text-gray-900">
 
                             Belum Tersedia
 
                         </h3>
 
-                        <p class="mt-2 text-gray-500">
+                        <p class="mt-2 text-sm leading-6 text-gray-500">
 
                             Delivery Order akan tersedia setelah Invoice dibuat.
 
@@ -110,6 +111,7 @@
                     <x-ui.button
                         variant="secondary"
                         disabled
+                        class="w-full"
                     >
 
                         Menunggu Invoice

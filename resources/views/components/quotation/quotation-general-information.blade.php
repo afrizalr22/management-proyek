@@ -1,6 +1,7 @@
 @props([
     'mode' => 'create',
-])  
+])
+
 <x-ui.info-card>
 
     <div class="p-8">
@@ -8,7 +9,7 @@
         {{-- Header --}}
         <div>
 
-            <h2 class="text-2xl font-bold text-gray-800">
+            <h2 class="text-2xl font-bold text-gray-900">
 
                 General Information
 
@@ -33,6 +34,7 @@
                 <label class="mb-2 block text-sm font-semibold text-gray-700">
 
                     Project
+
                     <span class="text-red-500">*</span>
 
                 </label>
@@ -41,21 +43,44 @@
                     class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
                 >
 
-                    <option>Pilih Project</option>
+                    <option value="" disabled selected>
 
-                    <option>Renovasi Gedung PT ABC</option>
+                        Pilih Project
 
-                    <option>Pembangunan Gudang PT XYZ</option>
+                    </option>
 
-                    <option>Pembangunan Ruko Medan</option>
+                    <option value="1">
+
+                        Renovasi Gedung PT ABC
+
+                    </option>
+
+                    <option value="2">
+
+                        Pembangunan Gudang PT XYZ
+
+                    </option>
+
+                    <option value="3">
+
+                        Pembangunan Ruko Medan
+
+                    </option>
 
                 </select>
 
+                <p class="mt-2 text-xs text-gray-500">
+
+                    Client akan otomatis mengikuti project yang dipilih.
+
+                </p>
+
             </div>
 
-            {{-- Quotation Number --}}
+            {{-- Quotation Number & Status --}}
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
+                {{-- Quotation Number --}}
                 <div>
 
                     <label class="mb-2 block text-sm font-semibold text-gray-700">
@@ -71,8 +96,15 @@
                         class="w-full rounded-xl border-gray-200 bg-gray-100 px-4 py-3 text-gray-600"
                     >
 
+                    <p class="mt-2 text-xs text-gray-500">
+
+                        Nomor quotation dibuat secara otomatis oleh sistem.
+
+                    </p>
+
                 </div>
 
+                {{-- Status --}}
                 <div>
 
                     <label class="mb-2 block text-sm font-semibold text-gray-700">
@@ -85,8 +117,14 @@
                         type="text"
                         value="Draft"
                         readonly
-                        class="w-full rounded-xl border-gray-200 bg-yellow-50 px-4 py-3 font-medium text-yellow-700"
+                        class="w-full rounded-xl border-yellow-200 bg-yellow-50 px-4 py-3 font-medium text-yellow-700"
                     >
+
+                    <p class="mt-2 text-xs text-gray-500">
+
+                        Quotation baru akan dibuat dengan status Draft.
+
+                    </p>
 
                 </div>
 
@@ -95,11 +133,13 @@
             {{-- Date --}}
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
+                {{-- Quotation Date --}}
                 <div>
 
                     <label class="mb-2 block text-sm font-semibold text-gray-700">
 
                         Quotation Date
+
                         <span class="text-red-500">*</span>
 
                     </label>
@@ -111,11 +151,13 @@
 
                 </div>
 
+                {{-- Valid Until --}}
                 <div>
 
                     <label class="mb-2 block text-sm font-semibold text-gray-700">
 
                         Valid Until
+
                         <span class="text-red-500">*</span>
 
                     </label>
@@ -124,6 +166,12 @@
                         type="date"
                         class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
                     >
+
+                    <p class="mt-2 text-xs text-gray-500">
+
+                        Tentukan batas waktu berlakunya quotation.
+
+                    </p>
 
                 </div>
 
@@ -134,7 +182,7 @@
         {{-- Client Information --}}
         <div class="mt-10">
 
-            <h3 class="text-xl font-bold text-gray-800">
+            <h3 class="text-xl font-bold text-gray-900">
 
                 Client Information
 
@@ -148,10 +196,12 @@
 
             <hr class="my-6">
 
+            {{-- Client Preview --}}
             <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
+                    {{-- Client --}}
                     <div>
 
                         <p class="text-sm text-gray-500">
@@ -168,6 +218,7 @@
 
                     </div>
 
+                    {{-- Contact Person --}}
                     <div>
 
                         <p class="text-sm text-gray-500">
@@ -184,6 +235,7 @@
 
                     </div>
 
+                    {{-- Phone --}}
                     <div>
 
                         <p class="text-sm text-gray-500">
@@ -200,6 +252,7 @@
 
                     </div>
 
+                    {{-- Email --}}
                     <div>
 
                         <p class="text-sm text-gray-500">
@@ -216,6 +269,7 @@
 
                     </div>
 
+                    {{-- Address --}}
                     <div class="md:col-span-2">
 
                         <p class="text-sm text-gray-500">

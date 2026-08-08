@@ -21,6 +21,7 @@
 
         <hr class="my-8">
 
+        {{-- Summary --}}
         <div class="flex justify-end">
 
             <div class="w-full max-w-md space-y-5">
@@ -42,11 +43,8 @@
 
                 </div>
 
-                {{-- Divider --}}
-                <hr>
-
                 {{-- Grand Total --}}
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between border-t border-gray-200 pt-5">
 
                     <span class="text-xl font-bold text-gray-900">
 

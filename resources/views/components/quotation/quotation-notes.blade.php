@@ -5,7 +5,7 @@
         {{-- Header --}}
         <div>
 
-            <h2 class="text-2xl font-bold text-gray-800">
+            <h2 class="text-2xl font-bold text-gray-900">
 
                 Additional Notes
 
@@ -21,24 +21,30 @@
 
         <hr class="my-8">
 
+        {{-- Notes --}}
         <div>
 
-            <label class="mb-3 block text-sm font-semibold text-gray-700">
+            <label class="mb-2 block text-sm font-semibold text-gray-700">
 
                 Notes
 
             </label>
 
             <textarea
-                rows="8"
+                rows="7"
                 placeholder="Contoh:
-
-                    • Harga sudah termasuk material.
-                    • Estimasi pengerjaan 30 hari kerja.
-                    • Pembayaran dilakukan sesuai termin yang telah disepakati.
-                    • Penawaran berlaku selama 7 hari."
-                class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+• Harga sudah termasuk material.
+• Estimasi pengerjaan 30 hari kerja.
+• Pembayaran dilakukan sesuai termin yang telah disepakati.
+• Penawaran berlaku selama 7 hari."
+                class="w-full resize-y rounded-xl border-gray-300 px-4 py-3 leading-6 focus:border-blue-500 focus:ring-blue-500"
             ></textarea>
+
+            <p class="mt-2 text-xs text-gray-500">
+
+                Catatan ini akan menjadi informasi tambahan yang dapat dilihat oleh client pada quotation.
+
+            </p>
 
         </div>
 
