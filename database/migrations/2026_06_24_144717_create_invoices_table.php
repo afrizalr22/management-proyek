@@ -12,25 +12,70 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('invoices', function (Blueprint $table) {
+
             $table->id();
+
+            // Project
             $table->foreignId('project_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->string('invoice_number', 100)->unique();
+
+            // Source quotation
+            $table->foreignId('quotation_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
+            // Invoice information
+            $table->string('invoice_number', 100)
+                ->unique();
+
             $table->date('invoice_date');
-            $table->date('due_date')->nullable();
+
+            $table->date('due_date')
+                ->nullable();
+
+            // Invoice status
+            $table->enum('status', [
+                'draft',
+                'issued',
+                'sent',
+                'cancelled',
+            ])->default('draft');
+
+            // Client snapshot
             $table->string('client_name');
-            $table->string('client_contact_person');
-            $table->string('client_phone', 20)->nullable();
-            $table->string('client_email')->nullable();
-            $table->text('client_address')->nullable();
-            $table->decimal('total', 15, 2);
+
+            $table->string('client_contact_person')
+                ->nullable();
+
+            $table->string('client_phone', 20)
+                ->nullable();
+
+            $table->string('client_email')
+                ->nullable();
+
+            $table->text('client_address')
+                ->nullable();
+
+            // Financial
+            $table->decimal('subtotal', 15, 2)
+                ->default(0);
+
+            $table->decimal('grand_total', 15, 2)
+                ->default(0);
+
+            // Payment
             $table->enum('payment_status', [
                 'unpaid',
                 'partial',
-                'paid'
+                'paid',
             ])->default('unpaid');
-            $table->text('notes')->nullable();
+
+            // Additional information
+            $table->text('notes')
+                ->nullable();
+
             $table->timestamps();
         });
     }

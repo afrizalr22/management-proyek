@@ -55,9 +55,6 @@
         {{-- Navbar --}}
         <x-navbar />
 
-        {{-- Breadcrumb --}}
-        <!-- <x-breadcrumb /> -->
-
         {{-- Scroll Area --}}
         <main class="flex-1 overflow-y-auto">
 
