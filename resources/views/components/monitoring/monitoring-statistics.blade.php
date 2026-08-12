@@ -21,19 +21,24 @@
 
             </div>
 
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+            <div
+                class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600"
+            >
 
-                <svg xmlns="http://www.w3.org/2000/svg"
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke-width="1.8"
                     stroke="currentColor"
-                    class="h-6 w-6">
+                    class="h-6 w-6"
+                >
 
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        d="M2.25 6.75A2.25 2.25 0 014.5 4.5h4.379a2.25 2.25 0 011.59.659l1.122 1.122a2.25 2.25 0 001.59.659H19.5A2.25 2.25 0 0121.75 9v8.25A2.25 2.25 0 0119.5 19.5h-15A2.25 2.25 0 012.25 17.25V6.75z"/>
+                        d="M2.25 6.75A2.25 2.25 0 014.5 4.5h4.379a2.25 2.25 0 011.59.659l1.122 1.122a2.25 2.25 0 001.59.659H19.5A2.25 2.25 0 0121.75 9v8.25A2.25 2.25 0 0119.5 19.5h-15A2.25 2.25 0 012.25 17.25V6.75z"
+                    />
 
                 </svg>
 
@@ -42,6 +47,7 @@
         </div>
 
     </x-ui.info-card>
+
 
     {{-- On Progress --}}
     <x-ui.info-card>
@@ -64,19 +70,24 @@
 
             </div>
 
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <div
+                class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600"
+            >
 
-                <svg xmlns="http://www.w3.org/2000/svg"
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke-width="1.8"
                     stroke="currentColor"
-                    class="h-6 w-6">
+                    class="h-6 w-6"
+                >
 
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
 
                 </svg>
 
@@ -85,6 +96,7 @@
         </div>
 
     </x-ui.info-card>
+
 
     {{-- Completed --}}
     <x-ui.info-card>
@@ -107,19 +119,24 @@
 
             </div>
 
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600">
+            <div
+                class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600"
+            >
 
-                <svg xmlns="http://www.w3.org/2000/svg"
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke-width="1.8"
                     stroke="currentColor"
-                    class="h-6 w-6">
+                    class="h-6 w-6"
+                >
 
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        d="M9 12.75l2.25 2.25L15 9.75m6 2.25a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        d="M9 12.75l2.25 2.25L15 9.75m6 2.25a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
 
                 </svg>
 
@@ -128,6 +145,7 @@
         </div>
 
     </x-ui.info-card>
+
 
     {{-- Delayed --}}
     <x-ui.info-card>
@@ -150,19 +168,24 @@
 
             </div>
 
-            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600">
+            <div
+                class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600"
+            >
 
-                <svg xmlns="http://www.w3.org/2000/svg"
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke-width="1.8"
                     stroke="currentColor"
-                    class="h-6 w-6">
+                    class="h-6 w-6"
+                >
 
                     <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
-                        d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                    />
 
                 </svg>
 

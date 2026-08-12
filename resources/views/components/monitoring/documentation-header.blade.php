@@ -1,36 +1,46 @@
 <x-ui.info-card>
 
-    <div class="flex items-center justify-between p-8">
+    <div class="flex flex-col gap-6 p-8 sm:flex-row sm:items-center sm:justify-between">
 
+        {{-- Header Information --}}
         <div>
 
-            <h1 class="text-3xl font-bold text-gray-800">
-
+            <p class="text-sm font-medium text-blue-600">
                 Project Documentation
+            </p>
 
+            <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+                Dokumentasi Proyek
             </h1>
 
-            <p class="mt-2 text-gray-500">
-
-                Seluruh dokumentasi proyek yang telah diunggah selama proses pelaksanaan.
-
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
+                Seluruh dokumentasi proyek yang telah diunggah selama
+                proses pelaksanaan konstruksi.
             </p>
 
         </div>
 
-        <div class="rounded-xl bg-blue-50 px-5 py-3">
 
-            <p class="text-sm text-gray-500">
+        {{-- Documentation Statistics --}}
+        <div
+            class="shrink-0 rounded-2xl border border-blue-100 bg-blue-50 px-6 py-4"
+        >
 
+            <p class="text-sm font-medium text-gray-500">
                 Total Documentation
-
             </p>
 
-            <h3 class="text-2xl font-bold text-blue-600">
+            <div class="mt-1 flex items-baseline gap-2">
 
-                24
+                <h3 class="text-3xl font-bold text-blue-600">
+                    24
+                </h3>
 
-            </h3>
+                <span class="text-sm text-gray-500">
+                    dokumentasi
+                </span>
+
+            </div>
 
         </div>
 

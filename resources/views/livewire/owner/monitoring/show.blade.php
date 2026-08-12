@@ -1,16 +1,18 @@
 <div class="space-y-6">
 
     {{-- Breadcrumb --}}
-    <div class="text-sm text-gray-500">
+    <div class="flex items-center gap-2 text-sm text-gray-500">
 
         <a
             href="{{ route('owner.monitoring.index') }}"
-            class="hover:text-blue-600 transition"
+            class="transition hover:text-blue-600"
         >
             Project Monitoring
         </a>
 
-        <span class="mx-2">/</span>
+        <span class="text-gray-400">
+            /
+        </span>
 
         <span class="font-medium text-gray-700">
             Monitoring Detail
@@ -18,17 +20,22 @@
 
     </div>
 
-    {{-- Header --}}
+
+    {{-- Project Header --}}
     <x-monitoring.monitoring-detail-header />
 
-    {{-- Statistics --}}
+
+    {{-- Project Statistics --}}
     <x-monitoring.monitoring-detail-statistics />
+
 
     {{-- Project Information --}}
     <x-monitoring.monitoring-project-information />
 
-    {{-- Construction Schedule (Gantt Chart) --}}
+
+    {{-- Construction Schedule --}}
     <x-monitoring.construction-gantt />
+
 
     {{-- Progress & Documentation --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
@@ -40,7 +47,8 @@
 
         </div>
 
-        {{-- Documentation --}}
+
+        {{-- Documentation Preview --}}
         <div>
 
             <x-monitoring.documentation-preview />
@@ -49,11 +57,15 @@
 
     </div>
 
-    {{-- Issue & Activity --}}
+
+    {{-- Issues & Activity --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
+        {{-- Issues --}}
         <x-monitoring.issue-list />
 
+
+        {{-- Activity --}}
         <x-monitoring.activity-log />
 
     </div>

@@ -2,7 +2,7 @@
     'project',
     'client',
     'mandor',
-    'location',
+    'location' => null,
     'phase',
     'progress',
     'deadline',
