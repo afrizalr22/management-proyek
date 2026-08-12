@@ -1,62 +1,76 @@
-<x-ui.info-card>
+<x-ui.toolbar>
 
-    <div class="flex flex-col gap-4 p-6 lg:flex-row lg:items-center lg:justify-between">
+    <x-slot:left>
 
-        <div class="flex flex-1 flex-col gap-4 lg:flex-row">
+        {{-- Search --}}
+        <x-ui.search
+            placeholder="Cari nama atau email..."
+        />
 
-            {{-- Search --}}
-            <div class="flex-1">
+    </x-slot:left>
 
-                <input
-                    type="text"
-                    placeholder="Search by name or email..."
-                    class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                >
 
-            </div>
+    <x-slot:right>
 
-            {{-- Role --}}
-            <div class="w-full lg:w-52">
-
-                <select
-                    class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                >
-
-                    <option>All Roles</option>
-                    <option>Owner</option>
-                    <option>Mandor</option>
-                    <option>Pekerja</option>
-
-                </select>
-
-            </div>
-
-            {{-- Status --}}
-            <div class="w-full lg:w-52">
-
-                <select
-                    class="w-full rounded-xl border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                >
-
-                    <option>All Status</option>
-                    <option>Active</option>
-                    <option>Inactive</option>
-
-                </select>
-
-            </div>
-
-        </div>
-
-        {{-- Reset --}}
-        <button
-            class="rounded-xl border border-gray-300 px-5 py-2 font-medium text-gray-700 transition hover:bg-gray-100"
+        {{-- Role --}}
+        <x-ui.dropdown
+            label="Semua Role"
         >
 
-            Reset Filter
+            <x-ui.dropdown-item
+                value="Semua Role"
+            />
 
-        </button>
+            <x-ui.dropdown-item
+                value="Owner"
+            />
 
-    </div>
+            <x-ui.dropdown-item
+                value="Mandor"
+            />
 
-</x-ui.info-card>
+            <x-ui.dropdown-item
+                value="Pekerja"
+            />
+
+        </x-ui.dropdown>
+
+
+        {{-- Status --}}
+        <x-ui.dropdown
+            label="Semua Status"
+        >
+
+            <x-ui.dropdown-item
+                value="Semua Status"
+            />
+
+            <x-ui.dropdown-item
+                value="Active"
+            />
+
+            <x-ui.dropdown-item
+                value="Inactive"
+            />
+
+        </x-ui.dropdown>
+
+
+        {{-- Sort --}}
+        <x-ui.dropdown
+            label="Terbaru"
+        >
+
+            <x-ui.dropdown-item
+                value="Terbaru"
+            />
+
+            <x-ui.dropdown-item
+                value="Terlama"
+            />
+
+        </x-ui.dropdown>
+
+    </x-slot:right>
+
+</x-ui.toolbar>

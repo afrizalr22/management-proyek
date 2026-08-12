@@ -1,37 +1,38 @@
 @php
 
-$users = [
+    $users = [
 
-    [
-        'id' => 1,
-        'name' => 'Ahmad Rizki',
-        'email' => 'ahmad@example.com',
-        'role' => 'Owner',
-        'status' => 'Active',
-        'last_login' => '5 minutes ago',
-    ],
+        [
+            'id' => 1,
+            'name' => 'Ahmad Rizki',
+            'email' => 'ahmad@example.com',
+            'role' => 'Owner',
+            'status' => 'Active',
+            'last_login' => '5 minutes ago',
+        ],
 
-    [
-        'id' => 2,
-        'name' => 'Budi Santoso',
-        'email' => 'budi@example.com',
-        'role' => 'Mandor',
-        'status' => 'Active',
-        'last_login' => '1 hour ago',
-    ],
+        [
+            'id' => 2,
+            'name' => 'Budi Santoso',
+            'email' => 'budi@example.com',
+            'role' => 'Mandor',
+            'status' => 'Active',
+            'last_login' => '1 hour ago',
+        ],
 
-    [
-        'id' => 3,
-        'name' => 'Rudi Hartono',
-        'email' => 'rudi@example.com',
-        'role' => 'Pekerja',
-        'status' => 'Inactive',
-        'last_login' => 'Yesterday',
-    ],
+        [
+            'id' => 3,
+            'name' => 'Rudi Hartono',
+            'email' => 'rudi@example.com',
+            'role' => 'Pekerja',
+            'status' => 'Inactive',
+            'last_login' => 'Yesterday',
+        ],
 
-];
+    ];
 
 @endphp
+
 
 <x-ui.info-card>
 
@@ -39,35 +40,50 @@ $users = [
 
         <table class="min-w-full">
 
+            {{-- Header --}}
             <thead class="bg-gray-50">
 
                 <tr>
 
-                    <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <th
+                        class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                         No
                     </th>
 
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <th
+                        class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                         Name
                     </th>
 
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <th
+                        class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                         Role
                     </th>
 
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <th
+                        class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                         Email
                     </th>
 
-                    <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <th
+                        class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                         Status
                     </th>
 
-                    <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <th
+                        class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                         Last Login
                     </th>
 
-                    <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    <th
+                        class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    >
                         Action
                     </th>
 
@@ -75,128 +91,138 @@ $users = [
 
             </thead>
 
+
+            {{-- Body --}}
             <tbody class="divide-y divide-gray-100 bg-white">
 
-                @foreach($users as $user)   
+                @foreach($users as $user)
 
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr class="transition hover:bg-gray-50">
 
-                    <td class="px-6 py-5 text-center">
+                        {{-- No --}}
+                        <td class="px-6 py-5 text-center text-sm text-gray-500">
 
-                        {{ $user['id'] }}
+                            {{ $loop->iteration }}
 
-                    </td>
+                        </td>
 
-                    <td class="px-6 py-5">
 
-                        <div>
+                        {{-- Name --}}
+                        <td class="px-6 py-5">
 
-                            <div class="font-semibold text-gray-800">
+                            <div>
 
-                                {{ $user['name'] }}
+                                <div class="font-semibold text-gray-800">
+
+                                    {{ $user['name'] }}
+
+                                </div>
+
+                                <div class="mt-1 text-sm text-gray-500">
+
+                                    {{ $user['email'] }}
+
+                                </div>
 
                             </div>
 
-                            <div class="text-sm text-gray-500">
+                        </td>
 
-                                {{ $user['email'] }}
-
-                            </div>
-
-                        </div>
-
-                    </td>
 
                         {{-- Role --}}
                         <td class="px-6 py-5">
 
-                            @switch($user['role'])
+                            @php
 
-                                @case('Owner')
+                                $roleColor = match ($user['role']) {
 
-                                    <span class="rounded-full bg-red-100 px-4 py-1.5 text-xs font-semibold text-red-600">
+                                    'Owner' => 'red',
 
-                                        Owner
+                                    'Mandor' => 'blue',
 
-                                    </span>
+                                    'Pekerja' => 'gray',
 
-                                @break
+                                    default => 'gray',
 
-                                @case('Mandor')
+                                };
 
-                                    <span class="rounded-full bg-blue-100 px-4 py-1.5 text-xs font-semibold text-blue-600">
+                            @endphp
 
-                                        Mandor
+                            <x-ui.badge :color="$roleColor">
 
-                                    </span>
+                                {{ $user['role'] }}
 
-                                @break
-
-                                @default
-
-                                    <span class="rounded-full bg-gray-100 px-4 py-1.5 text-xs font-semibold text-gray-600">
-
-                                        Pekerja
-
-                                    </span>
-
-                            @endswitch
+                            </x-ui.badge>
 
                         </td>
 
+
                         {{-- Email --}}
-                        <td class="px-6 py-5 text-gray-600">
+                        <td class="px-6 py-5 text-sm text-gray-600">
 
                             {{ $user['email'] }}
 
                         </td>
 
+
                         {{-- Status --}}
                         <td class="px-6 py-5 text-center">
 
-                            @if($user['status'] == 'Active')
+                            @php
 
-                                <span class="rounded-full bg-green-100 px-4 py-1.5 text-xs font-semibold text-green-600">
+                                $statusColor = match ($user['status']) {
 
-                                    Active
+                                    'Active' => 'green',
 
-                                </span>
+                                    'Inactive' => 'red',
 
-                            @else
+                                    default => 'gray',
 
-                                <span class="rounded-full bg-red-100 px-4 py-1.5 text-xs font-semibold text-red-600">
+                                };
 
-                                    Inactive
+                            @endphp
 
-                                </span>
+                            <x-ui.badge :color="$statusColor">
 
-                            @endif
+                                {{ $user['status'] }}
+
+                            </x-ui.badge>
 
                         </td>
 
+
                         {{-- Last Login --}}
-                        <td class="px-6 py-5 text-gray-600">
+                        <td class="px-6 py-5 text-sm text-gray-600">
 
                             {{ $user['last_login'] }}
 
                         </td>
+
 
                         {{-- Action --}}
                         <td class="px-6 py-5">
 
                             <div class="flex justify-center gap-2">
 
-                                    <x-ui.icon-button-edit
-                                       :href="route('owner.users.edit', 1)"
-                                    />
+                                {{-- Edit --}}
+                                <x-ui.icon-button-edit
+                                    :href="route('owner.users.edit', $user['id'])"
+                                />
 
-                                    <x-ui.icon-button-view
-                                       :href="route('owner.users.show', 1)"
-                                    />
 
+                                {{-- View --}}
+                                <x-ui.icon-button-view
+                                    :href="route('owner.users.show', $user['id'])"
+                                />
+
+
+                                {{-- Delete --}}
                                 <x-ui.icon-button-delete
                                     href="javascript:void(0)"
-                                    x-on:click="$dispatch('open-delete-user-modal')"
+                                    x-on:click="$dispatch(
+                                        'open-delete-user-modal',
+                                        { id: {{ $user['id'] }} }
+                                    )"
                                 />
 
                             </div>

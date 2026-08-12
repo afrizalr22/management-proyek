@@ -1,121 +1,169 @@
 <div
-    x-data="{ open:false }"
+    x-data="{ open: false }"
 
     x-on:open-delete-user-modal.window="
-        open=true
+        open = true
     "
 
     x-on:keydown.escape.window="
-        open=false
+        open = false
     "
 
     x-show="open"
 
-    x-transition
+    x-transition.opacity
 
     class="fixed inset-0 z-50 flex items-center justify-center"
 
-    style="display:none;"
+    style="display: none;"
 >
 
     {{-- Overlay --}}
     <div
         class="absolute inset-0 bg-black/50"
-        x-on:click="open=false"
+        x-on:click="open = false"
     ></div>
+
 
     {{-- Modal --}}
     <div
-        class="relative z-10 w-full max-w-lg rounded-3xl bg-white shadow-xl"
+        class="relative z-10 w-full max-w-lg rounded-3xl bg-white shadow-2xl"
     >
 
+        {{-- Header --}}
         <div class="border-b border-gray-200 px-8 py-6">
 
             <h2 class="text-2xl font-bold text-gray-900">
-
                 Delete User
-
             </h2>
 
             <p class="mt-2 text-gray-500">
-
                 Tindakan ini tidak dapat dibatalkan.
-
             </p>
 
         </div>
 
+
+        {{-- Body --}}
         <div class="space-y-6 p-8">
 
-            <div class="rounded-2xl border border-red-200 bg-red-50 p-5">
+            {{-- Warning --}}
+            <div
+                class="rounded-2xl border border-red-200 bg-red-50 p-5"
+            >
 
-                <h3 class="font-semibold text-red-700">
+                <div class="flex items-start gap-4">
 
-                    Apakah Anda yakin?
+                    {{-- Icon --}}
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500 text-white"
+                    >
 
-                </h3>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
 
-                <p class="mt-2 text-sm text-red-600">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
+                            />
 
-                    User akan dihapus dari sistem.
+                        </svg>
 
-                    Seluruh data proyek tetap tersimpan.
+                    </div>
 
-                </p>
+
+                    {{-- Message --}}
+                    <div>
+
+                        <h3 class="font-semibold text-red-700">
+                            Apakah Anda yakin?
+                        </h3>
+
+                        <p class="mt-2 text-sm leading-6 text-red-600">
+                            User akan dihapus dari sistem.
+                            Seluruh data proyek yang berkaitan
+                            tetap tersimpan.
+                        </p>
+
+                    </div>
+
+                </div>
 
             </div>
 
-            <div class="rounded-xl bg-gray-50 p-5">
 
-                <dl class="space-y-3">
+            {{-- User Preview --}}
+            <div
+                class="rounded-2xl bg-gray-50 p-6"
+            >
 
-                    <div class="flex justify-between">
+                <dl class="space-y-4">
+
+                    {{-- Name --}}
+                    <div class="flex items-center justify-between gap-4">
 
                         <dt class="text-gray-500">
-
                             Nama
-
                         </dt>
 
-                        <dd class="font-medium">
-
+                        <dd class="font-semibold text-gray-900">
                             Ahmad Subarjo
-
                         </dd>
 
                     </div>
 
-                    <div class="flex justify-between">
+
+                    {{-- Email --}}
+                    <div class="flex items-center justify-between gap-4">
 
                         <dt class="text-gray-500">
-
-                            Role
-
+                            Email
                         </dt>
 
-                        <dd class="font-medium">
-
-                            Mandor
-
+                        <dd class="text-right font-medium text-gray-800">
+                            ahmad@example.com
                         </dd>
 
                     </div>
 
-                    <div class="flex justify-between">
+
+                    {{-- Role --}}
+                    <div class="flex items-center justify-between gap-4">
 
                         <dt class="text-gray-500">
-
-                            Status
-
+                            Role
                         </dt>
 
                         <dd>
 
-                            <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                            <x-ui.badge color="blue">
+                                Mandor
+                            </x-ui.badge>
 
+                        </dd>
+
+                    </div>
+
+
+                    {{-- Status --}}
+                    <div class="flex items-center justify-between gap-4">
+
+                        <dt class="text-gray-500">
+                            Status
+                        </dt>
+
+                        <dd>
+
+                            <x-ui.badge color="green">
                                 Active
-
-                            </span>
+                            </x-ui.badge>
 
                         </dd>
 
@@ -127,15 +175,22 @@
 
         </div>
 
-        <div class="flex justify-end gap-3 border-t border-gray-200 px-8 py-6">
 
+        {{-- Footer --}}
+        <div
+            class="flex justify-end gap-3 border-t border-gray-200 px-8 py-6"
+        >
+
+            {{-- Cancel --}}
             <x-ui.button
                 variant="outline"
-                x-on:click="open=false"
+                x-on:click="open = false"
             >
                 Cancel
             </x-ui.button>
 
+
+            {{-- Delete --}}
             <x-ui.button
                 variant="danger"
             >

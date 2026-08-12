@@ -49,12 +49,15 @@
 
         <div class="flex items-center gap-3">
 
-            <x-ui.button
-                variant="outline"
-                :href="route('owner.users.index')"
-            >
-                Cancel
-            </x-ui.button>
+            <a href="{{ route('owner.users.index') }}">
+
+                    <x-ui.button variant="danger">
+
+                        Batal
+
+                    </x-ui.button>
+
+                </a>
 
             <x-ui.button>
 

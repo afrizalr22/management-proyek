@@ -4,18 +4,20 @@
 
         <div class="space-y-6">
 
+            {{-- Header --}}
             <x-user.user-header />
 
+            {{-- Filter --}}
             <x-user.user-filter />
 
+            {{-- User Table --}}
             <x-user.user-table />
 
+            {{-- Delete Modal --}}
             <livewire:owner.users.delete />
-            <div class="p-6 border-t hover:bg-blue-50/40">
 
-                <x-user.user-pagination />
-
-            </div>
+            {{-- Pagination --}}
+            <x-user.user-pagination />
 
         </div>
 
