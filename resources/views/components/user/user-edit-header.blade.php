@@ -66,7 +66,7 @@
         </x-ui.button>
         </a>
 
-        <x-ui.button>
+        <x-ui.button variant="success">
 
             Simpan Perubahan
 

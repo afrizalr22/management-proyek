@@ -67,7 +67,7 @@
 
             <a href="{{ route('owner.quotations.edit', 1) }}">
 
-                <x-ui.button variant="primary">
+                <x-ui.button variant="warning">
 
                     Edit
 

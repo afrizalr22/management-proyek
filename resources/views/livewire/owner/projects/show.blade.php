@@ -30,8 +30,14 @@
 
             <div class="flex gap-3">
 
+                <a href="{{ route('owner.projects.index') }}">
+                    <x-ui.button variant="outline">
+                        Kembali
+                    </x-ui.button>
+                </a>
+
                 <a href="{{ route('owner.projects.edit', 1) }}">
-                    <x-ui.button variant="secondary">
+                    <x-ui.button variant="warning">
                         Edit Project
                     </x-ui.button>
                 </a>

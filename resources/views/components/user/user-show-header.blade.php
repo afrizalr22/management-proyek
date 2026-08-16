@@ -75,20 +75,21 @@
 
     <div class="flex gap-3">
 
-        <x-ui.button
-            variant="outline"
-            :href="route('owner.users.index')">
+    <a href="{{ route('owner.users.index') }}">
+        <x-ui.button variant="outline">
 
             Kembali
 
         </x-ui.button>
+    </a>
 
-        <x-ui.button
-            :href="route('owner.users.edit',1)">
+    <a href="{{ route('owner.users.edit', 1) }}">
+        <x-ui.button variant="warning">
 
             Edit User
 
         </x-ui.button>
+    </a>
 
     </div>
 

@@ -41,7 +41,7 @@
 
                 </a>
 
-                <x-ui.button>
+                <x-ui.button variant="success">
 
                     Tambah Client
 

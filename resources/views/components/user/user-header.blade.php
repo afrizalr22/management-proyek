@@ -26,7 +26,7 @@
 
                 <x-ui.button variant="primary">
 
-                    + Create User
+                    Create User
 
                 </x-ui.button>
 

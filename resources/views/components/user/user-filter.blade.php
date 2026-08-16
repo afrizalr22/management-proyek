@@ -23,14 +23,17 @@
 
             <x-ui.dropdown-item
                 value="Owner"
+                color="gray"
             />
 
             <x-ui.dropdown-item
                 value="Mandor"
+                color="blue"
             />
 
             <x-ui.dropdown-item
                 value="Pekerja"
+                color="green"
             />
 
         </x-ui.dropdown>
@@ -43,14 +46,17 @@
 
             <x-ui.dropdown-item
                 value="Semua Status"
+                color="gray"
             />
 
             <x-ui.dropdown-item
                 value="Active"
+                color="green"
             />
 
             <x-ui.dropdown-item
                 value="Inactive"
+                color="red"
             />
 
         </x-ui.dropdown>

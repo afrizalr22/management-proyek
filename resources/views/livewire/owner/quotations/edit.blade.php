@@ -35,7 +35,7 @@
                 >
 
                     <x-ui.button
-                        variant="secondary"
+                        variant="outline"
                     >
 
                         Batal

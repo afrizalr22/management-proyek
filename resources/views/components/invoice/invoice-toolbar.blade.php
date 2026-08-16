@@ -78,7 +78,6 @@
                         <span
                             class="h-2.5 w-2.5 rounded-full"
                             :class="{
-                                'bg-gray-400': selected === 'Semua Status',
                                 'bg-blue-500': selected === 'Unpaid',
                                 'bg-yellow-500': selected === 'Partial',
                                 'bg-green-500': selected === 'Paid'
@@ -136,7 +135,6 @@
                             <span
                                 class="h-2.5 w-2.5 rounded-full"
                                 :class="{
-                                    'bg-gray-400': option.color === 'gray',
                                     'bg-blue-500': option.color === 'blue',
                                     'bg-yellow-500': option.color === 'yellow',
                                     'bg-green-500': option.color === 'green'

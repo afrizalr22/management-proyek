@@ -33,7 +33,7 @@
                 <a href="{{ route('owner.projects.index') }}">
 
                     <x-ui.button
-                        variant="secondary"
+                        variant="outline"
                     >
 
                         Batal

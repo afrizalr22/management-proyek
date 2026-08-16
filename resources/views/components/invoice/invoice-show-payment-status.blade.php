@@ -105,7 +105,7 @@
         {{-- Action --}}
         <div>
 
-            <x-ui.button class="w-full">
+            <x-ui.button class="w-full" variant="success">
                 Tandai Sudah Dibayar
             </x-ui.button>
 

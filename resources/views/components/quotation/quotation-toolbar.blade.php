@@ -7,7 +7,10 @@
             placeholder="Cari Quotation..."
         />
 
-        {{-- Status --}}
+    </x-slot:left>
+
+    <x-slot:right>
+                {{-- Status --}}
         <x-ui.dropdown label="Semua Status">
 
             <x-ui.dropdown-item
@@ -16,46 +19,25 @@
 
             <x-ui.dropdown-item
                 value="Draft"
+                color="yellow"
             />
 
             <x-ui.dropdown-item
                 value="Sent"
+                color="blue"
             />
 
             <x-ui.dropdown-item
                 value="Approved"
+                color="green"
             />
 
             <x-ui.dropdown-item
                 value="Rejected"
+                color="red"
             />
 
         </x-ui.dropdown>
-
-        {{-- Project --}}
-        <x-ui.dropdown label="Semua Project">
-
-            <x-ui.dropdown-item
-                value="Semua Project"
-            />
-
-            <x-ui.dropdown-item
-                value="Renovasi Gudang"
-            />
-
-            <x-ui.dropdown-item
-                value="Pembangunan Ruko"
-            />
-
-            <x-ui.dropdown-item
-                value="Renovasi Kantor"
-            />
-
-        </x-ui.dropdown>
-
-    </x-slot:left>
-
-    <x-slot:right>
 
         <button
             type="button"

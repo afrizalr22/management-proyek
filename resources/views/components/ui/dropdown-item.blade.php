@@ -9,6 +9,7 @@
         'yellow' => 'bg-yellow-400',
         'blue' => 'bg-blue-500',
         'red' => 'bg-red-500',
+        'gray' => 'bg-gray-400',
         default => 'hidden',
     };
 @endphp

@@ -69,7 +69,7 @@
                     href="{{ route('owner.invoices.index') }}"
                 >
 
-                    <x-ui.button variant="secondary">
+                    <x-ui.button variant="outline">
                         Kembali
                     </x-ui.button>
 
@@ -79,17 +79,17 @@
                     href="{{ route('owner.invoices.edit', 1) }}"
                 >
 
-                    <x-ui.button variant="secondary">
+                    <x-ui.button variant="warning">
                         Edit
                     </x-ui.button>
 
                 </a>
 
-                <x-ui.button variant="secondary">
+                <x-ui.button variant="primary">
                     Print PDF
                 </x-ui.button>
 
-                <x-ui.button variant="secondary">
+                <x-ui.button variant="primary">
                     Download PDF
                 </x-ui.button>
 

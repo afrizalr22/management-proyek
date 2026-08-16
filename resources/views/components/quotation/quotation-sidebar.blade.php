@@ -212,7 +212,7 @@
         <div class="space-y-3">
 
             {{-- Save --}}
-            <x-ui.button class="w-full">
+            <x-ui.button class="w-full" variant="success">
 
                 Simpan Quotation
 

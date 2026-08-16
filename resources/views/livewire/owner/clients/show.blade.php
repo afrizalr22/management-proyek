@@ -38,7 +38,7 @@
 
                 <a href="{{ route('owner.clients.edit',1) }}">
 
-                    <x-ui.button variant="primary">
+                    <x-ui.button variant="warning">
                         Ubah Data
                     </x-ui.button>
 

@@ -78,7 +78,7 @@
     <div class="border-t p-4 space-y-2">
 
         <a
-            href="#"
+            href="{{ route('owner.profile') }}"
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
         >

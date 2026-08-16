@@ -54,10 +54,6 @@
                             End
                         </th>
 
-                        <th class="py-3 text-right text-sm font-semibold text-gray-600">
-                            Action
-                        </th>
-
                     </tr>
 
                 </thead>
@@ -108,17 +104,6 @@
 
                             </td>
 
-                            <td class="py-4 text-right">
-
-                                <x-ui.button
-                                    variant="outline"
-                                    size="sm">
-
-                                    View
-
-                                </x-ui.button>
-
-                            </td>
 
                         </tr>
 

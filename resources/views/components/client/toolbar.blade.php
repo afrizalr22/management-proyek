@@ -21,10 +21,12 @@
 
             <x-ui.dropdown-item
                 value="Active"
+                color="green"
             />
 
             <x-ui.dropdown-item
                 value="Inactive"
+                color="red"
             />
 
         </x-ui.dropdown>

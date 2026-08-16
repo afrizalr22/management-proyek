@@ -204,15 +204,15 @@
 
                             <div class="flex justify-center gap-2">
 
-                                {{-- Edit --}}
-                                <x-ui.icon-button-edit
-                                    :href="route('owner.users.edit', $user['id'])"
-                                />
-
 
                                 {{-- View --}}
                                 <x-ui.icon-button-view
                                     :href="route('owner.users.show', $user['id'])"
+                                />
+
+                                {{-- Edit --}}
+                                <x-ui.icon-button-edit
+                                    :href="route('owner.users.edit', $user['id'])"
                                 />
 
 

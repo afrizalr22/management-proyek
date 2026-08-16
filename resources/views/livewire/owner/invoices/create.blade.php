@@ -47,14 +47,13 @@
         {{-- Actions --}}
         <div class="flex items-center gap-3">
 
-            <a
-                href="{{ route('owner.invoices.index') }}"
-                class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-                Batal
+            <a href="{{ route('owner.invoices.index') }}">
+                <x-ui.button variant="outline">
+                    Batal
+                </x-ui.button>
             </a>
 
-            <x-ui.button>
+            <x-ui.button variant="success">
                 Simpan Invoice
             </x-ui.button>
 

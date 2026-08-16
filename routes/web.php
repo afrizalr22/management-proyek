@@ -48,6 +48,8 @@ use App\Livewire\Owner\Users\Edit as UsersEdit;
 use App\Livewire\Owner\Users\Show as UsersShow;
 use App\Livewire\Owner\Users\Delete as UsersDelete;
 
+use App\Livewire\Owner\Profile as Profile;
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -70,10 +72,9 @@ Route::middleware([
     |--------------------------------------------------------------------------
     */
 
-    Route::get(
-        '/dashboard',
-        OwnerDashboard::class
-    )->name('owner.dashboard');
+    Route::get('/dashboard',OwnerDashboard::class)->name('owner.dashboard');
+
+     Route::get('/profile',Profile::class)->name('owner.profile');
 
     Route::prefix('clients')->name('owner.clients.')->group(function () {
             Route::get('', ClientsIndex::class)->name('index');

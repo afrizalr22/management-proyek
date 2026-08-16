@@ -33,7 +33,7 @@
                 <a href="{{ route('owner.projects.index') }}">
 
                     <x-ui.button
-                        variant="secondary"
+                        variant="outline"
                     >
 
                         Batal
@@ -42,7 +42,7 @@
 
                 </a>
 
-                <x-ui.button>
+                <x-ui.button variant="success">
 
                     Simpan Perubahan
 

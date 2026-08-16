@@ -12,7 +12,7 @@
 
                 <x-ui.button>
 
-                    + Create Invoice
+                    Create Invoice
 
                 </x-ui.button>
 
