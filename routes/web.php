@@ -48,6 +48,18 @@ use App\Livewire\Owner\Users\Edit as UsersEdit;
 use App\Livewire\Owner\Users\Show as UsersShow;
 use App\Livewire\Owner\Users\Delete as UsersDelete;
 
+use App\Livewire\Mandor\Projects\Index as MandorProjectsIndex;
+use App\Livewire\Mandor\Projects\Show as MandorProjectsShow;
+
+use App\Livewire\Mandor\WorkProgress\Index as MandorWorkProgressIndex;
+
+use App\Livewire\Mandor\Documentations\Index as MandorDocumentationsIndex;
+
+use App\Livewire\Mandor\DailyReports\Index as MandorDailyReportsIndex;
+use App\Livewire\Mandor\DailyReports\Create as MandoDailyReportsCreate;
+use App\Livewire\Mandor\DailyReports\Show as MandorDailyReportsShow;
+use App\Livewire\Mandor\DailyReports\Edit as MandorDailyReportsEdit;
+
 use App\Livewire\Owner\Profile as Profile;
 
 Route::get('/', function () {
@@ -61,34 +73,25 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware([
-    'auth',
-    'role:owner',
-])->group(function () {
+Route::middleware(['auth','role:owner',])->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard
-    |--------------------------------------------------------------------------
-    */
+    Route::get('/owner/dashboard',OwnerDashboard::class)->name('owner.dashboard');
 
-    Route::get('/dashboard',OwnerDashboard::class)->name('owner.dashboard');
-
-     Route::get('/profile',Profile::class)->name('owner.profile');
+    Route::get('/profile',Profile::class)->name('owner.profile');
 
     Route::prefix('clients')->name('owner.clients.')->group(function () {
             Route::get('', ClientsIndex::class)->name('index');
             Route::get('/create', ClientsCreate::class)->name('create');
             Route::get('/{client}/edit', ClientsEdit::class)->name('edit');
-            Route::get('/{client}', ClientsShow::class)->name('show');
+            Route::get('/client/{client}', ClientsShow::class)->name('show');
             Route::get('/{client}/delete', ClientsDelete::class)->name('delete');
         });
 
     Route::prefix('projects')->name('owner.projects.')->group(function () {
-            Route::get('', ProjectsIndex::class)->name('index');
+            Route::get('/projects', ProjectsIndex::class)->name('index');
             Route::get('/create', ProjectCreate::class)->name('create');
             Route::get('/{project}/edit', ProjectEdit::class)->name('edit');
-            Route::get('/{project}', ProjectsShow::class)->name('show');
+            Route::get('/projects/{project}', ProjectsShow::class)->name('show');
             Route::get('/{project}/delete', ProjectsDelete::class)->name('delete');
         });
 
@@ -96,7 +99,7 @@ Route::middleware([
             Route::get('', QuotationsIndex::class)->name('index');
             Route::get('/create', QuotationsCreate::class)->name('create');
             Route::get('/{quotation}/edit', QuotationsEdit::class)->name('edit');
-            Route::get('/{quotation}', QuotationsShow::class)->name('show');
+            Route::get('/quotations/{quotation}', QuotationsShow::class)->name('show');
             Route::get('/{quotation}/delete', QuotationsDelete::class)->name('delete');
         });
 
@@ -104,13 +107,13 @@ Route::middleware([
             Route::get('', InvoicesIndex::class)->name('index');
             Route::get('/create', InvoicesCreate::class)->name('create');
             Route::get('/{invoice}/edit', InvoicesEdit::class)->name('edit');
-            Route::get('/{invoice}', InvoicesShow::class)->name('show');
+            Route::get('/invoices/{invoice}', InvoicesShow::class)->name('show');
             Route::get('/{invoice}/delete', InvoicesDelete::class)->name('delete');
         });
 
     Route::prefix('monitoring')->name('owner.monitoring.')->group(function () {
             Route::get('', MonitoringIndex::class)->name('index');
-            Route::get('/{project}', MonitoringShow::class)->name('show');
+            Route::get('/projects/{project}', MonitoringShow::class)->name('show');
             Route::get('/{project}/documentation', MonitoringDocumentation::class)->name('documentation');
         });
 
@@ -118,7 +121,7 @@ Route::middleware([
             Route::get('', UsersIndex::class)->name('index');
             Route::get('/create', UsersCreate::class)->name('create');
             Route::get('/{user}/edit', UsersEdit::class)->name('edit');
-            Route::get('/{user}', UsersShow::class)->name('show');
+            Route::get('/user/{user}', UsersShow::class)->name('show');
             Route::get('/{user}/delete', UsersDelete::class)->name('delete');
         });
 });
@@ -130,15 +133,16 @@ Route::middleware([
 |--------------------------------------------------------------------------
 */
 
-Route::middleware([
-    'auth',
-    'role:mandor',
-])->group(function () {
-
-    Route::get(
-        '/mandor/dashboard',
-        MandorDashboard::class
-    )->name('mandor.dashboard');
+Route::middleware(['auth','role:mandor',])->group(function () {
+    Route::get('/mandor/dashboard',MandorDashboard::class)->name('mandor.dashboard');
+    Route::get('/projects', MandorProjectsIndex::class)->name('mandor.projects.index');
+    Route::get('/projects/{project}',MandorProjectsShow::class)->name('mandor.projects.show');
+    Route::get('/projects/{project}/work-progress', MandorWorkProgressIndex::class)->name('mandor.projects.work-progress.index');
+    Route::get('/projects/{project}/documentations', MandorDocumentationsIndex::class)->name('mandor.projects.documentations.index');
+    Route::get('/daily-reports', MandorDailyReportsIndex::class)->name('mandor.daily-reports.index');
+    Route::get('/daily-reports/create', MandoDailyReportsCreate::class)->name('mandor.daily-reports.create');
+    Route::get('/daily-reports/{report}', MandorDailyReportsShow::class)->name('mandor.daily-reports.show');
+    Route::get('/daily-reports/{report}/edit', MandorDailyReportsEdit::class)->name('mandor.daily-report.edit');
 });
 
 
@@ -148,15 +152,12 @@ Route::middleware([
 |--------------------------------------------------------------------------
 */
 
-Route::middleware([
-    'auth',
-    'role:pekerja',
-])->group(function () {
+Route::middleware(['auth','role:pekerja',])->group(function () {
 
     Route::get(
-        '/worker/dashboard',
+        '/pekerja/dashboard',
         WorkerDashboard::class
-    )->name('worker.dashboard');
+    )->name('pekerja.dashboard');
 });
 
 

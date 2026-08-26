@@ -29,7 +29,7 @@
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
         >
-            Client Management
+            Clients
         </a>
 
         <a
@@ -37,7 +37,7 @@
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
         >
-            Project Management
+            Projects
         </a>
 
         <a
@@ -45,7 +45,7 @@
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
         >
-            Quotation Management
+            Quotations
         </a>
 
          <a
@@ -53,7 +53,7 @@
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
         >
-            Invoice
+            Invoices
         </a>
 
         <a

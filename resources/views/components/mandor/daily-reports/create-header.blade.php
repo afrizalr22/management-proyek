@@ -1,0 +1,47 @@
+<div class="flex flex-col gap-4">
+
+    {{-- Breadcrumb --}}
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+
+        <a
+            href="{{ route('mandor.daily-reports.index') }}"
+            class="font-medium text-blue-600
+                   transition hover:text-blue-700"
+        >
+            Laporan Harian
+        </a>
+
+        <svg
+            class="h-4 w-4 text-gray-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 18l6-6-6-6"
+            />
+        </svg>
+
+        <span class="font-medium text-gray-500">
+            Buat Laporan
+        </span>
+
+    </div>
+
+    {{-- Title --}}
+    <div>
+
+        <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">
+            Buat Laporan Harian
+        </h1>
+
+        <p class="mt-2 text-sm text-gray-500">
+            Lengkapi laporan aktivitas dan perkembangan proyek hari ini.
+        </p>
+
+    </div>
+
+</div>

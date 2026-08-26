@@ -25,30 +25,21 @@ public function login(): void
 
 if ($user->hasRole('owner')) {
 
-    $this->redirectIntended(
-        default: route('owner.dashboard', absolute: false),
-        navigate: true
-    );
+    redirect()->route('owner.dashboard');
 
     return;
 }
 
 if ($user->hasRole('mandor')) {
 
-    $this->redirectIntended(
-        default: route('mandor.dashboard', absolute: false),
-        navigate: true
-    );
+    redirect()->route('mandor.dashboard');
 
     return;
 }
 
 if ($user->hasRole('pekerja')) {
 
-    $this->redirectIntended(
-        default: route('worker.dashboard', absolute: false),
-        navigate: true
-    );
+  redirect()->route('pekerja.dashboard');
 
     return;
 }
