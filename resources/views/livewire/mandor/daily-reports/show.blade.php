@@ -1,7 +1,8 @@
 <div class="w-full min-w-0 space-y-6">
 
     {{-- Detail Header --}}
-    <x-mandor.daily-reports.detail-header />
+    <x-mandor.daily-reports.detail-header
+    :report-id="$reportId"/>
 
     {{-- Report Overview --}}
     <x-mandor.daily-reports.report-overview />

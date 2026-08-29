@@ -9,8 +9,6 @@
 
     <x-mandor.daily-reports.edit-documentations />
 
-    <x-mandor.daily-reports.edit-additional-information />
-
     <x-mandor.daily-reports.form-actions
         :report-id="$reportId"
     />

@@ -1,3 +1,6 @@
+@props([
+    'reportId',
+])
 <div
     class="flex flex-col gap-5
            lg:flex-row lg:items-end lg:justify-between"

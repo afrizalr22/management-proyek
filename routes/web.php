@@ -142,7 +142,7 @@ Route::middleware(['auth','role:mandor',])->group(function () {
     Route::get('/daily-reports', MandorDailyReportsIndex::class)->name('mandor.daily-reports.index');
     Route::get('/daily-reports/create', MandoDailyReportsCreate::class)->name('mandor.daily-reports.create');
     Route::get('/daily-reports/{report}', MandorDailyReportsShow::class)->name('mandor.daily-reports.show');
-    Route::get('/daily-reports/{report}/edit', MandorDailyReportsEdit::class)->name('mandor.daily-report.edit');
+    Route::get('/daily-reports/{report}/edit', MandorDailyReportsEdit::class)->name('mandor.daily-reports.edit');
 });
 
 

@@ -15,4 +15,4 @@
     {{-- Report Navigation --}}
     <x-mandor.daily-reports.report-footer />
 
-</div>
+</div> 
