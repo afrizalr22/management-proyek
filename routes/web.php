@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Livewire\Owner\Dashboard as OwnerDashboard;
 use App\Livewire\Mandor\Dashboard as MandorDashboard;
-use App\Livewire\Worker\Dashboard as WorkerDashboard;
+use App\Livewire\Pekerja\Dashboard as PekerjaDashboard;
 
 // Clients
 use App\Livewire\Owner\Clients\Index as ClientsIndex;
@@ -59,6 +59,17 @@ use App\Livewire\Mandor\DailyReports\Index as MandorDailyReportsIndex;
 use App\Livewire\Mandor\DailyReports\Create as MandoDailyReportsCreate;
 use App\Livewire\Mandor\DailyReports\Show as MandorDailyReportsShow;
 use App\Livewire\Mandor\DailyReports\Edit as MandorDailyReportsEdit;
+
+use App\Livewire\Pekerja\Tasks\Index as PekerjaTaskIndex;
+
+use App\Livewire\Pekerja\Documentation\Index as PekerjaDocumentationIndex;
+use App\Livewire\Pekerja\Documentation\Create as PekerjaDocumentationCreate;
+
+use App\Livewire\Pekerja\Report\Index as PekerjaReportIndex;
+use App\Livewire\Pekerja\Report\Create as PekerjaReportCreate;
+use App\Livewire\Pekerja\Report\Show as PekerjaReportShow;
+
+use App\Livewire\Pekerja\Profile\Index as PekerjaProfileIndex;
 
 use App\Livewire\Owner\Profile as Profile;
 
@@ -154,10 +165,19 @@ Route::middleware(['auth','role:mandor',])->group(function () {
 
 Route::middleware(['auth','role:pekerja',])->group(function () {
 
-    Route::get(
-        '/pekerja/dashboard',
-        WorkerDashboard::class
-    )->name('pekerja.dashboard');
+    Route::get('/pekerja/dashboard',PekerjaDashboard::class)->name('pekerja.dashboard');
+    Route::get('/pekerja/tasks', PekerjaTaskIndex::class)->name('pekerja.task.index');
+
+    Route::get('/pekerja/documentation', PekerjaDocumentationIndex::class)->name('pekerja.documentation.index');
+    Route::get('/pekerja/documentation/create', PekerjaDocumentationCreate::class)->name('pekerja.documentation.create');
+
+    Route::get('/pekerja/report/index', PekerjaReportIndex::class)->name('pekerja.report.index');
+    Route::get('/pekerja/report/create', PekerjaReportCreate::class)->name('pekerja.report.create');
+    Route::get('/pekerja/report/{report}/show', PekerjaReportShow::class)->name('pekerja.report.show');
+
+    Route::get('/pekerja/profile', PekerjaProfileIndex::class)->name('pekerja.profile.index');
+    
+
 });
 
 
