@@ -59,7 +59,10 @@ class Create extends Component
             ],
 
             'phone' => [
-                'nullable',
+                'required',
+                'string',
+                'min:9',
+                'max:20',
                 'regex:/^[0-9]{8,15}$/',
             ],
 
@@ -115,54 +118,52 @@ class Create extends Component
         ];
     }
 
-    public function save(): void
-    {
-        $this->authorizeCreateClient();
+   public function save(): void
+{
+    $user = Auth::user();
 
-        $this->normalizePhone();
+    abort_unless(
+        $user instanceof User && $user->can('create clients'),
+        403
+    );
 
-        $data = $this->validate();
+    $validated = $this->validate();
 
-        Client::create([
-            'company_name' => trim($data['company']),
-            'contact_person' => trim($data['name']),
-            'email' => strtolower(trim($data['email'])),
-            'phone' => $data['phone'] !== ''
-                ? '+62'.$data['phone']
-                : null,
-            'city' => $data['city'],
-            'status' => $data['status'],
-            'address' => filled($data['address'])
-                ? trim($data['address'])
-                : null,
-            'notes' => null,
-        ]);
+    Client::create([
+        'company_name' => trim($validated['company']),
+        'contact_person' => trim($validated['name']),
+        'phone' => $this->normalizePhone($validated['phone']),
+        'email' => strtolower(trim($validated['email'])),
+        'city' => trim($validated['city']),
+        'status' => $validated['status'],
+        'address' => trim($validated['address']),
+    ]);
 
-        session()->flash(
-            'success',
-            'Client baru berhasil ditambahkan.'
-        );
+    session()->flash('notification', [
+        'type' => 'create',
+        'message' => 'Client berhasil ditambahkan.',
+    ]);
 
-        $this->redirectRoute(
-            'owner.clients.index',
-            navigate: true
-        );
+    $this->redirectRoute(
+        'owner.clients.index',
+        navigate: true
+    );
+}
+
+private function normalizePhone(string $phone): string
+{
+    $phone = preg_replace('/[^0-9]/', '', trim($phone)) ?? '';
+
+    if (str_starts_with($phone, '62')) {
+        $phone = substr($phone, 2);
     }
 
-    private function normalizePhone(): void
-    {
-        $phone = preg_replace('/[^0-9]/', '', $this->phone);
-
-        if (str_starts_with($phone, '62')) {
-            $phone = substr($phone, 2);
-        }
-
-        if (str_starts_with($phone, '0')) {
-            $phone = substr($phone, 1);
-        }
-
-        $this->phone = $phone;
+    if (str_starts_with($phone, '0')) {
+        $phone = substr($phone, 1);
     }
+
+    return '+62' . $phone;
+}
 
     public function render()
     {

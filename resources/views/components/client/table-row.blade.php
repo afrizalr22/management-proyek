@@ -1,77 +1,94 @@
 @props([
-    'no',
     'client',
+    'no',
 ])
 
-@php
-    $statusColor = match ($client->status) {
-        'active' => 'green',
-        'lead' => 'yellow',
-        'inactive' => 'red',
-        default => 'gray',
-    };
-
-    $statusText = match ($client->status) {
-        'active' => 'Aktif',
-        'lead' => 'Lead',
-        'inactive' => 'Nonaktif',
-        default => 'Tidak diketahui',
-    };
-@endphp
-
-<tr wire:key="client-row-{{ $client->id }}">
-
-    <td class="whitespace-nowrap px-6 py-4">
+<tr
+    wire:key="client-row-{{ $client->id }}"
+    class="transition hover:bg-gray-50"
+>
+    {{-- Nomor --}}
+    <td class="px-6 py-4 text-sm text-gray-500">
         {{ $no }}
     </td>
 
-    <td class="px-6 py-4 font-medium text-gray-900">
-        {{ $client->contact_person }}
-    </td>
-
+    {{-- Client --}}
     <td class="px-6 py-4">
-        {{ $client->company_name }}
-    </td>
+        <div>
+            <p class="text-sm font-medium text-gray-900">
+                {{ $client->contact_person }}
+            </p>
 
-    <td class="px-6 py-4">
-        {{ $client->city ?: '-' }}
-    </td>
-
-    <td class="whitespace-nowrap px-6 py-4">
-        {{ $client->phone ?: '-' }}
-    </td>
-
-    <td class="px-6 py-4">
-        <x-ui.badge :color="$statusColor">
-            {{ $statusText }}
-        </x-ui.badge>
-    </td>
-
-    <td class="px-6 py-4">
-        <div class="flex items-center justify-center gap-2">
-
-            <x-ui.icon-button-view
-                :href="route(
-                    'owner.clients.show',
-                    ['client' => $client->id]
-                )"
-            />
-
-            <x-ui.icon-button-edit
-                :href="route(
-                    'owner.clients.edit',
-                    ['client' => $client->id]
-                )"
-            />
-
-            <x-ui.icon-button-delete
-                x-on:click="$dispatch(
-                    'open-delete-client-modal',
-                    { clientId: {{ $client->id }} }
-                )"
-            />
-
+            <p class="mt-1 text-sm text-gray-500">
+                {{ $client->email }}
+            </p>
         </div>
     </td>
 
+    {{-- Perusahaan --}}
+    <td class="px-6 py-4 text-sm text-gray-700">
+        {{ $client->company_name }}
+    </td>
+
+    {{-- Kota --}}
+    <td class="px-6 py-4 text-sm text-gray-700">
+        {{ $client->city ?: '-' }}
+    </td>
+
+    {{-- Telepon --}}
+    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+        {{ $client->phone ?: '-' }}
+    </td>
+
+{{-- Status --}}
+<td class="px-6 py-4">
+    @switch($client->status)
+        @case('active')
+            <x-ui.badge color="green">
+                Aktif
+            </x-ui.badge>
+            @break
+
+        @case('lead')
+            <x-ui.badge color="yellow">
+                Lead
+            </x-ui.badge>
+            @break
+
+        @case('inactive')
+            <x-ui.badge color="red">
+                Nonaktif
+            </x-ui.badge>
+            @break
+
+        @default
+            <x-ui.badge color="gray">
+                Tidak diketahui
+            </x-ui.badge>
+    @endswitch
+</td>
+
+    {{-- Aksi --}}
+    <td class="px-6 py-4">
+        <div class="flex items-center justify-center gap-2">
+            <x-ui.icon-button-view
+                :href="route('owner.clients.show', [
+                    'client' => $client->id,
+                ])"
+                wire:navigate
+            />
+
+            <x-ui.icon-button-edit
+                :href="route('owner.clients.edit', [
+                    'client' => $client->id,
+                ])"
+                wire:navigate
+            />
+
+            <x-ui.icon-button-delete
+                href="#"
+                wire:click.prevent="confirmDelete({{ $client->id }})"
+            />
+        </div>
+    </td>
 </tr>

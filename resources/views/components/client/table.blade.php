@@ -37,31 +37,31 @@
             </tr>
         </thead>
 
-        <tbody class="divide-y divide-gray-100 bg-white">
-            @forelse ($clients as $client)
-                <x-client.table-row
-                    :client="$client"
-                    :no="$clients->firstItem() + $loop->index"
-                />
-            @empty
-                <tr>
-                    <td
-                        colspan="7"
-                        class="px-6 py-14 text-center"
-                    >
-                        <div class="mx-auto max-w-sm">
-                            <p class="font-semibold text-gray-700">
-                                Data Client tidak ditemukan
-                            </p>
+     <tbody class="divide-y divide-gray-100 bg-white">
+    @forelse ($clients as $client)
+        <x-client.table-row
+            :client="$client"
+            :no="$clients->firstItem() + $loop->index"
+        />
+    @empty
+        <tr>
+            <td
+                colspan="7"
+                class="px-6 py-14 text-center"
+            >
+                <div class="mx-auto max-w-sm">
+                    <p class="font-semibold text-gray-700">
+                        Data Client tidak ditemukan
+                    </p>
 
-                            <p class="mt-1 text-sm text-gray-500">
-                                Tambahkan Client baru atau ubah kata pencarian.
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Tambahkan Client baru atau ubah kata pencarian.
+                    </p>
+                </div>
+            </td>
+        </tr>
+    @endforelse
+</tbody>
 
     </table>
 </x-ui.table>

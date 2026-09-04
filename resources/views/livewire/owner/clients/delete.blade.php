@@ -1,215 +1,194 @@
-<div
-    x-data="{ open: false }"
+<div class="min-h-full bg-slate-50">
+    <div class="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 lg:px-8">
 
-    x-on:open-delete-client-modal.window="
-        open = true
-    "
+        {{-- Breadcrumb --}}
+        <nav class="mb-4 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+            <a
+                href="{{ route('owner.clients.index') }}"
+                wire:navigate
+                class="transition hover:text-blue-600"
+            >
+                Client
+            </a>
 
-    x-show="open"
+            <span>/</span>
 
-    x-transition.opacity
+            <a
+                href="{{ route('owner.clients.show', ['client' => $client->id]) }}"
+                wire:navigate
+                class="transition hover:text-blue-600"
+            >
+                {{ $client->company_name }}
+            </a>
 
-    class="fixed inset-0 z-50 flex items-center justify-center"
+            <span>/</span>
 
-    style="display:none;"
->
-
-    {{-- Overlay --}}
-    <div
-        class="absolute inset-0 bg-black/50"
-        x-on:click="open=false"
-    ></div>
-
-    {{-- Modal --}}
-    <div
-        class="relative z-10 w-full max-w-lg rounded-3xl bg-white shadow-2xl"
-    >
+            <span class="font-medium text-slate-700">
+                Hapus
+            </span>
+        </nav>
 
         {{-- Header --}}
-        <div
-            class="border-b border-gray-200 px-8 py-6"
-        >
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">
+                Hapus Client
+            </h1>
 
-            <h2
-                class="text-2xl font-bold text-gray-900"
-            >
-
-                Delete Client
-
-            </h2>
-
-            <p
-                class="mt-2 text-gray-500"
-            >
-
-                Apakah Anda yakin ingin menghapus client ini?
-
+            <p class="mt-2 text-sm text-slate-500 sm:text-base">
+                Periksa keterkaitan data sebelum menghapus client.
             </p>
-
         </div>
 
-        {{-- Body --}}
-        <div
-            class="space-y-6 p-8"
-        >
-
-            {{-- Warning --}}
-            <div
-                class="rounded-2xl border border-red-200 bg-red-50 p-5"
-            >
-
+        <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-5 py-5 sm:px-6">
                 <div class="flex items-start gap-4">
-
-                    <div
-                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500 text-white"
-                    >
-
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            class="h-5 w-5"
                             fill="none"
                             viewBox="0 0 24 24"
+                            stroke-width="1.8"
                             stroke="currentColor"
-                            stroke-width="2"
+                            class="h-6 w-6"
                         >
-
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
+                                d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374L10.052 3.38c.865-1.5 3.03-1.5 3.896 0l7.355 12.746ZM12 15.75h.008v.008H12v-.008Z"
                             />
-
                         </svg>
-
                     </div>
 
                     <div>
+                        <h2 class="text-lg font-semibold text-slate-900">
+                            Konfirmasi Penghapusan
+                        </h2>
 
-                        <h3
-                            class="font-semibold text-red-700"
-                        >
+                        <p class="mt-1 text-sm leading-6 text-slate-500">
+                            Data yang telah dihapus tidak dapat dikembalikan.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-                            Warning
+            <div class="space-y-6 px-5 py-6 sm:px-6">
+                {{-- Data client --}}
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <dl class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Perusahaan
+                            </dt>
 
-                        </h3>
+                            <dd class="mt-1 text-sm font-semibold text-slate-900">
+                                {{ $client->company_name }}
+                            </dd>
+                        </div>
 
-                        <p
-                            class="mt-2 text-sm text-red-600"
-                        >
+                        <div>
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Kontak
+                            </dt>
 
-                            Client yang dihapus tidak akan dapat digunakan
-                            pada Project, Quotation maupun Invoice.
-                            Pastikan client sudah tidak memiliki project aktif.
+                            <dd class="mt-1 text-sm font-semibold text-slate-900">
+                                {{ $client->contact_person }}
+                            </dd>
+                        </div>
 
+                        <div>
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Email
+                            </dt>
+
+                            <dd class="mt-1 break-all text-sm text-slate-700">
+                                {{ $client->email }}
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Status
+                            </dt>
+
+                            <dd class="mt-1 text-sm text-slate-700">
+                                {{ $client->status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                {{-- Pemeriksaan relasi --}}
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <p class="text-sm text-slate-500">
+                            Jumlah Quotation
                         </p>
 
+                        <p class="mt-1 text-2xl font-bold text-slate-900">
+                            {{ $quotationsCount }}
+                        </p>
                     </div>
 
+                    <div class="rounded-xl border border-slate-200 p-4">
+                        <p class="text-sm text-slate-500">
+                            Jumlah Proyek
+                        </p>
+
+                        <p class="mt-1 text-2xl font-bold text-slate-900">
+                            {{ $projectsCount }}
+                        </p>
+                    </div>
                 </div>
 
+                @if ($this->hasRelatedData())
+                    <div
+                        class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800"
+                        role="alert"
+                    >
+                        Client ini tidak dapat dihapus karena sudah memiliki
+                        quotation atau proyek. Data client perlu dipertahankan
+                        untuk menjaga riwayat transaksi.
+                    </div>
+                @else
+                    <div
+                        class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+                        role="alert"
+                    >
+                        Client ini belum memiliki quotation maupun proyek.
+                        Apakah Anda yakin ingin menghapusnya?
+                    </div>
+                @endif
             </div>
 
-            {{-- Preview Client --}}
-            <div
-                class="rounded-2xl bg-gray-50 p-6"
-            >
+            {{-- Action --}}
+            <div class="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+                <a
+                    href="{{ route('owner.clients.show', ['client' => $client->id]) }}"
+                    wire:navigate
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200"
+                >
+                    Batal
+                </a>
 
-                <div class="space-y-4">
+                <button
+                    type="button"
+                    wire:click="delete"
+                    wire:confirm="Yakin ingin menghapus client ini?"
+                    wire:loading.attr="disabled"
+                    wire:target="delete"
+                    @disabled($this->hasRelatedData())
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-200 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
+                >
+                    <span wire:loading.remove wire:target="delete">
+                        Hapus Client
+                    </span>
 
-                    <div class="flex justify-between">
-
-                        <span class="text-gray-500">
-
-                            Nama Client
-
-                        </span>
-
-                        <span class="font-semibold">
-
-                            Ahmad Afrizal
-
-                        </span>
-
-                    </div>
-
-                    <div class="flex justify-between">
-
-                        <span class="text-gray-500">
-
-                            Perusahaan
-
-                        </span>
-
-                        <span class="font-semibold">
-
-                            PT Satria Cipta Karya
-
-                        </span>
-
-                    </div>
-
-                    <div class="flex justify-between">
-
-                        <span class="text-gray-500">
-
-                            Status
-
-                        </span>
-
-                        <x-ui.badge color="green">
-
-                            Active
-
-                        </x-ui.badge>
-
-                    </div>
-
-                    <div class="flex justify-between">
-
-                        <span class="text-gray-500">
-
-                            Total Project
-
-                        </span>
-
-                        <span class="font-semibold">
-
-                            12 Project
-
-                        </span>
-
-                    </div>
-
-                </div>
-
+                    <span wire:loading wire:target="delete">
+                        Menghapus...
+                    </span>
+                </button>
             </div>
-
-        </div>
-
-        {{-- Footer --}}
-        <div
-            class="flex justify-end gap-3 border-t border-gray-200 px-8 py-6"
-        >
-
-            <x-ui.button
-                variant="outline"
-                x-on:click="open=false"
-            >
-
-                Cancel
-
-            </x-ui.button>
-
-            <x-ui.button
-                variant="danger"
-            >
-
-                Delete Client
-
-            </x-ui.button>
-
-        </div>
+        </section>
 
     </div>
-
 </div>

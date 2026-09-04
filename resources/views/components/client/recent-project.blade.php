@@ -32,6 +32,11 @@
                     'cancelled' => 'red',
                     default => 'gray',
                 };
+
+                $progress = min(
+                    100,
+                    max(0, (float) ($project->progress ?? 0))
+                );
             @endphp
 
             <a
@@ -70,17 +75,17 @@
                             </span>
 
                             <span class="text-sm font-semibold text-blue-600">
-                                {{ $project->progress }}%
+                                {{ $progress }}%
                             </span>
                         </div>
 
-                        <div class="h-3 overflow-hidden rounded-full bg-gray-200">
+                        <div
+                            x-data="{ progress: @js($progress) }"
+                            class="h-3 overflow-hidden rounded-full bg-gray-200"
+                        >
                             <div
+                                x-bind:style="{ width: progress + '%' }"
                                 class="h-full rounded-full bg-blue-600 transition-all duration-500"
-                                style="width: {{ min(
-                                    100,
-                                    max(0, $project->progress)
-                                ) }}%;"
                             ></div>
                         </div>
                     </div>

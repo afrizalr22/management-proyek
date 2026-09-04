@@ -34,6 +34,7 @@
                     Batal
                 </a>
 
+
                 {{-- Ubah Data --}}
                 <a
                     href="{{ route(
@@ -64,6 +65,27 @@
             </div>
         </x-slot:actions>
     </x-ui.page-header>
+        @if (session()->has('error'))
+        <div
+            x-data="{ show: true }"
+            x-init="setTimeout(() => show = false, 5000)"
+            x-show="show"
+            x-transition.opacity.duration.300ms
+            class="mb-6 flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            role="alert"
+        >
+            <span>{{ session('error') }}</span>
+
+            <button
+                type="button"
+                @click="show = false"
+                class="text-lg leading-none text-red-600 hover:text-red-800"
+                aria-label="Tutup notifikasi"
+            >
+                &times;
+            </button>
+        </div>
+    @endif
 
     {{-- Informasi Client --}}
     <x-client.detail-information

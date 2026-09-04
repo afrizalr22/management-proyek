@@ -124,12 +124,12 @@
                 {{-- Action --}}
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                     <a
-                        href="{{ route('owner.clients.show', ['client' => $client->id]) }}"
+                        href="{{ route('owner.clients.index') }}"
                         wire:navigate
                         class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-200"
                     >
                         Batal
-                    </a>
+                    </a>    
 
                     <button
                         type="submit"

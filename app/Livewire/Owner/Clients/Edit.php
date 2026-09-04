@@ -145,10 +145,10 @@ class Edit extends Component
             'status' => $validated['status'],
         ]);
 
-        session()->flash(
-            'success',
-            'Data client berhasil diperbarui.'
-        );
+        session()->flash('notification', [
+            'type' => 'update',
+            'message' => 'Data client berhasil diperbarui.',
+        ]);
 
         $this->redirectRoute(
             'owner.clients.index',

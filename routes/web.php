@@ -13,7 +13,6 @@ use App\Livewire\Owner\Clients\Index as ClientsIndex;
 use App\Livewire\Owner\Clients\Show as ClientsShow;
 use App\Livewire\Owner\Clients\Create as ClientsCreate;
 use App\Livewire\Owner\Clients\Edit as ClientsEdit;
-use App\Livewire\Owner\Clients\Delete as ClientsDelete;
 
 // Projects
 use App\Livewire\Owner\Projects\Index as ProjectsIndex;
@@ -90,13 +89,23 @@ Route::middleware(['auth','role:owner',])->group(function () {
 
     Route::get('/profile',Profile::class)->name('owner.profile');
 
-    Route::prefix('clients')->name('owner.clients.')->group(function () {
-            Route::get('', ClientsIndex::class)->name('index');
-            Route::get('/create', ClientsCreate::class)->name('create');
-            Route::get('/{client}/edit', ClientsEdit::class)->whereNumber('client')->name('edit');
-            Route::get('/{client}', ClientsShow::class)->whereNumber('client')->name('show');
-            Route::get('/{client}/delete', ClientsDelete::class)->name('delete');
-        });
+Route::prefix('clients')
+    ->name('owner.clients.')
+    ->group(function () {
+        Route::get('/', ClientsIndex::class)
+            ->name('index');
+
+        Route::get('/create', ClientsCreate::class)
+            ->name('create');
+
+        Route::get('/{client}/edit', ClientsEdit::class)
+            ->whereNumber('client')
+            ->name('edit');
+
+        Route::get('/{client}', ClientsShow::class)
+            ->whereNumber('client')
+            ->name('show');
+    });
 
     Route::prefix('projects')->name('owner.projects.')->group(function () {
             Route::get('/projects', ProjectsIndex::class)->name('index');
