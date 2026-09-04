@@ -7,14 +7,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProjectWorker extends Model
 {
-    protected $guarded = [];
+    protected $table = 'project_workers';
 
-    public function project() : BelongsTo
+    protected $fillable = [
+        'project_id',
+        'worker_id',
+    ];
+
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function worker() : BelongsTo
+    public function worker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'worker_id');
     }

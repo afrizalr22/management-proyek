@@ -6,27 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('invoices', function (Blueprint $table) {
-
             $table->id();
 
-            // Project
             $table->foreignId('project_id')
-                ->constrained()
-                ->cascadeOnDelete();
+                ->constrained('projects')
+                ->restrictOnDelete();
 
-            // Source quotation
             $table->foreignId('quotation_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('quotations')
                 ->nullOnDelete();
 
-            // Invoice information
+            $table->foreignId('created_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Informasi Invoice
+            |--------------------------------------------------------------------------
+            */
+
             $table->string('invoice_number', 100)
                 ->unique();
 
@@ -35,7 +39,6 @@ return new class extends Migration
             $table->date('due_date')
                 ->nullable();
 
-            // Invoice status
             $table->enum('status', [
                 'draft',
                 'issued',
@@ -43,7 +46,12 @@ return new class extends Migration
                 'cancelled',
             ])->default('draft');
 
-            // Client snapshot
+            /*
+            |--------------------------------------------------------------------------
+            | Snapshot Client
+            |--------------------------------------------------------------------------
+            */
+
             $table->string('client_name');
 
             $table->string('client_contact_person')
@@ -58,31 +66,66 @@ return new class extends Migration
             $table->text('client_address')
                 ->nullable();
 
-            // Financial
+            /*
+            |--------------------------------------------------------------------------
+            | Perhitungan Invoice
+            |--------------------------------------------------------------------------
+            */
+
             $table->decimal('subtotal', 15, 2)
+                ->default(0);
+
+            $table->decimal('tax_amount', 15, 2)
+                ->default(0);
+
+            $table->decimal('discount_amount', 15, 2)
                 ->default(0);
 
             $table->decimal('grand_total', 15, 2)
                 ->default(0);
 
-            // Payment
+            $table->decimal('paid_amount', 15, 2)
+                ->default(0);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Pembayaran
+            |--------------------------------------------------------------------------
+            */
+
             $table->enum('payment_status', [
                 'unpaid',
                 'partial',
                 'paid',
+                'overdue',
             ])->default('unpaid');
 
-            // Additional information
+            $table->dateTime('issued_at')
+                ->nullable();
+
+            $table->dateTime('sent_at')
+                ->nullable();
+
+            $table->dateTime('paid_at')
+                ->nullable();
+
             $table->text('notes')
                 ->nullable();
 
             $table->timestamps();
+
+            $table->index([
+                'project_id',
+                'status',
+            ]);
+
+            $table->index([
+                'payment_status',
+                'due_date',
+            ]);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('invoices');

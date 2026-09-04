@@ -6,28 +6,44 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('invoice_id')
-                ->constrained()
+                ->constrained('invoices')
                 ->cascadeOnDelete();
+
             $table->string('item_name');
-            $table->decimal('qty', 10, 2);
-            $table->string('unit', 50);
-            $table->decimal('price', 15, 2);
-            $table->decimal('total', 15, 2);
+
+            $table->text('description')
+                ->nullable();
+
+            $table->decimal('qty', 10, 2)
+                ->default(1);
+
+            $table->string('unit', 50)
+                ->default('unit');
+
+            $table->decimal('price', 15, 2)
+                ->default(0);
+
+            $table->decimal('total', 15, 2)
+                ->default(0);
+
+            $table->unsignedInteger('sort_order')
+                ->default(1);
+
             $table->timestamps();
+
+            $table->index([
+                'invoice_id',
+                'sort_order',
+            ]);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('invoice_items');

@@ -8,15 +8,66 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Quotation extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'client_id',
+        'project_id',
+        'created_by',
+        'quotation_number',
+        'quotation_date',
+        'valid_until',
+        'client_name',
+        'client_contact_person',
+        'client_phone',
+        'client_email',
+        'client_address',
+        'project_name',
+        'project_location',
+        'subtotal',
+        'grand_total',
+        'status',
+        'sent_at',
+        'approved_at',
+        'rejected_at',
+        'notes',
+    ];
 
-    public function project() : BelongsTo
+    protected function casts(): array
+    {
+        return [
+            'quotation_date' => 'date',
+            'valid_until' => 'date',
+            'subtotal' => 'decimal:2',
+            'grand_total' => 'decimal:2',
+            'sent_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
+        ];
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function items() : HasMany
+    public function creator(): BelongsTo
     {
-        return $this->hasMany(QuotationItem::class);
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(QuotationItem::class)
+            ->orderBy('sort_order');
+    }
+
+    public function canBeConvertedToProject(): bool
+    {
+        return $this->status === 'approved'
+            && $this->project_id === null;
     }
 }

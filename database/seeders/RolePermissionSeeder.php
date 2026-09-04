@@ -4,42 +4,50 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-         /*
-        |--------------------------------------------------------------------------
-        | OWNER
-        |--------------------------------------------------------------------------
-        */
+        app(PermissionRegistrar::class)
+            ->forgetCachedPermissions();
 
-        $owner = Role::findByName('owner');
+        $this->configureOwnerPermissions();
+        $this->configureMandorPermissions();
+        $this->configurePekerjaPermissions();
+
+        app(PermissionRegistrar::class)
+            ->forgetCachedPermissions();
+    }
+
+    private function configureOwnerPermissions(): void
+    {
+        $owner = Role::findOrCreate('owner', 'web');
 
         $owner->syncPermissions([
-
-            // Dashboard
             'view dashboard',
 
-            // User
             'view-any users',
             'view users',
             'create users',
             'update users',
             'delete users',
 
-            // Client
             'view-any clients',
             'view clients',
             'create clients',
             'update clients',
             'delete clients',
 
-            // Project
+            'view-any quotations',
+            'view quotations',
+            'create quotations',
+            'update quotations',
+            'delete quotations',
+            'approve quotations',
+            'reject quotations',
+
             'view-any projects',
             'view projects',
             'create projects',
@@ -47,100 +55,92 @@ class RolePermissionSeeder extends Seeder
             'delete projects',
             'assign workers',
 
-            // Project Progress
+            'view-any tasks',
+            'view tasks',
+
             'view-any project progress',
             'view project progress',
 
-            // Daily Report
             'view-any daily reports',
             'view daily reports',
 
-            // Documentation
             'view-any documentations',
             'view documentations',
 
-            // Quotation
-            'view-any quotations',
-            'view quotations',
-            'create quotations',
-            'update quotations',
-            'delete quotations',
-
-            // Invoice
             'view-any invoices',
             'view invoices',
             'create invoices',
             'update invoices',
             'delete invoices',
 
-            // Delivery Order
             'view-any delivery orders',
             'view delivery orders',
             'create delivery orders',
             'update delivery orders',
             'delete delivery orders',
 
-            // Profile
             'view profile',
             'update profile',
         ]);
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | MANDOR
-        |--------------------------------------------------------------------------
-        */
-
-        $mandor = Role::findByName('mandor');
+    private function configureMandorPermissions(): void
+    {
+        $mandor = Role::findOrCreate('mandor', 'web');
 
         $mandor->syncPermissions([
-
             'view dashboard',
 
             'view-any projects',
             'view projects',
 
+            'view-any tasks',
+            'view tasks',
+            'create tasks',
+            'update tasks',
+            'delete tasks',
+
             'view-any project progress',
             'view project progress',
-            'create project progress',
-            'update project progress',
-            'delete project progress',
 
             'view-any daily reports',
             'view daily reports',
-            'create daily reports',
-            'update daily reports',
-            'delete daily reports',
+            'review daily reports',
+            'approve daily reports',
+            'request daily report revisions',
 
             'view-any documentations',
             'view documentations',
-            'upload documentations',
-            'delete documentations',
-
-            'view delivery orders',
 
             'view profile',
             'update profile',
         ]);
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | PEKERJA
-        |--------------------------------------------------------------------------
-        */
-
-        $pekerja = Role::findByName('pekerja');
+    private function configurePekerjaPermissions(): void
+    {
+        $pekerja = Role::findOrCreate('pekerja', 'web');
 
         $pekerja->syncPermissions([
-
             'view dashboard',
 
             'view projects',
 
+            'view tasks',
+            'start tasks',
+            'submit tasks',
+
             'view project progress',
+
+            'view daily reports',
+            'create daily reports',
+            'update daily reports',
+            'delete daily reports',
+            'submit daily reports',
 
             'view documentations',
             'upload documentations',
+            'delete documentations',
 
             'view profile',
             'update profile',

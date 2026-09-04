@@ -3,81 +3,80 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
 
-    <title>{{ $title ?? config('app.name') }}</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {{ $title ?? config('app.name', 'Management Proyek') }}
+    </title>
 
     @vite([
         'resources/css/app.css',
-        'resources/js/app.js'
+        'resources/js/app.js',
     ])
 
     @livewireStyles
 </head>
 
 <body
-    class="bg-gray-100"
-    x-data="{ sidebarOpen:false }"
+    class="bg-gray-100 antialiased"
+    x-data="{ sidebarOpen: false }"
 >
+    <div class="flex h-screen overflow-hidden">
 
-<div class="h-screen flex overflow-hidden">
+        {{-- Overlay mobile --}}
+        <div
+            x-show="sidebarOpen"
+            x-transition.opacity
+            x-cloak
+            @click="sidebarOpen = false"
+            class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        ></div>
 
-    {{-- Overlay --}}
-    <div
-        x-show="sidebarOpen"
-        x-transition.opacity
-        @click="sidebarOpen = false"
-        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
-        x-cloak
-    ></div>
+        {{-- Sidebar mobile --}}
+        <aside
+            x-cloak
+            class="fixed inset-y-0 left-0 z-50 w-72 transform bg-white transition-transform duration-300 lg:hidden"
+            :class="sidebarOpen
+                ? 'translate-x-0'
+                : '-translate-x-full'"
+        >
+            <x-sidebar.index />
+        </aside>
 
-    {{-- Mobile Sidebar --}}
-    <aside
-        class="fixed inset-y-0 left-0 w-72 bg-white z-50 transform transition-transform duration-300 lg:hidden"
-        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-    >
+        {{-- Sidebar desktop --}}
+        <aside
+            class="hidden w-72 shrink-0 flex-col border-r border-gray-200 bg-white lg:flex"
+        >
+            <x-sidebar.index />
+        </aside>
 
-        <x-sidebar.index />
+        {{-- Area utama --}}
+        <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
 
-    </aside>
+            <x-navbar />
 
-    {{-- Desktop Sidebar --}}
-    <aside class="hidden lg:flex lg:w-72 lg:flex-col border-r bg-white">
+            <main class="min-h-0 flex-1 overflow-y-auto">
+                <div class="min-h-full">
 
-        <x-sidebar.index />
+                    <div class="p-4 sm:p-6">
+                        {{ $slot }}
+                    </div>
 
-    </aside>
+                    <x-footer />
 
-    {{-- Main Area --}}
-    <div class="flex flex-1 flex-col overflow-hidden">
+                </div>
+            </main>
 
-        {{-- Navbar --}}
-        <x-navbar />
-
-        {{-- Scroll Area --}}
-        <main class="flex-1 overflow-y-auto">
-
-            <div class="p-6">
-
-                {{ $slot }}
-
-            </div>
-
-            {{-- Footer ikut scroll --}}
-            <x-footer />
-
-        </main>
-
+        </div>
     </div>
 
-</div>
+    @livewireScripts
 
-@livewireScripts
-@vite(['resources/css/app.css','resources/js/app.js'])
-
-@stack('scripts')
-
+    @stack('scripts')
 </body>
 
 </html>

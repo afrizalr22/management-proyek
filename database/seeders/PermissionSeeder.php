@@ -4,16 +4,17 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        app(PermissionRegistrar::class)
+            ->forgetCachedPermissions();
+
         $permissions = [
-               /*
+            /*
             |--------------------------------------------------------------------------
             | Dashboard
             |--------------------------------------------------------------------------
@@ -23,7 +24,7 @@ class PermissionSeeder extends Seeder
 
             /*
             |--------------------------------------------------------------------------
-            | User
+            | Users
             |--------------------------------------------------------------------------
             */
 
@@ -35,7 +36,7 @@ class PermissionSeeder extends Seeder
 
             /*
             |--------------------------------------------------------------------------
-            | Client
+            | Clients
             |--------------------------------------------------------------------------
             */
 
@@ -47,7 +48,21 @@ class PermissionSeeder extends Seeder
 
             /*
             |--------------------------------------------------------------------------
-            | Project
+            | Quotations
+            |--------------------------------------------------------------------------
+            */
+
+            'view-any quotations',
+            'view quotations',
+            'create quotations',
+            'update quotations',
+            'delete quotations',
+            'approve quotations',
+            'reject quotations',
+
+            /*
+            |--------------------------------------------------------------------------
+            | Projects
             |--------------------------------------------------------------------------
             */
 
@@ -56,14 +71,21 @@ class PermissionSeeder extends Seeder
             'create projects',
             'update projects',
             'delete projects',
+            'assign workers',
 
             /*
             |--------------------------------------------------------------------------
-            | Project Worker
+            | Tasks
             |--------------------------------------------------------------------------
             */
 
-            'assign workers',
+            'view-any tasks',
+            'view tasks',
+            'create tasks',
+            'update tasks',
+            'delete tasks',
+            'start tasks',
+            'submit tasks',
 
             /*
             |--------------------------------------------------------------------------
@@ -73,13 +95,10 @@ class PermissionSeeder extends Seeder
 
             'view-any project progress',
             'view project progress',
-            'create project progress',
-            'update project progress',
-            'delete project progress',
 
             /*
             |--------------------------------------------------------------------------
-            | Daily Report
+            | Daily Reports
             |--------------------------------------------------------------------------
             */
 
@@ -88,10 +107,14 @@ class PermissionSeeder extends Seeder
             'create daily reports',
             'update daily reports',
             'delete daily reports',
+            'submit daily reports',
+            'review daily reports',
+            'approve daily reports',
+            'request daily report revisions',
 
             /*
             |--------------------------------------------------------------------------
-            | Documentation
+            | Documentations
             |--------------------------------------------------------------------------
             */
 
@@ -102,19 +125,7 @@ class PermissionSeeder extends Seeder
 
             /*
             |--------------------------------------------------------------------------
-            | Quotation
-            |--------------------------------------------------------------------------
-            */
-
-            'view-any quotations',
-            'view quotations',
-            'create quotations',
-            'update quotations',
-            'delete quotations',
-
-            /*
-            |--------------------------------------------------------------------------
-            | Invoice
+            | Invoices
             |--------------------------------------------------------------------------
             */
 
@@ -126,7 +137,7 @@ class PermissionSeeder extends Seeder
 
             /*
             |--------------------------------------------------------------------------
-            | Delivery Order
+            | Delivery Orders
             |--------------------------------------------------------------------------
             */
 
@@ -152,5 +163,8 @@ class PermissionSeeder extends Seeder
                 'guard_name' => 'web',
             ]);
         }
+
+        app(PermissionRegistrar::class)
+            ->forgetCachedPermissions();
     }
 }

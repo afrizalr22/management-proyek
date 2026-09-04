@@ -8,57 +8,42 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Owner
-        |--------------------------------------------------------------------------
-        */
-
-        $owner = User::firstOrCreate(
-            ['email' => 'owner@gmail.com'],
+        $owner = User::updateOrCreate(
+            [
+                'email' => 'owner@gmail.com',
+            ],
             [
                 'name' => 'Owner',
                 'password' => Hash::make('password'),
             ]
         );
 
-        $owner->assignRole('owner');
+        $owner->syncRoles(['owner']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Mandor
-        |--------------------------------------------------------------------------
-        */
-
-        $mandor = User::firstOrCreate(
-            ['email' => 'mandor@gmail.com'],
+        $mandor = User::updateOrCreate(
+            [
+                'email' => 'mandor@gmail.com',
+            ],
             [
                 'name' => 'Mandor',
                 'password' => Hash::make('password'),
             ]
         );
 
-        $mandor->assignRole('mandor');
+        $mandor->syncRoles(['mandor']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Pekerja
-        |--------------------------------------------------------------------------
-        */
-
-        $worker = User::firstOrCreate(
-            ['email' => 'pekerja@gmail.com'],
+        $pekerja = User::updateOrCreate(
+            [
+                'email' => 'pekerja@gmail.com',
+            ],
             [
                 'name' => 'Pekerja',
                 'password' => Hash::make('password'),
             ]
         );
 
-        $worker->assignRole('pekerja');
+        $pekerja->syncRoles(['pekerja']);
     }
 }

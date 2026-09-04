@@ -10,16 +10,26 @@ class Invoice extends Model
 {
     protected $fillable = [
         'project_id',
+        'quotation_id',
+        'created_by',
         'invoice_number',
         'invoice_date',
         'due_date',
+        'status',
         'client_name',
         'client_contact_person',
         'client_phone',
         'client_email',
         'client_address',
-        'total',
+        'subtotal',
+        'tax_amount',
+        'discount_amount',
+        'grand_total',
+        'paid_amount',
         'payment_status',
+        'issued_at',
+        'sent_at',
+        'paid_at',
         'notes',
     ];
 
@@ -28,7 +38,14 @@ class Invoice extends Model
         return [
             'invoice_date' => 'date',
             'due_date' => 'date',
-            'total' => 'decimal:2',
+            'subtotal' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
+            'grand_total' => 'decimal:2',
+            'paid_amount' => 'decimal:2',
+            'issued_at' => 'datetime',
+            'sent_at' => 'datetime',
+            'paid_at' => 'datetime',
         ];
     }
 
@@ -37,8 +54,28 @@ class Invoice extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function quotation(): BelongsTo
+    {
+        return $this->belongsTo(Quotation::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function items(): HasMany
     {
-        return $this->hasMany(InvoiceItem::class);
+        return $this->hasMany(InvoiceItem::class)
+            ->orderBy('sort_order');
+    }
+
+    public function getRemainingAmountAttribute(): float
+    {
+        return max(
+            0,
+            (float) $this->grand_total
+            - (float) $this->paid_amount
+        );
     }
 }

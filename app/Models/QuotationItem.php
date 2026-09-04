@@ -7,7 +7,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuotationItem extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'quotation_id',
+        'item_name',
+        'description',
+        'qty',
+        'unit',
+        'price',
+        'total',
+        'sort_order',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'qty' => 'decimal:2',
+            'price' => 'decimal:2',
+            'total' => 'decimal:2',
+            'sort_order' => 'integer',
+        ];
+    }
 
     public function quotation(): BelongsTo
     {

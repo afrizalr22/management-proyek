@@ -5,16 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class InvoiceItem extends Model
+class DeliveryOrderItem extends Model
 {
     protected $fillable = [
-        'invoice_id',
+        'delivery_order_id',
         'item_name',
         'description',
         'qty',
         'unit',
-        'price',
-        'total',
+        'condition',
         'sort_order',
     ];
 
@@ -22,14 +21,12 @@ class InvoiceItem extends Model
     {
         return [
             'qty' => 'decimal:2',
-            'price' => 'decimal:2',
-            'total' => 'decimal:2',
             'sort_order' => 'integer',
         ];
     }
 
-    public function invoice(): BelongsTo
+    public function deliveryOrder(): BelongsTo
     {
-        return $this->belongsTo(Invoice::class);
+        return $this->belongsTo(DeliveryOrder::class);
     }
 }

@@ -28,7 +28,7 @@
     </a>
 
     <a
-        href="{{ route('pekerja.task.index') }}"
+        href="{{ route('pekerja.tasks.index') }}"
         wire:navigate
         class="block rounded-lg px-4 py-2 transition
             {{ request()->routeIs('pekerja.task.*')
@@ -40,7 +40,7 @@
     </a>
 
     <a
-        href="{{ route('pekerja.documentation.index') }}"
+        href="{{ route('pekerja.documentations.index') }}"
         wire:navigate
         class="block rounded-lg px-4 py-2 transition
             {{ request()->routeIs('pekerja.documentation.*')
@@ -52,7 +52,7 @@
     </a>
 
     <a
-        href="{{ route('pekerja.report.index') }}"
+        href="{{ route('pekerja.reports.index') }}"
         wire:navigate
         class="block rounded-lg px-4 py-2 transition
             {{ request()->routeIs('pekerja.report.*')
