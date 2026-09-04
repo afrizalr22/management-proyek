@@ -1,199 +1,175 @@
-   <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+@props([
+    'client',
+])
 
-        {{-- LEFT --}}
-        <div class="xl:col-span-2">
+@php
+    $statusColor = match ($client->status) {
+        'active' => 'green',
+        'lead' => 'yellow',
+        'inactive' => 'red',
+        default => 'gray',
+    };
 
-            <x-ui.info-card>
+    $statusText = match ($client->status) {
+        'active' => 'Aktif',
+        'lead' => 'Lead',
+        'inactive' => 'Nonaktif',
+        default => 'Tidak diketahui',
+    };
 
-                <div class="p-8">
+    $totalProjectValue = (float) (
+        $client->projects_sum_contract_value ?? 0
+    );
+@endphp
 
-                    {{-- Header --}}
-                    <div class="flex items-start gap-5">
+<div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
-                        <div
-                            class="flex h-16 w-16 items-center justify-center rounded-xl bg-blue-600 text-3xl text-white"
-                        >
+    {{-- Informasi utama --}}
+    <div class="xl:col-span-2">
+        <x-ui.info-card>
+            <div class="p-8">
 
-                            🏢
-
-                        </div>
-
-                        <div>
-
-                            <h2 class="text-2xl font-bold">
-
-                                PT Tekno Konstruksi Utama
-
-                            </h2>
-
-                            <div class="mt-2">
-
-                                <x-ui.badge color="green">
-
-                                    Active
-
-                                </x-ui.badge>
-
-                            </div>
-
-                        </div>
-
+                <div class="flex items-start gap-5">
+                    <div
+                        class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-3xl text-white"
+                    >
+                        🏢
                     </div>
 
-                    <hr class="my-8">
+                    <div class="min-w-0">
+                        <h2 class="break-words text-2xl font-bold text-gray-900">
+                            {{ $client->company_name }}
+                        </h2>
 
-                    {{-- Information --}}
-                    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-
-                        <div>
-
-                            <p class="text-xs font-semibold uppercase text-gray-500">
-
-                                Nama Client
-
-                            </p>
-
-                            <p class="mt-2 text-lg">
-
-                                Budi Santoso
-
-                            </p>
-
+                        <div class="mt-2">
+                            <x-ui.badge :color="$statusColor">
+                                {{ $statusText }}
+                            </x-ui.badge>
                         </div>
-
-                        <div>
-
-                            <p class="text-xs font-semibold uppercase text-gray-500">
-
-                                Nomor Telepon
-
-                            </p>
-
-                            <p class="mt-2 text-lg">
-
-                                +62 812 3456 7890
-
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-xs font-semibold uppercase text-gray-500">
-
-                                Email
-
-                            </p>
-
-                            <p class="mt-2 text-lg">
-
-                                budi.santoso@tekno-utama.com
-
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-xs font-semibold uppercase text-gray-500">
-
-                                Kota
-
-                            </p>
-
-                            <p class="mt-2 text-lg">
-
-                                Jakarta Selatan
-
-                            </p>
-
-                        </div>
-
                     </div>
+                </div>
 
-                    <div class="mt-8">
+                <hr class="my-8 border-gray-200">
 
+                <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+
+                    <div>
                         <p class="text-xs font-semibold uppercase text-gray-500">
-
-                            Alamat Lengkap
-
+                            Nama Client
                         </p>
 
-                        <p class="mt-2 text-lg leading-8">
+                        <p class="mt-2 break-words text-lg text-gray-900">
+                            {{ $client->contact_person }}
+                        </p>
+                    </div>
 
-                            Jl. Jenderal Sudirman No.45,
-                            Menara Mandiri Lt.12,
-                            Senayan,
-                            Kebayoran Baru,
-                            Jakarta Selatan,
-                            12190
-
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-gray-500">
+                            Nomor Telepon
                         </p>
 
+                        <p class="mt-2 text-lg text-gray-900">
+                            {{ $client->phone ?: '-' }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-gray-500">
+                            Email
+                        </p>
+
+                        <p class="mt-2 break-all text-lg text-gray-900">
+                            {{ $client->email ?: '-' }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold uppercase text-gray-500">
+                            Kota
+                        </p>
+
+                        <p class="mt-2 text-lg text-gray-900">
+                            {{ $client->city ?: '-' }}
+                        </p>
                     </div>
 
                 </div>
 
-            </x-ui.info-card>
+                <div class="mt-8">
+                    <p class="text-xs font-semibold uppercase text-gray-500">
+                        Alamat Lengkap
+                    </p>
 
-        </div>
+                    <p class="mt-2 whitespace-pre-line text-lg leading-8 text-gray-900">{{ $client->address ?: '-' }}</p>
+                </div>
 
-        {{-- RIGHT --}}
-        <div class="space-y-6">
+            </div>
+        </x-ui.info-card>
+    </div>
 
-            {{-- Project Summary --}}
-            <x-ui.summary-card>
+    {{-- Ringkasan --}}
+    <div class="space-y-6">
 
-                <div class="p-6">
+        <x-ui.summary-card>
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-gray-800">
+                    Ringkasan Project
+                </h3>
 
-                    <h3 class="text-lg font-bold text-gray-800">
-                        Project Summary
-                    </h3>
+                <div class="mt-6 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500">
+                            Total Project
+                        </span>
 
-                    <div class="mt-6 space-y-5">
-
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Total Project</span>
-                            <span class="text-xl font-bold">12</span>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Project Aktif</span>
-                            <span class="font-semibold text-blue-600">4</span>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Project Selesai</span>
-                            <span class="font-semibold text-green-600">8</span>
-                        </div>
-
+                        <span class="text-xl font-bold text-gray-900">
+                            {{ $client->projects_count }}
+                        </span>
                     </div>
 
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500">
+                            Project Aktif
+                        </span>
+
+                        <span class="font-semibold text-blue-600">
+                            {{ $client->active_projects_count }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500">
+                            Project Selesai
+                        </span>
+
+                        <span class="font-semibold text-green-600">
+                            {{ $client->completed_projects_count }}
+                        </span>
+                    </div>
                 </div>
+            </div>
+        </x-ui.summary-card>
 
-            </x-ui.summary-card>
+        <x-ui.summary-card>
+            <div class="rounded-2xl bg-gray-900 p-6 text-white">
+                <p class="text-sm uppercase tracking-wide text-gray-300">
+                    Total Nilai Project
+                </p>
 
-            {{-- Total Nilai Project --}}
-            <x-ui.summary-card>
+                <h2 class="mt-4 break-words text-2xl font-bold sm:text-3xl">
+                    Rp {{ number_format(
+                        $totalProjectValue,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
+                </h2>
 
-                <div class="rounded-2xl bg-gray-900 p-6 text-white">
-
-                    <p class="text-sm uppercase tracking-wide text-gray-300">
-                        Total Nilai Project
-                    </p>
-
-                    <h2 class="mt-4 text-3xl font-bold">
-                        Rp 4,5 M
-                    </h2>
-
-                    <p class="mt-2 text-sm text-gray-400">
-                        Akumulasi seluruh nilai kontrak project client.
-                    </p>
-
-                </div>
-
-            </x-ui.summary-card>
-
-        </div>
+                <p class="mt-2 text-sm text-gray-400">
+                    Akumulasi nilai kontrak seluruh Project Client.
+                </p>
+            </div>
+        </x-ui.summary-card>
 
     </div>
+</div>

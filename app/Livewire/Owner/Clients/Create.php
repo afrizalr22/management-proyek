@@ -5,6 +5,8 @@ namespace App\Livewire\Owner\Clients;
 use App\Models\Client;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class Create extends Component
 {
@@ -29,10 +31,7 @@ class Create extends Component
 
     public function mount(): void
     {
-        abort_unless(
-            auth()->user()?->can('create clients'),
-            403
-        );
+        $this->authorizeCreateClient();
     }
 
     protected function rules(): array
@@ -118,10 +117,7 @@ class Create extends Component
 
     public function save(): void
     {
-        abort_unless(
-            auth()->user()?->can('create clients'),
-            403
-        );
+        $this->authorizeCreateClient();
 
         $this->normalizePhone();
 
@@ -171,5 +167,16 @@ class Create extends Component
     public function render()
     {
         return view('livewire.owner.clients.create');
+    }
+
+    private function authorizeCreateClient(): void
+    {
+        $user = Auth::user();
+
+        abort_unless(
+            $user instanceof User
+                && $user->can('create clients'),
+            403
+        );
     }
 }

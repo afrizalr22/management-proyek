@@ -59,4 +59,16 @@ class Project extends Model
     {
         return $this->hasMany(DeliveryOrder::class);
     }
+
+    protected function casts(): array
+    {
+        return [
+            'contract_date' => 'date',
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'project_budget' => 'decimal:2',
+            'contract_value' => 'decimal:2',
+            'progress' => 'integer',
+        ];
+    }
 }
