@@ -93,8 +93,8 @@ Route::middleware(['auth','role:owner',])->group(function () {
     Route::prefix('clients')->name('owner.clients.')->group(function () {
             Route::get('', ClientsIndex::class)->name('index');
             Route::get('/create', ClientsCreate::class)->name('create');
-            Route::get('/{client}/edit', ClientsEdit::class)->name('edit');
-            Route::get('/client/{client}', ClientsShow::class)->name('show');
+            Route::get('/{client}/edit', ClientsEdit::class)->whereNumber('client')->name('edit');
+            Route::get('/{client}', ClientsShow::class)->whereNumber('client')->name('show');
             Route::get('/{client}/delete', ClientsDelete::class)->name('delete');
         });
 
