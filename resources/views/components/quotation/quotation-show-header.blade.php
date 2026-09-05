@@ -1,94 +1,77 @@
+@props([
+    'quotation',
+    'statusText',
+    'statusColor',
+])
+
 <div class="space-y-6">
 
     {{-- Breadcrumb --}}
-    <div class="text-sm text-gray-500">
-
+    <nav class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
         <a
             href="{{ route('owner.quotations.index') }}"
+            wire:navigate
             class="transition hover:text-blue-600"
         >
-            Quotation Management
+            Quotation
         </a>
 
-        <span class="mx-2">
-            >
-        </span>
+        <span>/</span>
 
         <span class="font-medium text-gray-700">
-
-            QTN-2026-0001
-
+            {{ $quotation->quotation_number }}
         </span>
-
-    </div>
+    </nav>
 
     {{-- Header --}}
-    <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-
-        {{-- Information --}}
-        <div>
-
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-3">
-
-                <h1 class="text-3xl font-bold text-gray-900">
-
-                    QTN-2026-0001
-
+                <h1 class="break-words text-2xl font-bold text-gray-900 sm:text-3xl">
+                    {{ $quotation->quotation_number }}
                 </h1>
 
-                <x-ui.badge color="green">
-
-                    Approved
-
+                <x-ui.badge :color="$statusColor">
+                    {{ $statusText }}
                 </x-ui.badge>
-
             </div>
 
-            <p class="mt-2 text-gray-500">
-
-                Detail quotation proyek pembangunan gudang logistik.
-
+            <p class="mt-2 break-words text-sm leading-6 text-gray-500 sm:text-base">
+                {{ $quotation->project_name
+                    ?: 'Detail penawaran pekerjaan untuk client.' }}
             </p>
-
         </div>
 
-        {{-- Actions --}}
-        <div class="flex flex-wrap items-center gap-3">
-
-            <a href="{{ route('owner.quotations.index') }}">
-
-                <x-ui.button variant="outline">
-
-                    Kembali
-
-                </x-ui.button>
-
+        {{-- Aksi --}}
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <a
+                href="{{ route('owner.quotations.index') }}"
+                wire:navigate
+                class="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-100"
+            >
+                Kembali
             </a>
 
-            <a href="{{ route('owner.quotations.edit', 1) }}">
-
-                <x-ui.button variant="warning">
-
-                    Edit
-
-                </x-ui.button>
-
-            </a>
-
-            <x-ui.button variant="primary">
-
-                Print PDF
-
-            </x-ui.button>
-
-            <x-ui.button variant="primary">
-
-                Download PDF
-
-            </x-ui.button>
-
+            @if ($quotation->status === 'draft')
+                <a
+                    href="{{ route('owner.quotations.edit', [
+                        'quotation' => $quotation->id,
+                    ]) }}"
+                    wire:navigate
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-100"
+                >
+                    Edit Quotation
+                </a>
+            @else
+                <button
+                    type="button"
+                    disabled
+                    title="Hanya quotation Draft yang dapat diedit"
+                    class="inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-xl bg-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-500"
+                >
+                    Edit Quotation
+                </button>
+            @endif
         </div>
-
     </div>
-
 </div>

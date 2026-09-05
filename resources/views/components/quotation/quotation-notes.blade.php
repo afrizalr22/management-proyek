@@ -1,53 +1,61 @@
 <x-ui.info-card>
-
-    <div class="p-8">
-
-        {{-- Header --}}
+    <div class="p-5 sm:p-6 lg:p-8">
         <div>
-
-            <h2 class="text-2xl font-bold text-gray-900">
-
-                Additional Notes
-
+            <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">
+                Catatan Quotation
             </h2>
 
-            <p class="mt-2 text-gray-500">
-
-                Tambahkan catatan, syarat pekerjaan, atau informasi lain yang perlu diketahui client.
-
+            <p class="mt-2 text-sm leading-6 text-gray-500 sm:text-base">
+                Tambahkan ketentuan, ruang lingkup, atau informasi lainnya.
             </p>
-
         </div>
 
-        <hr class="my-8">
+        <hr class="my-6 border-gray-200 sm:my-8">
 
-        {{-- Notes --}}
         <div>
-
-            <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                Notes
-
+            <label
+                for="notes"
+                class="mb-2 block text-sm font-semibold text-gray-700"
+            >
+                Catatan
             </label>
 
             <textarea
+                id="notes"
+                wire:model.blur="notes"
                 rows="7"
+                maxlength="5000"
                 placeholder="Contoh:
-• Harga sudah termasuk material.
-• Estimasi pengerjaan 30 hari kerja.
-• Pembayaran dilakukan sesuai termin yang telah disepakati.
-• Penawaran berlaku selama 7 hari."
-                class="w-full resize-y rounded-xl border-gray-300 px-4 py-3 leading-6 focus:border-blue-500 focus:ring-blue-500"
+- Harga sudah termasuk material dan tenaga kerja.
+- Masa pelaksanaan mengikuti jadwal yang disepakati.
+- Pembayaran dilakukan sesuai termin pekerjaan."
+                class="block w-full resize-y rounded-xl border bg-white px-4 py-3 text-sm leading-6 text-gray-900 outline-none transition focus:ring-4
+                    @error('notes')
+                        border-red-400 focus:border-red-500 focus:ring-red-100
+                    @else
+                        border-gray-300 focus:border-blue-500 focus:ring-blue-100
+                    @enderror"
             ></textarea>
 
-            <p class="mt-2 text-xs text-gray-500">
+            <div class="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    @error('notes')
+                        <p class="text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @else
+                        <p class="text-xs text-gray-500">
+                            Catatan akan ditampilkan pada detail quotation.
+                        </p>
+                    @enderror
+                </div>
 
-                Catatan ini akan menjadi informasi tambahan yang dapat dilihat oleh client pada quotation.
-
-            </p>
-
+                <p
+                    x-data
+                    x-text="($wire.notes?.length ?? 0) + '/5000 karakter'"
+                    class="shrink-0 text-xs text-gray-400"
+                ></p>
+            </div>
         </div>
-
     </div>
-
 </x-ui.info-card>

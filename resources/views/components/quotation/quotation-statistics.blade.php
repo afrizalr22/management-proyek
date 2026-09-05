@@ -1,48 +1,47 @@
-<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+@props([
+    'statistics',
+])
 
-    {{-- Total Quotation --}}
-<x-ui.stat-card
-    title="Total Quotation"
-    value="25"
-    description="Seluruh quotation"
->
+<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
 
+    {{-- Total quotation --}}
+    <x-ui.stat-card
+        title="Total Quotation"
+        :value="$statistics['total'] ?? 0"
+        description="Seluruh quotation"
+    >
         <x-slot:icon>
-
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 class="h-6 w-6"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor">
-
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M9 12h6m-6 4h6M9 8h6m-7 12h8a2 2 0 002-2V6l-4-4H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    d="M9 12h6m-6 4h6M9 8h6m-7 12h8a2 2 0 0 0 2-2V6l-4-4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2Z"
                 />
-
             </svg>
-
         </x-slot:icon>
-
     </x-ui.stat-card>
 
     {{-- Draft --}}
     <x-ui.stat-card
         title="Draft"
-        value="8"
+        :value="$statistics['draft'] ?? 0"
         description="Belum dikirim ke client"
     >
-
         <x-slot:icon>
-
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 class="h-6 w-6"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor">
-
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
                 <circle
                     cx="12"
                     cy="12"
@@ -56,74 +55,63 @@
                     stroke-width="2"
                     d="M12 8v4l3 3"
                 />
-
             </svg>
-
         </x-slot:icon>
-
     </x-ui.stat-card>
 
-    {{-- Sent --}}
+    {{-- Dikirim --}}
     <x-ui.stat-card
-        title="Sent"
-        value="6"
-        description="Menunggu respon client"
+        title="Dikirim"
+        :value="$statistics['sent'] ?? 0"
+        description="Menunggu respons client"
     >
-
         <x-slot:icon>
-
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 class="h-6 w-6"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor">
-
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M3 10l9-6 9 6-9 6-9-6z"
+                    d="M3 10l9-6 9 6-9 6-9-6Z"
                 />
 
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M21 10v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8"
+                    d="M21 10v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8"
                 />
-
             </svg>
-
         </x-slot:icon>
-
     </x-ui.stat-card>
 
-    {{-- Approved --}}
+    {{-- Disetujui --}}
     <x-ui.stat-card
-        title="Approved"
-        value="11"
-        description="Siap dibuat invoice"
+        title="Disetujui"
+        :value="$statistics['approved'] ?? 0"
+        description="Siap diproses menjadi proyek"
     >
-
         <x-slot:icon>
-
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 class="h-6 w-6"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor">
-
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M5 13l4 4L19 7"
+                    d="m5 13 4 4L19 7"
                 />
-
             </svg>
-
         </x-slot:icon>
-
     </x-ui.stat-card>
 
 </div>

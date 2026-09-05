@@ -115,13 +115,27 @@ Route::prefix('clients')
             Route::get('/{project}/delete', ProjectsDelete::class)->name('delete');
         });
 
-    Route::prefix('quotations')->name('owner.quotations.')->group(function () {
-            Route::get('', QuotationsIndex::class)->name('index');
-            Route::get('/create', QuotationsCreate::class)->name('create');
-            Route::get('/{quotation}/edit', QuotationsEdit::class)->name('edit');
-            Route::get('/quotations/{quotation}', QuotationsShow::class)->name('show');
-            Route::get('/{quotation}/delete', QuotationsDelete::class)->name('delete');
-        });
+Route::prefix('quotations')
+    ->name('owner.quotations.')
+    ->group(function () {
+        Route::get('/', QuotationsIndex::class)
+            ->name('index');
+
+        Route::get('/create', QuotationsCreate::class)
+            ->name('create');
+
+        Route::get('/{quotation}/edit', QuotationsEdit::class)
+            ->whereNumber('quotation')
+            ->name('edit');
+
+        Route::get('/{quotation}/delete', QuotationsDelete::class)
+            ->whereNumber('quotation')
+            ->name('delete');
+
+        Route::get('/{quotation}', QuotationsShow::class)
+            ->whereNumber('quotation')
+            ->name('show');
+    });
 
     Route::prefix('invoices')->name('owner.invoices.')->group(function () {
             Route::get('', InvoicesIndex::class)->name('index');

@@ -1,297 +1,389 @@
 @props([
-    'mode' => 'create',
+    'clients' => [],
+    'selectedClient' => null,
+    'quotationNumber' => '',
+    'quotationDate' => '',
 ])
 
 <x-ui.info-card>
-
-    <div class="p-8">
+    <div class="p-5 sm:p-6 lg:p-8">
 
         {{-- Header --}}
         <div>
-
-            <h2 class="text-2xl font-bold text-gray-900">
-
-                General Information
-
+            <h2 class="text-xl font-bold text-gray-900 sm:text-2xl">
+                Informasi Umum
             </h2>
 
-            <p class="mt-2 text-gray-500">
-
-                Informasi utama quotation beserta data project dan client yang dipilih.
-
+            <p class="mt-2 text-sm leading-6 text-gray-500 sm:text-base">
+                Tentukan client, tanggal quotation, dan informasi calon proyek.
             </p>
-
         </div>
 
-        <hr class="my-8">
+        <hr class="my-6 border-gray-200 sm:my-8">
 
-        {{-- General Information --}}
         <div class="space-y-6">
 
-            {{-- Project --}}
+            {{-- Client --}}
             <div>
-
-                <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                    Project
-
+                <label
+                    for="clientId"
+                    class="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                    Client
                     <span class="text-red-500">*</span>
-
                 </label>
 
                 <select
-                    class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                    id="clientId"
+                    wire:model.live="clientId"
+                    class="block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:ring-4
+                        @error('clientId')
+                            border-red-400 focus:border-red-500 focus:ring-red-100
+                        @else
+                            border-gray-300 focus:border-blue-500 focus:ring-blue-100
+                        @enderror"
                 >
-
-                    <option value="" disabled selected>
-
-                        Pilih Project
-
+                    <option value="">
+                        Pilih client
                     </option>
 
-                    <option value="1">
-
-                        Renovasi Gedung PT ABC
-
-                    </option>
-
-                    <option value="2">
-
-                        Pembangunan Gudang PT XYZ
-
-                    </option>
-
-                    <option value="3">
-
-                        Pembangunan Ruko Medan
-
-                    </option>
-
+                    @foreach ($clients as $client)
+                        <option value="{{ $client->id }}">
+                            {{ $client->company_name }}
+                            — {{ $client->contact_person }}
+                        </option>
+                    @endforeach
                 </select>
 
-                <p class="mt-2 text-xs text-gray-500">
-
-                    Client akan otomatis mengikuti project yang dipilih.
-
-                </p>
-
+                @error('clientId')
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ $message }}
+                    </p>
+                @else
+                    <p class="mt-2 text-xs text-gray-500">
+                        Hanya client berstatus Lead atau Aktif yang dapat dipilih.
+                    </p>
+                @enderror
             </div>
 
-            {{-- Quotation Number & Status --}}
+            {{-- Nomor dan status --}}
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-                {{-- Quotation Number --}}
+                {{-- Nomor quotation --}}
                 <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                        Quotation Number
-
+                    <label
+                        for="quotationNumber"
+                        class="mb-2 block text-sm font-semibold text-gray-700"
+                    >
+                        Nomor Quotation
                     </label>
 
                     <input
+                        id="quotationNumber"
                         type="text"
-                        value="QT-2026-0001"
+                        value="{{ $quotationNumber }}"
                         readonly
-                        class="w-full rounded-xl border-gray-200 bg-gray-100 px-4 py-3 text-gray-600"
+                        class="block min-h-12 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm font-medium text-gray-600 outline-none"
                     >
 
                     <p class="mt-2 text-xs text-gray-500">
-
-                        Nomor quotation dibuat secara otomatis oleh sistem.
-
+                        Nomor quotation dibuat otomatis oleh sistem.
                     </p>
-
                 </div>
 
                 {{-- Status --}}
                 <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">
-
+                    <p class="mb-2 block text-sm font-semibold text-gray-700">
                         Status
-
-                    </label>
-
-                    <input
-                        type="text"
-                        value="Draft"
-                        readonly
-                        class="w-full rounded-xl border-yellow-200 bg-yellow-50 px-4 py-3 font-medium text-yellow-700"
-                    >
-
-                    <p class="mt-2 text-xs text-gray-500">
-
-                        Quotation baru akan dibuat dengan status Draft.
-
                     </p>
 
-                </div>
+                    <div class="flex min-h-12 w-full items-center rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3">
+                        <x-ui.badge color="yellow">
+                            Draft
+                        </x-ui.badge>
+                    </div>
 
+                    <p class="mt-2 text-xs text-gray-500">
+                        Quotation baru disimpan dengan status Draft.
+                    </p>
+                </div>
             </div>
 
-            {{-- Date --}}
+            {{-- Tanggal --}}
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 
-                {{-- Quotation Date --}}
+                {{-- Tanggal quotation --}}
                 <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                        Quotation Date
-
+                    <label
+                        for="quotationDate"
+                        class="mb-2 block text-sm font-semibold text-gray-700"
+                    >
+                        Tanggal Quotation
                         <span class="text-red-500">*</span>
-
                     </label>
 
                     <input
+                        id="quotationDate"
                         type="date"
-                        class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                        wire:model.blur="quotationDate"
+                        class="block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:ring-4
+                            @error('quotationDate')
+                                border-red-400 focus:border-red-500 focus:ring-red-100
+                            @else
+                                border-gray-300 focus:border-blue-500 focus:ring-blue-100
+                            @enderror"
                     >
 
+                    @error('quotationDate')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
 
-                {{-- Valid Until --}}
+                {{-- Berlaku sampai --}}
                 <div>
-
-                    <label class="mb-2 block text-sm font-semibold text-gray-700">
-
-                        Valid Until
-
+                    <label
+                        for="validUntil"
+                        class="mb-2 block text-sm font-semibold text-gray-700"
+                    >
+                        Berlaku Sampai
                         <span class="text-red-500">*</span>
-
                     </label>
 
                     <input
+                        id="validUntil"
                         type="date"
-                        class="w-full rounded-xl border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
+                        wire:model.blur="validUntil"
+                        min="{{ $quotationDate ?: now()->format('Y-m-d') }}"
+                        class="block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:ring-4
+                            @error('validUntil')
+                                border-red-400 focus:border-red-500 focus:ring-red-100
+                            @else
+                                border-gray-300 focus:border-blue-500 focus:ring-blue-100
+                            @enderror"
                     >
 
-                    <p class="mt-2 text-xs text-gray-500">
-
-                        Tentukan batas waktu berlakunya quotation.
-
-                    </p>
-
+                    @error('validUntil')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @else
+                        <p class="mt-2 text-xs text-gray-500">
+                            Batas waktu client memberikan keputusan.
+                        </p>
+                    @enderror
                 </div>
-
             </div>
-
         </div>
 
-        {{-- Client Information --}}
-        <div class="mt-10">
-
-            <h3 class="text-xl font-bold text-gray-900">
-
-                Client Information
-
+        {{-- Informasi client --}}
+        <div class="mt-8 sm:mt-10">
+            <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
+                Informasi Client
             </h3>
 
-            <p class="mt-2 text-gray-500">
-
-                Data client akan terisi otomatis berdasarkan project yang dipilih.
-
+            <p class="mt-2 text-sm text-gray-500">
+                Data berikut diambil dari client yang dipilih.
             </p>
 
-            <hr class="my-6">
+            <hr class="my-5 border-gray-200 sm:my-6">
 
-            {{-- Client Preview --}}
-            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+            @if ($selectedClient)
+                <div class="rounded-2xl border border-blue-200 bg-blue-50/40 p-5 sm:p-6">
+                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {{-- Perusahaan --}}
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Perusahaan
+                            </p>
 
-                    {{-- Client --}}
-                    <div>
+                            <p class="mt-1 break-words font-semibold text-gray-900">
+                                {{ $selectedClient->company_name }}
+                            </p>
+                        </div>
 
-                        <p class="text-sm text-gray-500">
+                        {{-- Contact person --}}
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Contact Person
+                            </p>
 
-                            Client
+                            <p class="mt-1 break-words font-semibold text-gray-900">
+                                {{ $selectedClient->contact_person }}
+                            </p>
+                        </div>
 
-                        </p>
+                        {{-- Telepon --}}
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Telepon
+                            </p>
 
-                        <p class="mt-1 font-semibold text-gray-800">
+                            <p class="mt-1 break-words font-semibold text-gray-900">
+                                {{ $selectedClient->phone ?: '-' }}
+                            </p>
+                        </div>
 
-                            PT ABC Indonesia
+                        {{-- Email --}}
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Email
+                            </p>
 
-                        </p>
+                            <p class="mt-1 break-all font-semibold text-gray-900">
+                                {{ $selectedClient->email ?: '-' }}
+                            </p>
+                        </div>
 
+                        {{-- Kota --}}
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Kota
+                            </p>
+
+                            <p class="mt-1 break-words font-semibold text-gray-900">
+                                {{ $selectedClient->city ?: '-' }}
+                            </p>
+                        </div>
+
+                        {{-- Status --}}
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Status Client
+                            </p>
+
+                            <div class="mt-2">
+                                @if ($selectedClient->status === 'active')
+                                    <x-ui.badge color="green">
+                                        Aktif
+                                    </x-ui.badge>
+                                @elseif ($selectedClient->status === 'lead')
+                                    <x-ui.badge color="yellow">
+                                        Lead
+                                    </x-ui.badge>
+                                @else
+                                    <x-ui.badge color="red">
+                                        Nonaktif
+                                    </x-ui.badge>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Alamat --}}
+                        <div class="md:col-span-2">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Alamat
+                            </p>
+
+                            <p class="mt-1 whitespace-pre-line break-words text-sm leading-6 text-gray-700">
+                                {{ $selectedClient->address ?: '-' }}
+                            </p>
+                        </div>
                     </div>
-
-                    {{-- Contact Person --}}
-                    <div>
-
-                        <p class="text-sm text-gray-500">
-
-                            Contact Person
-
-                        </p>
-
-                        <p class="mt-1 font-semibold text-gray-800">
-
-                            Ahmad Fauzi
-
-                        </p>
-
-                    </div>
-
-                    {{-- Phone --}}
-                    <div>
-
-                        <p class="text-sm text-gray-500">
-
-                            Phone
-
-                        </p>
-
-                        <p class="mt-1 font-semibold text-gray-800">
-
-                            0812-3456-7890
-
-                        </p>
-
-                    </div>
-
-                    {{-- Email --}}
-                    <div>
-
-                        <p class="text-sm text-gray-500">
-
-                            Email
-
-                        </p>
-
-                        <p class="mt-1 font-semibold text-gray-800">
-
-                            admin@ptabc.co.id
-
-                        </p>
-
-                    </div>
-
-                    {{-- Address --}}
-                    <div class="md:col-span-2">
-
-                        <p class="text-sm text-gray-500">
-
-                            Address
-
-                        </p>
-
-                        <p class="mt-1 font-semibold text-gray-800">
-
-                            Jl. Gatot Subroto No. 123, Medan, Sumatera Utara
-
-                        </p>
-
-                    </div>
-
                 </div>
+            @else
+                <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-5 py-10 text-center">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="mx-auto h-10 w-10 text-gray-300"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                        />
+                    </svg>
 
-            </div>
+                    <p class="mt-3 font-semibold text-gray-700">
+                        Client belum dipilih
+                    </p>
 
+                    <p class="mt-1 text-sm text-gray-500">
+                        Pilih client untuk menampilkan informasi lengkapnya.
+                    </p>
+                </div>
+            @endif
         </div>
 
-    </div>
+        {{-- Informasi calon proyek --}}
+        <div class="mt-8 sm:mt-10">
+            <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
+                Informasi Calon Proyek
+            </h3>
 
+            <p class="mt-2 text-sm text-gray-500">
+                Proyek akan dibuat setelah quotation disetujui.
+            </p>
+
+            <hr class="my-5 border-gray-200 sm:my-6">
+
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+                {{-- Nama calon proyek --}}
+                <div>
+                    <label
+                        for="projectName"
+                        class="mb-2 block text-sm font-semibold text-gray-700"
+                    >
+                        Nama Calon Proyek
+                        <span class="text-red-500">*</span>
+                    </label>
+
+                    <input
+                        id="projectName"
+                        type="text"
+                        wire:model.blur="projectName"
+                        placeholder="Contoh: Renovasi Gedung Kantor"
+                        class="block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:ring-4
+                            @error('projectName')
+                                border-red-400 focus:border-red-500 focus:ring-red-100
+                            @else
+                                border-gray-300 focus:border-blue-500 focus:ring-blue-100
+                            @enderror"
+                    >
+
+                    @error('projectName')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                {{-- Lokasi --}}
+                <div>
+                    <label
+                        for="projectLocation"
+                        class="mb-2 block text-sm font-semibold text-gray-700"
+                    >
+                        Lokasi Proyek
+                    </label>
+
+                    <input
+                        id="projectLocation"
+                        type="text"
+                        wire:model.blur="projectLocation"
+                        placeholder="Contoh: Jakarta Selatan"
+                        class="block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:ring-4
+                            @error('projectLocation')
+                                border-red-400 focus:border-red-500 focus:ring-red-100
+                            @else
+                                border-gray-300 focus:border-blue-500 focus:ring-blue-100
+                            @enderror"
+                    >
+
+                    @error('projectLocation')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+    </div>
 </x-ui.info-card>

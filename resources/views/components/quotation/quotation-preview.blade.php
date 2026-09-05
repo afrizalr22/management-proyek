@@ -62,12 +62,14 @@
             </h3>
 
             <p class="mt-2 max-w-sm text-center text-sm leading-6 text-gray-500">
-
-                Setelah quotation disimpan, preview dokumen akan tersedia
-                di bagian ini untuk ditinjau sebelum dicetak atau dikirim
-                kepada client.
-
-            </p>
+    @if ($mode === 'edit')
+        Preview dokumen terbaru akan tersedia setelah perubahan
+        quotation berhasil disimpan.
+    @else
+        Setelah quotation disimpan, preview dokumen akan tersedia
+        untuk ditinjau sebelum dicetak atau diserahkan kepada Client.
+    @endif
+</p>
 
         </div>
 

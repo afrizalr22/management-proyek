@@ -1,115 +1,130 @@
 @props([
-    'mode' => 'create',
+    'items' => [],
+    'subtotal' => 0,
+    'grandTotal' => 0,
 ])
 
-<x-ui.info-card>
+@php
+    $quotationItems = is_array($items)
+        ? $items
+        : [];
 
-    <div class="p-6">
+    $itemCount = count($quotationItems);
 
-        {{-- Header --}}
-        <div>
+    $totalQuantity = collect($quotationItems)
+        ->sum(function ($item) {
+            return (float) ($item['qty'] ?? 0);
+        });
 
-            <h2 class="text-xl font-bold text-gray-900">
+    $subtotalValue = (float) $subtotal;
+    $grandTotalValue = (float) $grandTotal;
+@endphp
 
-                Financial Summary
+<section
+    class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+>
+    {{-- Header --}}
+    <div class="border-b border-gray-200 px-5 py-4">
+        <h2 class="font-semibold text-gray-900">
+            Ringkasan Quotation
+        </h2>
 
-            </h2>
-
-            <p class="mt-2 text-sm leading-6 text-gray-500">
-
-                Ringkasan nilai quotation berdasarkan item pekerjaan.
-
-            </p>
-
-        </div>
-
-        <hr class="my-6 border-gray-200">
-
-        {{-- Summary --}}
-        <div class="space-y-5">
-
-            {{-- Total Item --}}
-            <div class="flex items-center justify-between">
-
-                <span class="text-gray-500">
-
-                    Total Item
-
-                </span>
-
-                <span class="font-semibold text-gray-900">
-
-                    1 Item
-
-                </span>
-
-            </div>
-
-            {{-- Total Quantity --}}
-            <div class="flex items-center justify-between">
-
-                <span class="text-gray-500">
-
-                    Total Qty
-
-                </span>
-
-                <span class="font-semibold text-gray-900">
-
-                    1
-
-                </span>
-
-            </div>
-
-            {{-- Subtotal --}}
-            <div class="flex items-center justify-between">
-
-                <span class="text-gray-500">
-
-                    Subtotal
-
-                </span>
-
-                <span class="font-semibold text-gray-900">
-
-                    Rp 0
-
-                </span>
-
-            </div>
-
-            <hr class="border-gray-200">
-
-            {{-- Grand Total --}}
-            <div class="rounded-2xl bg-blue-50 p-5">
-
-                <div class="flex items-center justify-between gap-4">
-
-                    <span class="text-lg font-semibold text-gray-900">
-
-                        Grand Total
-
-                    </span>
-
-                    <span class="text-2xl font-bold text-blue-600">
-
-                        Rp 0
-
-                    </span>
-
-                </div>
-
-                <p class="mt-2 text-xs leading-5 text-gray-500">
-
-                    Total akhir berdasarkan seluruh item quotation.
-
-                </p>
-
-            </div>
-
-        </div>
-
+        <p class="mt-1 text-sm text-gray-500">
+            Perhitungan otomatis berdasarkan item pekerjaan.
+        </p>
     </div>
 
-</x-ui.info-card>
+    {{-- Ringkasan --}}
+    <div class="space-y-4 p-5">
+        {{-- Jumlah item --}}
+        <div class="flex items-center justify-between gap-4">
+            <span class="text-sm text-gray-500">
+                Jumlah Item
+            </span>
+
+            <span class="text-sm font-semibold text-gray-900">
+                {{ $itemCount }} item
+            </span>
+        </div>
+
+        {{-- Total kuantitas --}}
+        <div class="flex items-center justify-between gap-4">
+            <span class="text-sm text-gray-500">
+                Total Kuantitas
+            </span>
+
+            <span class="text-sm font-semibold text-gray-900">
+                {{ number_format(
+                    $totalQuantity,
+                    $totalQuantity == floor($totalQuantity) ? 0 : 2,
+                    ',',
+                    '.'
+                ) }}
+            </span>
+        </div>
+
+        {{-- Subtotal --}}
+        <div class="flex items-center justify-between gap-4">
+            <span class="text-sm text-gray-500">
+                Subtotal
+            </span>
+
+            <span class="text-sm font-semibold text-gray-900">
+                Rp {{ number_format(
+                    $subtotalValue,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+            </span>
+        </div>
+
+        {{-- Grand total --}}
+        <div class="border-t border-gray-200 pt-4">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="font-semibold text-gray-900">
+                        Total Quotation
+                    </p>
+
+                    <p class="mt-1 text-xs text-gray-500">
+                        Total keseluruhan penawaran
+                    </p>
+                </div>
+
+                <span class="text-right text-xl font-bold text-blue-600">
+                    Rp {{ number_format(
+                        $grandTotalValue,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
+                </span>
+            </div>
+        </div>
+
+        {{-- Informasi --}}
+        <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+            <div class="flex items-start gap-3">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.8"
+                    stroke="currentColor"
+                    class="mt-0.5 h-5 w-5 shrink-0 text-blue-600"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M11.25 11.25 9 13.5l2.25 2.25m1.5-4.5L15 13.5l-2.25 2.25M12 6.75h.008v.008H12V6.75Zm0 10.5h.008v.008H12v-.008ZM21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                </svg>
+
+                <p class="text-xs leading-5 text-blue-700">
+                    Nilai akan diperbarui otomatis ketika jumlah atau harga item diubah.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
