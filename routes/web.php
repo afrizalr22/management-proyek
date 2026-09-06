@@ -107,13 +107,29 @@ Route::prefix('clients')
             ->name('show');
     });
 
-    Route::prefix('projects')->name('owner.projects.')->group(function () {
-            Route::get('/projects', ProjectsIndex::class)->name('index');
-            Route::get('/create', ProjectCreate::class)->name('create');
-            Route::get('/{project}/edit', ProjectEdit::class)->name('edit');
-            Route::get('/projects/{project}', ProjectsShow::class)->name('show');
-            Route::get('/{project}/delete', ProjectsDelete::class)->name('delete');
-        });
+Route::prefix('owner/projects')
+    ->name('owner.projects.')
+    ->group(function () {
+        Route::get('/', ProjectsIndex::class)
+            ->name('index');
+
+        Route::get('/create', ProjectCreate::class)
+            ->name('create');
+
+        Route::get(
+            '/quotation/{quotation}/create',
+            ProjectCreate::class
+        )->name('create-from-quotation');
+
+        Route::get('/{project}/edit', ProjectEdit::class)
+            ->name('edit');
+
+        Route::get('/{project}/delete', ProjectsDelete::class)
+            ->name('delete');
+
+        Route::get('/{project}', ProjectsShow::class)
+            ->name('show');
+    });
 
 Route::prefix('quotations')
     ->name('owner.quotations.')

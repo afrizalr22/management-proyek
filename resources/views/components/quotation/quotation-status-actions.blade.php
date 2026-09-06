@@ -273,29 +273,60 @@
 
             {{-- Disetujui --}}
             @elseif ($status === 'approved')
-                <div
-                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 py-2.5 text-sm font-semibold text-green-700"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="2"
-                        stroke="currentColor"
-                        class="h-5 w-5"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="m4.5 12.75 6 6 9-13.5"
-                        />
-                    </svg>
+    @if ($quotation->project_id)
+        <a
+            href="{{ route('owner.projects.show', [
+                'project' => $quotation->project_id,
+            ]) }}"
+            wire:navigate
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.8"
+                stroke="currentColor"
+                class="h-5 w-5"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-6 6L21 3m0 0h-6.75M21 3v6.75"
+                />
+            </svg>
 
-                    Siap Dibuat Project
-                </div>
+            Lihat Project
+        </a>
+    @else
+        <a
+            href="{{ route(
+                'owner.projects.create-from-quotation',
+                ['quotation' => $quotation->id]
+            ) }}"
+            wire:navigate
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-100"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="h-5 w-5"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 4.5v15m7.5-7.5h-15"
+                />
+            </svg>
 
-            {{-- Ditolak --}}
-            @elseif ($status === 'rejected')
+            Buat Project
+        </a>
+    @endif
+
+@elseif ($status === 'rejected')
                 <div
                     class="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-semibold text-red-700"
                 >
