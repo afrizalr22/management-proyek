@@ -70,6 +70,9 @@ use App\Livewire\Pekerja\Report\Show as PekerjaReportShow;
 
 use App\Livewire\Pekerja\Profile\Index as PekerjaProfileIndex;
 
+
+use App\Http\Controllers\Owner\QuotationPdfController;
+
 use App\Livewire\Owner\Profile as Profile;
 
 Route::get('/', function () {
@@ -136,6 +139,22 @@ Route::prefix('quotations')
     ->group(function () {
         Route::get('/', QuotationsIndex::class)
             ->name('index');
+
+        Route::get(
+            '/{quotation}/pdf/preview',
+            [
+                QuotationPdfController::class,
+                'preview',
+            ]
+        )->name('preview');
+
+        Route::get(
+            '/{quotation}/pdf/download',
+            [
+                QuotationPdfController::class,
+                'download',
+            ]
+        )->name('download');
 
         Route::get('/create', QuotationsCreate::class)
             ->name('create');
