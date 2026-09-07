@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Illuminate\Support\Carbon;
+use Livewire\Attributes\On;
 
 class Show extends Component
 {
@@ -284,6 +285,17 @@ private function loadProjectData(): void
         'workers' => fn ($query) => $query
             ->orderBy('name'),
 
+        'workerAssignments' => fn ($query) => $query
+            ->with([
+                'worker:id,name,email',
+                'assignedBy:id,name,email',
+            ])
+            ->orderByRaw(
+                "CASE WHEN status = 'active' THEN 0 ELSE 1 END"
+            )
+            ->latest('joined_at')
+            ->latest('id'),
+
         'tasks' => fn ($query) => $query
             ->with([
                 'worker:id,name,email',
@@ -338,5 +350,15 @@ private function loadProjectData(): void
                 && $user->can('view projects'),
             403
         );
+    }
+    
+    #[On('project-workers-updated')]
+    public function refreshProjectWorkers(int $projectId): void
+    {
+        if ($projectId !== $this->project->id) {
+            return;
+        }
+
+        $this->loadProjectData();
     }
 }

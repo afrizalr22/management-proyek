@@ -115,4 +115,11 @@ class Project extends Model
             DeliveryOrder::class
         );
     }
+
+    public function workerAssignments(): HasMany
+    {
+        return $this->hasMany(
+            ProjectWorker::class
+        );
+    }
 }

@@ -140,43 +140,51 @@
 
     {{-- Informasi utama --}}
     {{-- Konten detail Project --}}
-<div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
-    {{-- Konten utama --}}
-    <main class="min-w-0 space-y-6 xl:col-span-2">
-        {{-- Informasi Project --}}
-        <x-project.project-information
-            :project="$project"
-            :source-quotation="$sourceQuotation"
-            :status-text="$statusText"
-            :status-color="$statusColor"
-        />
+    <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
+        {{-- Konten utama --}}
+        <main class="min-w-0 space-y-6 xl:col-span-2">
+            {{-- Informasi Project --}}
+            <x-project.project-information
+                :project="$project"
+                :source-quotation="$sourceQuotation"
+                :status-text="$statusText"
+                :status-color="$statusColor"
+            />
 
-        {{-- Progres Project --}}
-        <x-project.project-progress
-            :project="$project"
-        />
+            <x-project.project-team
+                :project="$project"
+            />
 
-        {{-- Deskripsi dan ruang lingkup --}}
-        <x-project.project-description
-            :project="$project"
-            :source-quotation="$sourceQuotation"
-        />
+            {{-- Progres Project --}}
+            <x-project.project-progress
+                :project="$project"
+            />
 
-        {{-- Aktivitas terbaru --}}
-        <x-project.project-activity
-            :project="$project"
-            :activities="$activities"
-        />
-    </main>
+            {{-- Deskripsi dan ruang lingkup --}}
+            <x-project.project-description
+                :project="$project"
+                :source-quotation="$sourceQuotation"
+            />
 
-    {{-- Sidebar ringkasan --}}
-    <aside class="min-w-0 xl:sticky xl:top-6">
-        <x-project.project-summary
-            :project="$project"
-            :source-quotation="$sourceQuotation"
-            :status-text="$statusText"
-            :status-color="$statusColor"
-        />
-    </aside>
-</div>
+            {{-- Aktivitas terbaru --}}
+            <x-project.project-activity
+                :project="$project"
+                :activities="$activities"
+            />
+        </main>
+
+        {{-- Sidebar ringkasan --}}
+        <aside class="min-w-0 xl:sticky xl:top-6">
+            <x-project.project-summary
+                :project="$project"
+                :source-quotation="$sourceQuotation"
+                :status-text="$statusText"
+                :status-color="$statusColor"
+            />
+        </aside>
+    </div>
+    <livewire:owner.projects.manage-workers
+        :project="$project"
+        :key="'manage-workers-'.$project->id"
+    />
 </div>

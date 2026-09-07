@@ -7,15 +7,41 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProjectWorker extends Model
 {
-    protected $guarded = [];
+    protected $fillable = [
+        'project_id',
+        'worker_id',
+        'assigned_by',
+        'status',
+        'joined_at',
+        'ended_at',
+    ];
 
-    public function project() : BelongsTo
+    protected function casts(): array
+    {
+        return [
+            'joined_at' => 'datetime',
+            'ended_at' => 'datetime',
+        ];
+    }
+
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function worker() : BelongsTo
+    public function worker(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'worker_id');
+        return $this->belongsTo(
+            User::class,
+            'worker_id'
+        );
+    }
+
+    public function assignedBy(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'assigned_by'
+        );
     }
 }
