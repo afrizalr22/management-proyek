@@ -71,6 +71,7 @@ use App\Livewire\Pekerja\Profile\Index as PekerjaProfileIndex;
 
 
 use App\Http\Controllers\Owner\QuotationPdfController;
+use App\Http\Controllers\Owner\InvoicePdfController;
 
 use App\Livewire\Owner\Profile as Profile;
 
@@ -171,13 +172,43 @@ Route::prefix('quotations')
             ->name('show');
     });
 
-    Route::prefix('invoices')->name('owner.invoices.')->group(function () {
-            Route::get('', InvoicesIndex::class)->name('index');
-            Route::get('/create', InvoicesCreate::class)->name('create');
-            Route::get('/{invoice}/edit', InvoicesEdit::class)->name('edit');
-            Route::get('/invoices/{invoice}', InvoicesShow::class)->name('show');
-            Route::get('/{invoice}/delete', InvoicesDelete::class)->name('delete');
-        });
+Route::prefix('invoices')
+    ->name('owner.invoices.')
+    ->group(function (): void {
+        Route::get('/', InvoicesIndex::class)
+            ->name('index');
+
+            Route::get(
+            '/{invoice}/pdf/preview',
+            [
+                InvoicePdfController::class,
+                'preview',
+            ]
+        )
+            ->whereNumber('invoice')
+            ->name('preview');
+
+        Route::get(
+            '/{invoice}/pdf/download',
+            [
+                InvoicePdfController::class,
+                'download',
+            ]
+        )
+            ->whereNumber('invoice')
+            ->name('download');
+
+        Route::get('/create', InvoicesCreate::class)
+            ->name('create');
+
+        Route::get('/{invoice}/edit', InvoicesEdit::class)
+            ->whereNumber('invoice')
+            ->name('edit');
+
+        Route::get('/{invoice}', InvoicesShow::class)
+            ->whereNumber('invoice')
+            ->name('show');
+    });
 
     Route::prefix('monitoring')->name('owner.monitoring.')->group(function () {
             Route::get('', MonitoringIndex::class)->name('index');

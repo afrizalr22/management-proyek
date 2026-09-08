@@ -144,4 +144,15 @@ class User extends Authenticatable
             Documentation::class
         );
     }
+
+    /**
+     * Invoice yang dibuat oleh User.
+     */
+    public function createdInvoices(): HasMany
+    {
+        return $this->hasMany(
+            Invoice::class,
+            'created_by'
+        );
+    }
 }

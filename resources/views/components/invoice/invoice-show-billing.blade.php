@@ -1,96 +1,73 @@
+@props([
+    'invoice',
+])
+
 <x-ui.info-card>
-
     <div class="p-6">
-
-        {{-- Header --}}
         <div>
-
             <h2 class="text-xl font-bold text-gray-800">
-                Billing Information
+                Informasi Penagihan
             </h2>
 
             <p class="mt-2 text-sm text-gray-500">
-                Informasi client yang terkait dengan invoice ini.
+                Snapshot informasi klien saat invoice dibuat.
             </p>
-
         </div>
 
-        <hr class="my-6">
+        <hr class="my-6 border-gray-200">
 
-        {{-- Client Information --}}
-        <div class="space-y-6">
-
-            {{-- Client --}}
+        <dl class="space-y-6">
             <div>
+                <dt class="text-sm text-gray-500">
+                    Klien
+                </dt>
 
-                <p class="text-sm text-gray-500">
-                    Client
-                </p>
-
-                <p class="mt-1 text-lg font-semibold text-gray-800">
-                    PT Maju Bersama Properti
-                </p>
-
+                <dd class="mt-1 text-lg font-semibold text-gray-800">
+                    {{ $invoice->client_name }}
+                </dd>
             </div>
 
-            {{-- Contact Person --}}
             <div>
-
-                <p class="text-sm text-gray-500">
+                <dt class="text-sm text-gray-500">
                     Contact Person
-                </p>
+                </dt>
 
-                <p class="mt-1 font-semibold text-gray-800">
-                    Ahmad Fauzi
-                </p>
-
+                <dd class="mt-1 font-semibold text-gray-800">
+                    {{ $invoice->client_contact_person ?: '-' }}
+                </dd>
             </div>
 
-            {{-- Contact --}}
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-
                 <div>
+                    <dt class="text-sm text-gray-500">
+                        Telepon
+                    </dt>
 
-                    <p class="text-sm text-gray-500">
-                        Phone
-                    </p>
-
-                    <p class="mt-1 font-semibold text-gray-800">
-                        0812-3456-7890
-                    </p>
-
+                    <dd class="mt-1 font-semibold text-gray-800">
+                        {{ $invoice->client_phone ?: '-' }}
+                    </dd>
                 </div>
 
                 <div>
-
-                    <p class="text-sm text-gray-500">
+                    <dt class="text-sm text-gray-500">
                         Email
-                    </p>
+                    </dt>
 
-                    <p class="mt-1 break-all font-semibold text-gray-800">
-                        admin@ptmaju.co.id
-                    </p>
-
+                    <dd class="mt-1 break-all font-semibold text-gray-800">
+                        {{ $invoice->client_email ?: '-' }}
+                    </dd>
                 </div>
-
             </div>
 
-            {{-- Address --}}
             <div>
+                <dt class="text-sm text-gray-500">
+                    Alamat
+                </dt>
 
-                <p class="text-sm text-gray-500">
-                    Address
-                </p>
-
-                <p class="mt-1 font-semibold leading-relaxed text-gray-800">
-                    Jl. Gatot Subroto No. 123,
-                    Jakarta Selatan, DKI Jakarta
-                </p>
-
+                <dd class="mt-1 whitespace-pre-line font-semibold leading-relaxed text-gray-800">
+                    {{ $invoice->client_address ?: '-' }}
+                </dd>
             </div>
-
-        </div>
-
+        </dl>
     </div>
-
 </x-ui.info-card>

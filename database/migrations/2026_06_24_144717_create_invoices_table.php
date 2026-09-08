@@ -6,83 +6,144 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('invoices', function (Blueprint $table) {
-
+        Schema::create('invoices', function (
+            Blueprint $table
+        ): void {
             $table->id();
 
-            // Project
-            $table->foreignId('project_id')
+            /*
+             * Invoice dapat dibuat sebelum Project.
+             * Jika Project dihapus, Invoice tetap disimpan.
+             */
+            $table
+                ->foreignId('project_id')
+                ->nullable()
                 ->constrained()
-                ->cascadeOnDelete();
+                ->nullOnDelete();
 
-            // Source quotation
+            /*
+             * Satu Quotation hanya menghasilkan satu Invoice.
+             */
             $table->foreignId('quotation_id')
                 ->nullable()
                 ->constrained()
                 ->nullOnDelete();
 
-            // Invoice information
-            $table->string('invoice_number', 100)
+            /*
+             * Pembuat Invoice.
+             */
+            $table
+                ->foreignId('created_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table
+                ->string('invoice_number', 100)
                 ->unique();
 
             $table->date('invoice_date');
 
-            $table->date('due_date')
+            $table
+                ->date('due_date')
                 ->nullable();
 
-            // Invoice status
-            $table->enum('status', [
-                'draft',
-                'issued',
-                'sent',
-                'cancelled',
-            ])->default('draft');
+            $table
+                ->enum('status', [
+                    'draft',
+                    'issued',
+                    'sent',
+                    'cancelled',
+                ])
+                ->default('draft');
 
-            // Client snapshot
+            /*
+             * Snapshot Client.
+             */
             $table->string('client_name');
 
-            $table->string('client_contact_person')
+            $table
+                ->string('client_contact_person')
                 ->nullable();
 
-            $table->string('client_phone', 20)
+            $table
+                ->string('client_phone', 20)
                 ->nullable();
 
-            $table->string('client_email')
+            $table
+                ->string('client_email')
                 ->nullable();
 
-            $table->text('client_address')
+            $table
+                ->text('client_address')
                 ->nullable();
 
-            // Financial
-            $table->decimal('subtotal', 15, 2)
+            /*
+             * Nilai Invoice.
+             */
+            $table
+                ->decimal('subtotal', 15, 2)
                 ->default(0);
 
-            $table->decimal('grand_total', 15, 2)
+            $table
+                ->decimal('tax_amount', 15, 2)
                 ->default(0);
 
-            // Payment
-            $table->enum('payment_status', [
-                'unpaid',
-                'partial',
-                'paid',
-            ])->default('unpaid');
+            $table
+                ->decimal('discount_amount', 15, 2)
+                ->default(0);
 
-            // Additional information
-            $table->text('notes')
+            $table
+                ->decimal('grand_total', 15, 2)
+                ->default(0);
+
+            $table
+                ->decimal('paid_amount', 15, 2)
+                ->default(0);
+
+            $table
+                ->enum('payment_status', [
+                    'unpaid',
+                    'partial',
+                    'paid',
+                ])
+                ->default('unpaid');
+
+            /*
+             * Riwayat status.
+             */
+            $table
+                ->timestamp('issued_at')
+                ->nullable();
+
+            $table
+                ->timestamp('sent_at')
+                ->nullable();
+
+            $table
+                ->timestamp('paid_at')
+                ->nullable();
+
+            $table
+                ->text('notes')
                 ->nullable();
 
             $table->timestamps();
+
+            $table->index([
+                'project_id',
+                'status',
+            ]);
+
+            $table->index([
+                'payment_status',
+                'due_date',
+            ]);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('invoices');

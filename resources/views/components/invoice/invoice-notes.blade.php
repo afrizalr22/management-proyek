@@ -1,103 +1,83 @@
+@props([
+    'invoice',
+])
+
 <x-ui.info-card>
-
-    <div class="p-8">
-
-        {{-- Header --}}
+    <div class="p-6 sm:p-8">
         <div>
-
             <h2 class="text-2xl font-bold text-gray-800">
-                Additional Notes
+                Catatan Tambahan
             </h2>
 
             <p class="mt-2 text-gray-500">
-                Catatan tambahan atau informasi pembayaran yang berkaitan dengan invoice.
+                Catatan yang disimpan bersama invoice.
             </p>
-
         </div>
 
+        <hr class="my-8 border-gray-200">
 
-        <hr class="my-8">
-
-
-        {{-- Notes --}}
-        <div>
-
-            <label class="mb-3 block text-sm font-semibold text-gray-700">
-                Notes
-            </label>
-
+        @if (filled($invoice->notes))
             <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-
                 <p class="whitespace-pre-line text-sm leading-7 text-gray-700">
-                    Pembayaran dilakukan sesuai dengan termin yang telah disepakati.
-
-                    Mohon mencantumkan nomor invoice pada saat melakukan pembayaran.
-
-                    Invoice ini merupakan tagihan resmi atas pekerjaan yang telah diselesaikan sesuai dengan kesepakatan proyek.
+                    {{ $invoice->notes }}
+                </p>
+            </div>
+        @else
+            <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-8 text-center">
+                <p class="font-semibold text-gray-700">
+                    Tidak ada catatan
                 </p>
 
+                <p class="mt-1 text-sm text-gray-500">
+                    Invoice ini tidak memiliki catatan tambahan.
+                </p>
             </div>
+        @endif
 
-        </div>
-
-
-        {{-- Payment Information --}}
         <div class="mt-8">
-
             <h3 class="text-lg font-bold text-gray-800">
-                Payment Information
+                Informasi Pembayaran
             </h3>
 
             <p class="mt-2 text-sm text-gray-500">
-                Informasi yang perlu diperhatikan client terkait pembayaran invoice.
+                Informasi umum yang perlu diperhatikan terkait pembayaran.
             </p>
 
             <div class="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-5">
-
                 <ul class="space-y-3 text-sm leading-6 text-blue-800">
-
                     <li class="flex gap-3">
-
-                        <span class="font-bold">
-                            •
-                        </span>
+                        <span class="font-bold">•</span>
 
                         <span>
-                            Pembayaran dilakukan sesuai tanggal jatuh tempo yang tercantum pada invoice.
+                            Gunakan nomor
+                            <strong>{{ $invoice->invoice_number }}</strong>
+                            sebagai referensi pembayaran.
                         </span>
-
                     </li>
+
+                    @if ($invoice->due_date)
+                        <li class="flex gap-3">
+                            <span class="font-bold">•</span>
+
+                            <span>
+                                Pembayaran dilakukan paling lambat
+                                <strong>
+                                    {{ $invoice->due_date->format('d M Y') }}
+                                </strong>.
+                            </span>
+                        </li>
+                    @endif
 
                     <li class="flex gap-3">
-
-                        <span class="font-bold">
-                            •
-                        </span>
+                        <span class="font-bold">•</span>
 
                         <span>
-                            Simpan bukti pembayaran untuk keperluan administrasi perusahaan.
+                            Simpan bukti pembayaran untuk kebutuhan
+                            administrasi dan verifikasi.
                         </span>
-
                     </li>
-
-                    <li class="flex gap-3">
-
-                        <span class="font-bold">
-                            •
-                        </span>
-
-                        <span>
-                            Konfirmasi pembayaran kepada pihak perusahaan setelah transaksi dilakukan.
-                        </span>
-
-                    </li>
-
                 </ul>
-
             </div>
-
         </div>
-
     </div>
-
 </x-ui.info-card>

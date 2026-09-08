@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase
@@ -13,44 +14,65 @@ class PasswordConfirmationTest extends TestCase
 
     public function test_confirm_password_screen_can_be_rendered(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createOwner();
 
-        $response = $this->actingAs($user)->get('/confirm-password');
-
-        $response
-            ->assertSeeVolt('pages.auth.confirm-password')
-            ->assertStatus(200);
+        $this->actingAs($user)
+            ->get('/confirm-password')
+            ->assertOk()
+            ->assertSeeVolt(
+                'pages.auth.confirm-password'
+            );
     }
 
     public function test_password_can_be_confirmed(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createOwner();
 
         $this->actingAs($user);
 
-        $component = Volt::test('pages.auth.confirm-password')
-            ->set('password', 'password');
-
-        $component->call('confirmPassword');
-
-        $component
-            ->assertRedirect('/dashboard')
-            ->assertHasNoErrors();
+        Volt::test(
+            'pages.auth.confirm-password'
+        )
+            ->set('password', 'password')
+            ->call('confirmPassword')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'owner.dashboard',
+                    absolute: false
+                )
+            );
     }
 
     public function test_password_is_not_confirmed_with_invalid_password(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createOwner();
 
         $this->actingAs($user);
 
-        $component = Volt::test('pages.auth.confirm-password')
-            ->set('password', 'wrong-password');
+        Volt::test(
+            'pages.auth.confirm-password'
+        )
+            ->set(
+                'password',
+                'wrong-password'
+            )
+            ->call('confirmPassword')
+            ->assertHasErrors('password')
+            ->assertNoRedirect();
+    }
 
-        $component->call('confirmPassword');
+    private function createOwner(): User
+    {
+        $role = Role::findOrCreate(
+            'owner',
+            'web'
+        );
 
-        $component
-            ->assertNoRedirect()
-            ->assertHasErrors('password');
+        $user = User::factory()->create();
+
+        $user->assignRole($role);
+
+        return $user;
     }
 }

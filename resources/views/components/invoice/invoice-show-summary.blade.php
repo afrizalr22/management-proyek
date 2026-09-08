@@ -1,98 +1,159 @@
+@props([
+    'invoice',
+])
+
+@php
+    $documentStatus = match ($invoice->status) {
+        'draft' => [
+            'label' => 'Draft',
+            'color' => 'yellow',
+        ],
+        'issued' => [
+            'label' => 'Diterbitkan',
+            'color' => 'purple',
+        ],
+        'sent' => [
+            'label' => 'Dikirim',
+            'color' => 'blue',
+        ],
+        'cancelled' => [
+            'label' => 'Dibatalkan',
+            'color' => 'red',
+        ],
+        default => [
+            'label' => ucfirst($invoice->status),
+            'color' => 'gray',
+        ],
+    };
+
+    $paymentStatus = match ($invoice->payment_status) {
+        'paid' => [
+            'label' => 'Lunas',
+            'color' => 'green',
+        ],
+        'partial' => [
+            'label' => 'Sebagian',
+            'color' => 'yellow',
+        ],
+        default => [
+            'label' => 'Belum Dibayar',
+            'color' => 'red',
+        ],
+    };
+
+    $projectName = $invoice->project?->project_name
+        ?? $invoice->quotation?->project_name
+        ?? 'Belum terhubung dengan proyek';
+@endphp
+
 <x-ui.info-card>
-
     <div class="p-6">
-
-        {{-- Header --}}
         <div>
-
             <h2 class="text-xl font-bold text-gray-800">
-                Invoice Summary
+                Ringkasan Invoice
             </h2>
 
             <p class="mt-2 text-sm text-gray-500">
-                Informasi utama invoice dan project yang terkait.
+                Informasi utama dan dokumen sumber invoice.
             </p>
-
         </div>
 
-        <hr class="my-6">
+        <hr class="my-6 border-gray-200">
 
-        <div class="space-y-6">
-
-            {{-- Invoice Number --}}
+        <dl class="space-y-6">
             <div>
+                <dt class="text-sm text-gray-500">
+                    Nomor Invoice
+                </dt>
 
-                <p class="text-sm text-gray-500">
-                    Invoice Number
-                </p>
-
-                <p class="mt-1 text-lg font-semibold text-gray-800">
-                    INV-2026-0001
-                </p>
-
+                <dd class="mt-1 text-lg font-semibold text-gray-800">
+                    {{ $invoice->invoice_number }}
+                </dd>
             </div>
 
-            {{-- Project --}}
             <div>
+                <dt class="text-sm text-gray-500">
+                    Proyek
+                </dt>
 
-                <p class="text-sm text-gray-500">
-                    Project
-                </p>
+                <dd class="mt-1 font-semibold leading-relaxed text-gray-800">
+                    {{ $projectName }}
+                </dd>
 
-                <p class="mt-1 font-semibold leading-relaxed text-gray-800">
-                    Pembangunan Gudang Logistik Tahap II
-                </p>
-
+                @if ($invoice->project?->project_code)
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ $invoice->project->project_code }}
+                    </p>
+                @endif
             </div>
 
-            {{-- Invoice Date --}}
+            <div>
+                <dt class="text-sm text-gray-500">
+                    Quotation
+                </dt>
+
+                <dd class="mt-1 font-semibold text-gray-800">
+                    {{ $invoice->quotation?->quotation_number ?: '-' }}
+                </dd>
+            </div>
+
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-
                 <div>
+                    <dt class="text-sm text-gray-500">
+                        Tanggal Invoice
+                    </dt>
 
-                    <p class="text-sm text-gray-500">
-                        Invoice Date
-                    </p>
-
-                    <p class="mt-1 font-semibold text-gray-800">
-                        12 Oktober 2026
-                    </p>
-
+                    <dd class="mt-1 font-semibold text-gray-800">
+                        {{ $invoice->invoice_date?->format('d M Y') ?? '-' }}
+                    </dd>
                 </div>
 
                 <div>
+                    <dt class="text-sm text-gray-500">
+                        Jatuh Tempo
+                    </dt>
 
-                    <p class="text-sm text-gray-500">
-                        Due Date
-                    </p>
-
-                    <p class="mt-1 font-semibold text-gray-800">
-                        26 Oktober 2026
-                    </p>
-
+                    <dd class="mt-1 font-semibold text-gray-800">
+                        {{ $invoice->due_date?->format('d M Y') ?? '-' }}
+                    </dd>
                 </div>
-
             </div>
 
-            {{-- Payment Status --}}
             <div>
+                <dt class="text-sm text-gray-500">
+                    Dibuat Oleh
+                </dt>
 
-                <p class="text-sm text-gray-500">
-                    Payment Status
-                </p>
-
-                <div class="mt-2">
-
-                    <x-ui.badge color="yellow">
-                        Unpaid
-                    </x-ui.badge>
-
-                </div>
-
+                <dd class="mt-1 font-semibold text-gray-800">
+                    {{ $invoice->creator?->name ?: 'Pengguna tidak tersedia' }}
+                </dd>
             </div>
 
-        </div>
+            <div class="flex flex-wrap gap-6">
+                <div>
+                    <dt class="mb-2 text-sm text-gray-500">
+                        Status Dokumen
+                    </dt>
 
+                    <dd>
+                        <x-ui.badge :color="$documentStatus['color']">
+                            {{ $documentStatus['label'] }}
+                        </x-ui.badge>
+                    </dd>
+                </div>
+
+                <div>
+                    <dt class="mb-2 text-sm text-gray-500">
+                        Status Pembayaran
+                    </dt>
+
+                    <dd>
+                        <x-ui.badge :color="$paymentStatus['color']">
+                            {{ $paymentStatus['label'] }}
+                        </x-ui.badge>
+                    </dd>
+                </div>
+            </div>
+        </dl>
     </div>
-
 </x-ui.info-card>

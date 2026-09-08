@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
+use Spatie\Permission\Models\Role;
 
 class ProfileTest extends TestCase
 {
@@ -13,15 +14,18 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
+        $role = Role::findOrCreate(
+            'owner',
+            'web'
+        );
+
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->get('/profile');
+        $user->assignRole($role);
 
-        $response
-            ->assertOk()
-            ->assertSeeVolt('profile.update-profile-information-form')
-            ->assertSeeVolt('profile.update-password-form')
-            ->assertSeeVolt('profile.delete-user-form');
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertOk();
     }
 
     public function test_profile_information_can_be_updated(): void

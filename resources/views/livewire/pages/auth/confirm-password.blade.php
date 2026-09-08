@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use App\Models\User;
 
 new #[Layout('layouts.guest')] class extends Component
 {
@@ -27,9 +28,42 @@ new #[Layout('layouts.guest')] class extends Component
             ]);
         }
 
-        session(['auth.password_confirmed_at' => time()]);
+        session([
+    'auth.password_confirmed_at' => time(),
+]);
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+/** @var User|null $user */
+$user = Auth::user();
+
+if (! $user instanceof User) {
+    abort(403);
+}
+
+$dashboardRoute = match (true) {
+    $user->hasRole('owner') =>
+        'owner.dashboard',
+
+    $user->hasRole('mandor') =>
+        'mandor.dashboard',
+
+    $user->hasRole('pekerja') =>
+        'pekerja.dashboard',
+
+    default => null,
+};
+
+abort_unless(
+    $dashboardRoute !== null,
+    403
+);
+
+$this->redirectIntended(
+    default: route(
+        $dashboardRoute,
+        absolute: false
+    ),
+    navigate: true
+);
     }
 }; ?>
 
