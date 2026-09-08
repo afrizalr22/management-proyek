@@ -1,120 +1,148 @@
+@props([
+    'user',
+    'projects' => collect(),
+])
+
+@php
+    $projectStatus = fn (?string $status): array => match ($status) {
+        'planning' => ['Perencanaan', 'yellow'],
+        'on_progress' => ['Sedang Berjalan', 'blue'],
+        'completed' => ['Selesai', 'green'],
+        'cancelled' => ['Dibatalkan', 'red'],
+        default => ['Tidak Diketahui', 'gray'],
+    };
+@endphp
+
 <x-ui.info-card>
+    <div class="p-6 sm:p-8">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800">
+                Riwayat Project
+            </h2>
 
-    <div class="p-8">
+            <p class="mt-2 text-gray-500">
+                Daftar Project yang pernah maupun sedang ditangani pengguna.
+            </p>
+        </div>
 
-        <div class="mb-8 flex items-center justify-between">
+        @if ($projects->isNotEmpty())
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Project
+                            </th>
 
-            <div>
+                            <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Client
+                            </th>
 
-                <h2 class="text-2xl font-bold text-gray-800">
+                            <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Peran
+                            </th>
 
-                    Project History
+                            <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Status
+                            </th>
 
-                </h2>
+                            <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Mulai
+                            </th>
 
-                <p class="mt-2 text-gray-500">
+                            <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Selesai
+                            </th>
+                        </tr>
+                    </thead>
 
-                    Daftar proyek yang pernah maupun sedang ditangani pengguna.
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($projects as $project)
+                            @php
+                                [$statusText, $statusColor] =
+                                    $projectStatus($project['status']);
 
+                                $startDate = $project['joined_at']
+                                    ?? $project['start_date'];
+
+                                $endDate = $project['ended_at']
+                                    ?? $project['end_date'];
+                            @endphp
+
+                            <tr class="transition hover:bg-gray-50">
+                                <td class="px-3 py-4">
+                                    @if ($project['id'])
+                                        <a
+                                            href="{{ route('owner.projects.show', [
+                                                'project' => $project['id'],
+                                            ]) }}"
+                                            wire:navigate
+                                            class="font-semibold text-gray-900 transition hover:text-blue-600"
+                                        >
+                                            {{ $project['name'] }}
+                                        </a>
+                                    @else
+                                        <span class="font-semibold text-gray-900">
+                                            {{ $project['name'] }}
+                                        </span>
+                                    @endif
+
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        {{ $project['code'] ?: '-' }}
+                                    </p>
+                                </td>
+
+                                <td class="px-3 py-4 text-sm text-gray-600">
+                                    {{ $project['client'] }}
+                                </td>
+
+                                <td class="px-3 py-4 text-sm text-gray-600">
+                                    {{ $project['role'] }}
+                                </td>
+
+                                <td class="px-3 py-4">
+                                    <x-ui.badge :color="$statusColor">
+                                        {{ $statusText }}
+                                    </x-ui.badge>
+
+                                    @if ($project['assignment_status'])
+                                        <p class="mt-2 text-xs text-gray-500">
+                                            Penugasan:
+                                            {{ $project['assignment_status'] === 'active'
+                                                ? 'Aktif'
+                                                : 'Tidak Aktif' }}
+                                        </p>
+                                    @endif
+                                </td>
+
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                                    {{ $startDate
+                                        ? \Illuminate\Support\Carbon::parse($startDate)
+                                            ->translatedFormat('d M Y')
+                                        : '-' }}
+                                </td>
+
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
+                                    {{ $endDate
+                                        ? \Illuminate\Support\Carbon::parse($endDate)
+                                            ->translatedFormat('d M Y')
+                                        : '-' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
+                <p class="font-semibold text-gray-700">
+                    Belum memiliki riwayat Project
                 </p>
 
+                <p class="mt-1 text-sm text-gray-500">
+                    Pengguna ini belum pernah ditugaskan pada Project.
+                </p>
             </div>
-
-        </div>
-
-        <div class="overflow-x-auto">
-
-            <table class="min-w-full">
-
-                <thead>
-
-                    <tr class="border-b border-gray-200">
-
-                        <th class="py-3 text-left text-sm font-semibold text-gray-600">
-                            Project
-                        </th>
-
-                        <th class="py-3 text-left text-sm font-semibold text-gray-600">
-                            Client
-                        </th>
-
-                        <th class="py-3 text-left text-sm font-semibold text-gray-600">
-                            Role
-                        </th>
-
-                        <th class="py-3 text-left text-sm font-semibold text-gray-600">
-                            Status
-                        </th>
-
-                        <th class="py-3 text-left text-sm font-semibold text-gray-600">
-                            Start
-                        </th>
-
-                        <th class="py-3 text-left text-sm font-semibold text-gray-600">
-                            End
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    @foreach(range(1,4) as $project)
-
-                        <tr class="border-b border-gray-100">
-
-                            <td class="py-4">
-
-                                Renovasi Gedung A
-
-                            </td>
-
-                            <td class="py-4">
-
-                                PT ABC Indonesia
-
-                            </td>
-
-                            <td class="py-4">
-
-                                Mandor
-
-                            </td>
-
-                            <td class="py-4">
-
-                                <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-
-                                    Active
-
-                                </span>
-
-                            </td>
-
-                            <td class="py-4">
-
-                                01 Jul 2026
-
-                            </td>
-
-                            <td class="py-4">
-
-                                -
-
-                            </td>
-
-
-                        </tr>
-
-                    @endforeach
-
-                </tbody>
-
-            </table>
-
-        </div>
-
+        @endif
     </div>
-
 </x-ui.info-card>

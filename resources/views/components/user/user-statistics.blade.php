@@ -1,117 +1,97 @@
-<div class="grid grid-cols-2 gap-4">
+@props([
+    'statistics',
+])
 
-    {{-- Total Projects --}}
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <x-ui.stat-card
-        title="Total Projects"
-        value="12"
-        description="Seluruh proyek">
-
+        title="Total Pengguna"
+        :value="$statistics['total']"
+        description="Seluruh akun sistem"
+    >
         <x-slot:icon>
-            <svg xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor">
-
+                stroke-width="1.8"
+                stroke="currentColor"
+                class="h-6 w-6"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M3 7h18M6 3h12a1 1 0 011 1v16H5V4a1 1 0 011-1z"/>
-
+                    d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72M18 18.72v-.75c0-.956-.22-1.861-.612-2.666M18 18.72a9.094 9.094 0 0 1-6 2.28c-2.305 0-4.408-.867-6-2.292m0 .012v-.75c0-.956.22-1.861.612-2.666m0 0a5.985 5.985 0 0 1 10.776 0M15 7.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
             </svg>
         </x-slot:icon>
-
     </x-ui.stat-card>
 
-    {{-- Active Projects --}}
     <x-ui.stat-card
-        title="Active Projects"
-        value="3"
-        description="Sedang berjalan">
-
+        title="Akun Aktif"
+        :value="$statistics['active']"
+        description="Dapat mengakses sistem"
+    >
         <x-slot:icon>
-            <svg xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor">
-
+                stroke-width="1.8"
+                stroke="currentColor"
+                class="h-6 w-6"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"/>
-
+                    d="m4.5 12.75 6 6 9-13.5"
+                />
             </svg>
         </x-slot:icon>
-
     </x-ui.stat-card>
 
-    {{-- Completed Projects --}}
     <x-ui.stat-card
-        title="Completed"
-        value="9"
-        description="Proyek selesai">
-
+        title="Mandor"
+        :value="$statistics['mandors']"
+        description="Pengelola pekerjaan"
+    >
         <x-slot:icon>
-            <svg xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor">
-
-                <circle
-                    cx="12"
-                    cy="12"
-                    r="9"
-                    stroke-width="2" />
-
+                stroke-width="1.8"
+                stroke="currentColor"
+                class="h-6 w-6"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 12l2 2 4-4"/>
-
+                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0"
+                />
             </svg>
         </x-slot:icon>
-
     </x-ui.stat-card>
 
-    {{-- Daily Reports --}}
     <x-ui.stat-card
-        title="Daily Reports"
-        value="148"
-        description="Total laporan">
-
+        title="Pekerja"
+        :value="$statistics['workers']"
+        description="Pelaksana pekerjaan"
+    >
         <x-slot:icon>
-            <svg xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke="currentColor">
-
+                stroke-width="1.8"
+                stroke="currentColor"
+                class="h-6 w-6"
+            >
                 <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 3h6v4H9z"/>
-
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 8h6M8 12h8M8 16h5"/>
-
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/>
-
+                    d="M18 7.5V6a6 6 0 0 0-12 0v1.5M3.75 9.75h16.5v9a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-9Z"
+                />
             </svg>
         </x-slot:icon>
-
     </x-ui.stat-card>
-
 </div>

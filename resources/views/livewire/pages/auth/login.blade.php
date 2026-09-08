@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Validation\ValidationException;
 use App\Livewire\Forms\LoginForm;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -23,28 +25,51 @@ public function login(): void
 
     $user = Auth::user();
 
-if ($user->hasRole('owner')) {
+    if (!$user instanceof User) {
+        Auth::logout();
 
-    redirect()->route('owner.dashboard');
+        throw ValidationException::withMessages([
+            'form.email' =>
+                'Sesi login tidak valid. Silakan coba kembali.',
+        ]);
+    }
 
-    return;
-}
+    if ($user->hasRole('owner')) {
+        $this->redirectRoute(
+            'owner.dashboard',
+            navigate: true
+        );
 
-if ($user->hasRole('mandor')) {
+        return;
+    }
 
-    redirect()->route('mandor.dashboard');
+    if ($user->hasRole('mandor')) {
+        $this->redirectRoute(
+            'mandor.dashboard',
+            navigate: true
+        );
 
-    return;
-}
+        return;
+    }
 
-if ($user->hasRole('pekerja')) {
+    if ($user->hasRole('pekerja')) {
+        $this->redirectRoute(
+            'pekerja.dashboard',
+            navigate: true
+        );
 
-  redirect()->route('pekerja.dashboard');
+        return;
+    }
 
-    return;
-}
+    Auth::logout();
 
-    abort(403);
+    Session::invalidate();
+    Session::regenerateToken();
+
+    throw ValidationException::withMessages([
+        'form.email' =>
+            'Akun belum mempunyai role yang valid.',
+    ]);
 }
 }; ?>
 

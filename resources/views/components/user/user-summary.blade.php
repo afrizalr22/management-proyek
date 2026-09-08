@@ -1,107 +1,97 @@
+@props([
+    'user',
+    'role' => '-',
+    'projectHistory' => collect(),
+])
+
+@php
+    $roleText = match ($role) {
+        'owner' => 'Owner',
+        'mandor' => 'Mandor',
+        'pekerja' => 'Pekerja',
+        default => '-',
+    };
+
+    $totalProjects = $projectHistory->count();
+
+    $activeProjects = $projectHistory
+        ->filter(function ($project) {
+            if (($project['role'] ?? null) === 'Pekerja') {
+                return ($project['assignment_status'] ?? null) === 'active';
+            }
+
+            return in_array(
+                $project['status'] ?? null,
+                ['planning', 'on_progress'],
+                true
+            );
+        })
+        ->count();
+
+    $availabilityText = match (true) {
+        $user->status !== 'active' => 'Akun tidak aktif',
+        $role === 'pekerja' && $activeProjects > 0 => 'Sedang bertugas',
+        $role === 'pekerja' => 'Tersedia',
+        $role === 'mandor' && $activeProjects > 0 => 'Mengelola Project',
+        $role === 'mandor' => 'Tersedia',
+        default => 'Akses sistem',
+    };
+
+    $availabilityClasses = match (true) {
+        $user->status !== 'active' =>
+            'border-red-200 bg-red-50 text-red-700',
+
+        $activeProjects > 0 =>
+            'border-yellow-200 bg-yellow-50 text-yellow-700',
+
+        default =>
+            'border-green-200 bg-green-50 text-green-700',
+    };
+@endphp
+
 <x-ui.info-card>
-
-    <div class="p-8">
-
+    <div class="p-6 sm:p-8">
         <div class="mb-6">
-
             <h2 class="text-2xl font-bold text-gray-800">
-
-                User Summary
-
+                Ringkasan User
             </h2>
 
             <p class="mt-2 text-gray-500">
-
-                Ringkasan informasi akun pengguna.
-
+                Ringkasan akun dan penugasan pengguna.
             </p>
-
         </div>
 
         <div class="space-y-5">
-
-            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-
-                <span class="text-gray-500">
-                    Full Name
-                </span>
-
+            <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                <span class="text-gray-500">Role</span>
                 <span class="font-semibold text-gray-800">
-                    Ahmad Afrizal
+                    {{ $roleText }}
                 </span>
-
             </div>
 
-            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-
-                <span class="text-gray-500">
-                    Email
-                </span>
-
+            <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                <span class="text-gray-500">Total Project</span>
                 <span class="font-semibold text-gray-800">
-                    admin@example.com
+                    {{ $totalProjects }}
                 </span>
-
             </div>
 
-            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-
-                <span class="text-gray-500">
-                    Role
+            <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
+                <span class="text-gray-500">Project Aktif</span>
+                <span class="font-semibold text-gray-800">
+                    {{ $activeProjects }}
                 </span>
-
-                <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
-
-                    Owner
-
-                </span>
-
             </div>
 
-            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-
-                <span class="text-gray-500">
-                    Status
+            <div>
+                <span class="mb-2 block text-gray-500">
+                    Ketersediaan
                 </span>
 
-                <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
-
-                    Active
-
-                </span>
-
+                <div class="rounded-xl border px-4 py-3 text-sm font-semibold {{ $availabilityClasses }}">
+                    {{ $availabilityText }}
+                </div>
             </div>
-
-            <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-
-                <span class="text-gray-500">
-                    Created
-                </span>
-
-                <span class="font-semibold text-gray-700">
-
-                    27 Jul 2026
-
-                </span>
-
-            </div>
-
-            <div class="flex items-center justify-between">
-
-                <span class="text-gray-500">
-                    Last Login
-                </span>
-
-                <span class="font-semibold text-gray-700">
-
-                    Today, 09:20
-
-                </span>
-
-            </div>
-
         </div>
-
     </div>
-
 </x-ui.info-card>

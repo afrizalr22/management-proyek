@@ -1,139 +1,108 @@
+@props([
+    'user',
+    'role' => '-',
+])
+
+@php
+    $roleText = match ($role) {
+        'owner' => 'Owner',
+        'mandor' => 'Mandor',
+        'pekerja' => 'Pekerja',
+        default => '-',
+    };
+
+    $roleColor = match ($role) {
+        'owner' => 'red',
+        'mandor' => 'blue',
+        'pekerja' => 'green',
+        default => 'gray',
+    };
+
+    $statusText = $user->status === 'active'
+        ? 'Aktif'
+        : 'Tidak Aktif';
+
+    $statusColor = $user->status === 'active'
+        ? 'green'
+        : 'red';
+@endphp
+
 <x-ui.info-card>
-
-    <div class="p-8">
-
+    <div class="p-6 sm:p-8">
         <div class="mb-8">
-
             <h2 class="text-2xl font-bold text-gray-800">
-
-                User Information
-
+                Informasi Pengguna
             </h2>
 
             <p class="mt-2 text-gray-500">
-
                 Informasi lengkap mengenai akun pengguna.
-
             </p>
-
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-
-            {{-- Nama --}}
-
             <div>
-
                 <p class="mb-2 text-sm font-medium text-gray-500">
-
-                    Full Name
-
+                    Nama Lengkap
                 </p>
 
-                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                    Ahmad Subarjo
-
+                <div class="break-words rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-medium text-gray-800">
+                    {{ $user->name }}
                 </div>
-
             </div>
 
-            {{-- Email --}}
-
             <div>
-
                 <p class="mb-2 text-sm font-medium text-gray-500">
-
                     Email
-
                 </p>
 
-                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                    ahmad@email.com
-
+                <div class="break-all rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800">
+                    {{ $user->email }}
                 </div>
-
             </div>
 
-            {{-- Telepon --}}
-
             <div>
-
                 <p class="mb-2 text-sm font-medium text-gray-500">
-
-                    Phone Number
-
+                    Nomor Telepon
                 </p>
 
-                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                    +62 812 3456 7890
-
+                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800">
+                    {{ $user->phone ?: '-' }}
                 </div>
-
             </div>
 
-            {{-- Role --}}
-
             <div>
-
                 <p class="mb-2 text-sm font-medium text-gray-500">
-
                     Role
-
                 </p>
 
-                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                    Mandor
-
+                <div class="flex min-h-12 items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                    <x-ui.badge :color="$roleColor">
+                        {{ $roleText }}
+                    </x-ui.badge>
                 </div>
-
             </div>
-
-            {{-- Status --}}
 
             <div>
-
                 <p class="mb-2 text-sm font-medium text-gray-500">
-
-                    Account Status
-
+                    Status Akun
                 </p>
 
-                <div>
-
-                    <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
-
-                        Active
-
-                    </span>
-
+                <div class="flex min-h-12 items-center rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                    <x-ui.badge :color="$statusColor">
+                        {{ $statusText }}
+                    </x-ui.badge>
                 </div>
-
             </div>
-
-            {{-- Bergabung --}}
 
             <div>
-
                 <p class="mb-2 text-sm font-medium text-gray-500">
-
-                    Join Date
-
+                    Tanggal Bergabung
                 </p>
 
-                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-
-                    27 Juli 2026
-
+                <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800">
+                    {{ $user->created_at?->translatedFormat('d F Y, H:i') ?? '-' }}
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </x-ui.info-card>

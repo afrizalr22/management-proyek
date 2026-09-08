@@ -45,7 +45,6 @@ use App\Livewire\Owner\Users\Index as UsersIndex;
 use App\Livewire\Owner\Users\Create as UsersCreate;
 use App\Livewire\Owner\Users\Edit as UsersEdit;
 use App\Livewire\Owner\Users\Show as UsersShow;
-use App\Livewire\Owner\Users\Delete as UsersDelete;
 
 use App\Livewire\Mandor\Projects\Index as MandorProjectsIndex;
 use App\Livewire\Mandor\Projects\Show as MandorProjectsShow;
@@ -186,13 +185,23 @@ Route::prefix('quotations')
             Route::get('/{project}/documentation', MonitoringDocumentation::class)->name('documentation');
         });
 
-    Route::prefix('users')->name('owner.users.')->group(function () {
-            Route::get('', UsersIndex::class)->name('index');
-            Route::get('/create', UsersCreate::class)->name('create');
-            Route::get('/{user}/edit', UsersEdit::class)->name('edit');
-            Route::get('/user/{user}', UsersShow::class)->name('show');
-            Route::get('/{user}/delete', UsersDelete::class)->name('delete');
-        });
+    Route::prefix('users')
+    ->name('owner.users.')
+    ->group(function (): void {
+        Route::get('/', UsersIndex::class)
+            ->name('index');
+
+        Route::get('/create', UsersCreate::class)
+            ->name('create');
+
+        Route::get('/{user}/edit', UsersEdit::class)
+            ->whereNumber('user')
+            ->name('edit');
+
+        Route::get('/{user}', UsersShow::class)
+            ->whereNumber('user')
+            ->name('show');
+    });
 });
 
 

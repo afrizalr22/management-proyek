@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,9 @@ use Spatie\Permission\Traits\HasRoles;
 #[Fillable([
     'name',
     'email',
+    'phone',
+    'photo',
+    'status',
     'password',
 ])]
 #[Hidden([
@@ -32,6 +36,26 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Membatasi query hanya untuk akun aktif.
+     */
+    public function scopeActive(
+        Builder $query
+    ): Builder {
+        return $query->where(
+            'status',
+            'active'
+        );
+    }
+
+    /**
+     * Menentukan apakah akun pengguna masih aktif.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
     }
 
     /**
@@ -72,7 +96,10 @@ class User extends Authenticatable
     public function activeWorkerProjects(): BelongsToMany
     {
         return $this->workerProjects()
-            ->wherePivot('status', 'active');
+            ->wherePivot(
+                'status',
+                'active'
+            );
     }
 
     /**
