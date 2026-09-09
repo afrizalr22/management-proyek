@@ -35,6 +35,12 @@ use App\Livewire\Owner\Invoices\Edit as InvoicesEdit;
 use App\Livewire\Owner\Invoices\Show as InvoicesShow;
 use App\Livewire\Owner\Invoices\Delete as InvoicesDelete;
 
+// Delivery Orders
+use App\Livewire\Owner\DeliveryOrders\Index as DeliveryOrdersIndex;
+use App\Livewire\Owner\DeliveryOrders\Create as DeliveryOrdersCreate;
+use App\Livewire\Owner\DeliveryOrders\Show as DeliveryOrdersShow;
+use App\Livewire\Owner\DeliveryOrders\Edit as DeliveryOrdersEdit;
+
 // Monitoring
 use App\Livewire\Owner\Monitoring\Index as MonitoringIndex;
 use App\Livewire\Owner\Monitoring\Show as MonitoringShow;
@@ -72,6 +78,7 @@ use App\Livewire\Pekerja\Profile\Index as PekerjaProfileIndex;
 
 use App\Http\Controllers\Owner\QuotationPdfController;
 use App\Http\Controllers\Owner\InvoicePdfController;
+use App\Http\Controllers\Owner\DeliveryOrderPdfController;
 
 use App\Livewire\Owner\Profile as Profile;
 
@@ -207,6 +214,54 @@ Route::prefix('invoices')
 
         Route::get('/{invoice}', InvoicesShow::class)
             ->whereNumber('invoice')
+            ->name('show');
+    });
+
+    Route::prefix('delivery-orders')
+    ->name('owner.delivery-orders.')
+    ->group(function (): void {
+        Route::get(
+            '/',
+            DeliveryOrdersIndex::class
+        )->name('index');
+
+        Route::get(
+    '/{deliveryOrder}/pdf/preview',
+    [
+        DeliveryOrderPdfController::class,
+        'preview',
+    ]
+    )
+        ->whereNumber('deliveryOrder')
+        ->name('preview');
+
+    Route::get(
+        '/{deliveryOrder}/pdf/download',
+        [
+            DeliveryOrderPdfController::class,
+            'download',
+        ]
+    )
+        ->whereNumber('deliveryOrder')
+        ->name('download');
+
+        Route::get(
+            '/create',
+            DeliveryOrdersCreate::class
+        )->name('create');
+
+        Route::get(
+            '/{deliveryOrder}/edit',
+            DeliveryOrdersEdit::class
+        )
+            ->whereNumber('deliveryOrder')
+            ->name('edit');
+
+        Route::get(
+            '/{deliveryOrder}',
+            DeliveryOrdersShow::class
+        )
+            ->whereNumber('deliveryOrder')
             ->name('show');
     });
 

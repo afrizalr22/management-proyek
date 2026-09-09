@@ -155,4 +155,15 @@ class User extends Authenticatable
             'created_by'
         );
     }
+
+    /**
+     * Surat Jalan yang dibuat oleh User.
+     */
+    public function createdDeliveryOrders(): HasMany
+    {
+        return $this->hasMany(
+            DeliveryOrder::class,
+            'created_by'
+        );
+    }
 }

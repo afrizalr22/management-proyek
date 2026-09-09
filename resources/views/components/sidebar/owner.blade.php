@@ -57,6 +57,17 @@
         </a>
 
         <a
+            href="{{ route(
+                'owner.delivery-orders.index'
+            ) }}"
+            wire:navigate
+            class="block rounded-lg px-4 py-2 hover:bg-gray-100"
+            @click="sidebarOpen = false"
+        >
+            Surat Jalan
+        </a>
+
+        <a
             href="{{ route('owner.monitoring.index') }}"
             class="block px-4 py-2 rounded-lg hover:bg-gray-100"
             @click="sidebarOpen = false"
