@@ -7,15 +7,33 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProjectProgress extends Model
 {
-    protected $guarded = [];
+    protected $table = 'project_progress';
 
-    public function project() : BelongsTo
+    protected $fillable = [
+        'project_id',
+        'user_id',
+        'progress_percentage',
+        'description',
+    ];
+
+    protected function casts(): array
     {
-        return $this->belongsTo(Project::class);
+        return [
+            'progress_percentage' => 'integer',
+        ];
     }
 
-    public function user() : BelongsTo
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(
+            Project::class
+        );
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class
+        );
     }
 }

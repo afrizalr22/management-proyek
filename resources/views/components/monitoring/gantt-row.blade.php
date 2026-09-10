@@ -1,67 +1,89 @@
 @props([
     'task',
+    'timelineStart',
+    'timelineEnd',
+    'totalDays',
 ])
 
 @php
-    $statusColor = match ($task['status']) {
-        'completed' => 'bg-emerald-500',
-        'current' => 'bg-blue-600',
-        default => 'bg-gray-400',
+    [$statusText, $statusColor] = match ($task->status) {
+        'assigned' => [
+            'Ditugaskan',
+            'bg-gray-400',
+        ],
+
+        'in_progress' => [
+            'Berjalan',
+            'bg-blue-600',
+        ],
+
+        'submitted' => [
+            'Menunggu Validasi',
+            'bg-blue-600',
+        ],
+
+        'revision' => [
+            'Revisi',
+            'bg-amber-500',
+        ],
+
+        'completed' => [
+            'Selesai',
+            'bg-emerald-500',
+        ],
+
+        'cancelled' => [
+            'Dibatalkan',
+            'bg-red-500',
+        ],
+
+        default => [
+            'Tidak Diketahui',
+            'bg-gray-400',
+        ],
     };
 @endphp
 
-
 <div
-    class="grid grid-cols-[260px_1fr] border-b border-gray-100 transition-colors duration-200 hover:bg-gray-50"
+    wire:key="monitoring-task-{{ $task->id }}"
+    class="grid grid-cols-[300px_1fr] border-b border-gray-100 transition hover:bg-gray-50 last:border-b-0"
 >
-
-    {{-- Task Information --}}
-    <div class="flex items-center gap-3 px-5 py-4">
-
-        {{-- Status Indicator --}}
-        <span
-            class="h-3 w-3 shrink-0 rounded-full {{ $statusColor }} ring-2 ring-white shadow-sm"
-        ></span>
-
+    <div class="flex min-w-0 items-center gap-3 px-5 py-4">
+        <span class="h-3 w-3 shrink-0 rounded-full {{ $statusColor }}"></span>
 
         <div class="min-w-0">
-
-            <h4 class="truncate text-sm font-medium text-gray-700">
-                {{ $task['name'] }}
+            <h4
+                class="truncate text-sm font-semibold text-gray-800"
+                title="{{ $task->title }}"
+            >
+                {{ $task->title }}
             </h4>
 
-            <p class="mt-1 text-xs text-gray-400">
-                {{ ucfirst($task['status']) }}
+            <p class="mt-1 truncate text-xs text-gray-500">
+                {{ $task->task_code }}
+                •
+                {{ $task->worker?->name
+                    ?? 'Pekerja belum tersedia' }}
             </p>
 
+            <p class="mt-1 text-xs font-medium text-gray-400">
+                {{ $statusText }}
+            </p>
         </div>
-
     </div>
 
-
-    {{-- Timeline --}}
-    <div class="relative h-16">
-
-        {{-- Timeline Grid --}}
+    <div class="relative min-h-20 overflow-hidden">
         <div class="absolute inset-0 grid grid-cols-12">
-
-            @for ($i = 1; $i <= 12; $i++)
-
-                <div class="border-l border-dashed border-gray-200"></div>
-
+            @for ($column = 1; $column <= 12; $column++)
+                <div class="border-l border-gray-100"></div>
             @endfor
-
         </div>
 
-
-        {{-- Task Bar --}}
         <x-monitoring.gantt-bar
-            :start="$task['start']"
-            :duration="$task['duration']"
-            :progress="$task['progress']"
-            :status="$task['status']"
+            :task="$task"
+            :timeline-start="$timelineStart"
+            :timeline-end="$timelineEnd"
+            :total-days="$totalDays"
         />
-
     </div>
-
 </div>

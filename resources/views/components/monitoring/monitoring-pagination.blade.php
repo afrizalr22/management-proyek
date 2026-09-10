@@ -1,40 +1,37 @@
-<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+@props([
+    'projects',
+])
 
-    {{-- Pagination Information --}}
-    <p class="text-sm text-gray-500">
-        Showing 1 - 4 of 12 Projects
+<div class="space-y-4">
+    @if ($projects->hasPages())
+        <div class="rounded-xl border border-gray-200 bg-white px-4 py-4">
+            {{ $projects->links() }}
+        </div>
+    @endif
+
+    <p class="px-2 text-sm text-gray-500">
+        @if ($projects->total() > 0)
+            Menampilkan
+
+            <span class="font-medium text-gray-700">
+                {{ $projects->firstItem() }}
+            </span>
+
+            sampai
+
+            <span class="font-medium text-gray-700">
+                {{ $projects->lastItem() }}
+            </span>
+
+            dari
+
+            <span class="font-medium text-gray-700">
+                {{ $projects->total() }}
+            </span>
+
+            Project
+        @else
+            Tidak ada Project yang ditampilkan
+        @endif
     </p>
-
-
-    {{-- Pagination Navigation --}}
-    <div class="flex items-center gap-2">
-
-        {{-- Previous --}}
-        <button
-            type="button"
-            class="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
-        >
-            Previous
-        </button>
-
-
-        {{-- Current Page --}}
-        <button
-            type="button"
-            class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm"
-        >
-            1
-        </button>
-
-
-        {{-- Next --}}
-        <button
-            type="button"
-            class="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
-        >
-            Next
-        </button>
-
-    </div>
-
 </div>

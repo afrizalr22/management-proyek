@@ -1,10 +1,12 @@
 <div class="space-y-6">
-
     {{-- Breadcrumb --}}
-    <div class="flex flex-wrap items-center gap-2 text-sm">
-
+    <nav
+        class="flex flex-wrap items-center gap-2 text-sm"
+        aria-label="Breadcrumb"
+    >
         <a
             href="{{ route('owner.monitoring.index') }}"
+            wire:navigate
             class="font-medium text-gray-500 transition hover:text-blue-600"
         >
             Project Monitoring
@@ -26,10 +28,16 @@
         </svg>
 
         <a
-            href="{{ route('owner.monitoring.show', 1) }}"
+            href="{{ route(
+                'owner.monitoring.show',
+                [
+                    'project' => $project->id,
+                ]
+            ) }}"
+            wire:navigate
             class="font-medium text-gray-500 transition hover:text-blue-600"
         >
-            Monitoring Detail
+            {{ $project->project_code }}
         </a>
 
         <svg
@@ -48,25 +56,46 @@
         </svg>
 
         <span class="font-semibold text-gray-700">
-            Documentation
+            Dokumentasi
         </span>
+    </nav>
 
-    </div>
+    <x-monitoring.documentation-header
+        :project="$project"
+        :total-documentations="$totalDocumentations"
+        :category-statistics="$categoryStatistics"
+    />
 
+    <x-monitoring.documentation-filter
+        :search="$search"
+        :category="$category"
+        :date="$date"
+        :sort="$sort"
+    />
 
-    {{-- Header --}}
-    <x-monitoring.documentation-header />
+    @error('category')
+        <div
+            class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+            role="alert"
+        >
+            {{ $message }}
+        </div>
+    @enderror
 
+    @error('date')
+        <div
+            class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+            role="alert"
+        >
+            {{ $message }}
+        </div>
+    @enderror
 
-    {{-- Filter --}}
-    <x-monitoring.documentation-filter />
+    <x-monitoring.documentation-gallery
+        :documentations="$documentations"
+    />
 
-
-    {{-- Gallery --}}
-    <x-monitoring.documentation-gallery />
-
-
-    {{-- Pagination --}}
-    <x-monitoring.documentation-pagination />
-
+    <x-monitoring.documentation-pagination
+        :documentations="$documentations"
+    />
 </div>

@@ -1,137 +1,207 @@
+@props([
+    'project',
+    'isDelayed' => false,
+])
+
+@php
+    $formatCurrency = static function (
+        mixed $amount
+    ): string {
+        if ($amount === null) {
+            return '-';
+        }
+
+        return 'Rp '.number_format(
+            (float) $amount,
+            0,
+            ',',
+            '.'
+        );
+    };
+
+    $duration = null;
+
+    if ($project->start_date && $project->end_date) {
+        $duration =
+            $project->start_date
+                ->diffInDays($project->end_date)
+            + 1;
+    }
+@endphp
+
 <x-ui.info-card>
-
-    <div class="p-8">
-
-        {{-- Header --}}
-        <div class="mb-8">
-
+    <div class="p-6 sm:p-8">
+        <div>
             <h2 class="text-2xl font-bold text-gray-800">
-                Project Information
+                Informasi Project
             </h2>
 
             <p class="mt-2 text-sm text-gray-500">
-                Informasi utama proyek konstruksi.
+                Informasi utama dan periode pelaksanaan Project.
             </p>
-
         </div>
 
+        <hr class="my-8 border-gray-200">
 
-        {{-- Information Grid --}}
-        <div class="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
-
-            {{-- Project Name --}}
+        <div class="grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2 xl:grid-cols-3">
             <div>
-
                 <p class="text-sm font-medium text-gray-500">
-                    Project Name
+                    Kode Project
                 </p>
 
-                <h4 class="mt-1.5 font-semibold leading-6 text-gray-900">
-                    Pembangunan Gudang PT Maju Bersama
-                </h4>
-
+                <p class="mt-1.5 font-semibold leading-6 text-blue-600">
+                    {{ $project->project_code }}
+                </p>
             </div>
 
-
-            {{-- Client --}}
             <div>
+                <p class="text-sm font-medium text-gray-500">
+                    Nama Project
+                </p>
 
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $project->project_name }}
+                </p>
+            </div>
+
+            <div>
                 <p class="text-sm font-medium text-gray-500">
                     Client
                 </p>
 
-                <h4 class="mt-1.5 font-semibold leading-6 text-gray-900">
-                    PT Maju Bersama
-                </h4>
-
-            </div>
-
-
-            {{-- Project Manager --}}
-            <div>
-
-                <p class="text-sm font-medium text-gray-500">
-                    Project Manager
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $project->client?->company_name
+                        ?? 'Client tidak tersedia' }}
                 </p>
-
-                <h4 class="mt-1.5 font-semibold leading-6 text-gray-900">
-                    Ahmad Afrizal
-                </h4>
-
             </div>
 
-
-            {{-- Mandor --}}
             <div>
-
                 <p class="text-sm font-medium text-gray-500">
                     Mandor
                 </p>
 
-                <h4 class="mt-1.5 font-semibold leading-6 text-gray-900">
-                    Budi Santoso
-                </h4>
-
-            </div>
-
-
-            {{-- Location --}}
-            <div>
-
-                <p class="text-sm font-medium text-gray-500">
-                    Location
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $project->mandor?->name
+                        ?? 'Belum ditentukan' }}
                 </p>
 
-                <h4 class="mt-1.5 font-semibold leading-6 text-gray-900">
-                    Tangerang Selatan
-                </h4>
-
+                @if ($project->mandor?->phone)
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ $project->mandor->phone }}
+                    </p>
+                @endif
             </div>
 
-
-            {{-- Contract Value --}}
             <div>
-
                 <p class="text-sm font-medium text-gray-500">
-                    Contract Value
+                    Lokasi
                 </p>
 
-                <h4 class="mt-1.5 font-semibold leading-6 text-blue-600">
-                    Rp 1.250.000.000
-                </h4>
-
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $project->location ?: '-' }}
+                </p>
             </div>
 
-
-            {{-- Start Date --}}
             <div>
-
                 <p class="text-sm font-medium text-gray-500">
-                    Start Date
+                    Nomor Kontrak
                 </p>
 
-                <h4 class="mt-1.5 font-semibold leading-6 text-gray-900">
-                    10 Januari 2026
-                </h4>
-
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $project->contract_number ?: '-' }}
+                </p>
             </div>
 
-
-            {{-- Deadline --}}
             <div>
-
                 <p class="text-sm font-medium text-gray-500">
-                    Deadline
+                    Nilai Kontrak
                 </p>
 
-                <h4 class="mt-1.5 font-semibold leading-6 text-red-600">
-                    30 September 2026
-                </h4>
-
+                <p class="mt-1.5 font-semibold leading-6 text-blue-600">
+                    {{ $formatCurrency($project->contract_value) }}
+                </p>
             </div>
 
+            <div>
+                <p class="text-sm font-medium text-gray-500">
+                    Anggaran Project
+                </p>
+
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $formatCurrency($project->project_budget) }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-sm font-medium text-gray-500">
+                    Tanggal Kontrak
+                </p>
+
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $project->contract_date
+                        ?->translatedFormat('d F Y') ?? '-' }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-sm font-medium text-gray-500">
+                    Tanggal Mulai
+                </p>
+
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $project->start_date
+                        ?->translatedFormat('d F Y') ?? '-' }}
+                </p>
+            </div>
+
+            <div>
+                <p class="text-sm font-medium text-gray-500">
+                    Batas Waktu
+                </p>
+
+                <p
+                    @class([
+                        'mt-1.5 font-semibold leading-6',
+                        'text-red-600' => $isDelayed,
+                        'text-gray-900' => ! $isDelayed,
+                    ])
+                >
+                    {{ $project->end_date
+                        ?->translatedFormat('d F Y') ?? '-' }}
+                </p>
+
+                @if ($isDelayed)
+                    <p class="mt-1 text-xs font-medium text-red-500">
+                        Project telah melewati batas waktu.
+                    </p>
+                @endif
+            </div>
+
+            <div>
+                <p class="text-sm font-medium text-gray-500">
+                    Durasi Pelaksanaan
+                </p>
+
+                <p class="mt-1.5 font-semibold leading-6 text-gray-900">
+                    {{ $duration !== null
+                        ? $duration.' hari'
+                        : '-' }}
+                </p>
+            </div>
         </div>
 
-    </div>
+        @if (filled($project->description))
+            <hr class="my-8 border-gray-200">
 
+            <div>
+                <p class="text-sm font-medium text-gray-500">
+                    Deskripsi Project
+                </p>
+
+                <p class="mt-2 whitespace-pre-line text-sm leading-7 text-gray-700">
+                    {{ $project->description }}
+                </p>
+            </div>
+        @endif
+    </div>
 </x-ui.info-card>
