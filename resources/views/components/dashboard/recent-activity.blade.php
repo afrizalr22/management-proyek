@@ -1,153 +1,139 @@
-<div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+@props([
+    'activities',
+])
 
-    {{-- Header --}}
-    <div class="flex items-center justify-between border-b border-gray-200 p-6">
+@php
+    $typeConfiguration = [
+        'client' => [
+            'background' => 'bg-green-100',
+            'text' => 'text-green-600',
+            'label' => 'Client',
+        ],
 
-        <div>
+        'project' => [
+            'background' => 'bg-blue-100',
+            'text' => 'text-blue-600',
+            'label' => 'Monitoring',
+        ],
 
-            <h2 class="text-lg font-semibold text-gray-900">
-                Aktivitas Terbaru
-            </h2>
+        'invoice' => [
+            'background' => 'bg-purple-100',
+            'text' => 'text-purple-600',
+            'label' => 'Invoice',
+        ],
 
-            <p class="mt-1 text-sm text-gray-500">
-                Aktivitas terbaru yang terjadi pada sistem.
-            </p>
+        'delivery_order' => [
+            'background' => 'bg-amber-100',
+            'text' => 'text-amber-600',
+            'label' => 'Surat Jalan',
+        ],
+    ];
+@endphp
 
-        </div>
+<div class="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div class="border-b border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900">
+            Aktivitas Terbaru
+        </h2>
 
-        <a
-            href="#"
-            class="text-sm font-medium text-blue-600 transition hover:text-blue-700"
-        >
-            Lihat Semua
-        </a>
-
+        <p class="mt-1 text-sm text-gray-500">
+            Pembaruan terbaru pada sistem.
+        </p>
     </div>
 
-    {{-- Timeline --}}
     <div class="p-6">
+        @if ($activities->isNotEmpty())
+            <div class="relative">
+                <div class="absolute bottom-5 left-5 top-5 w-px bg-gray-200"></div>
 
-        <div class="relative">
+                <div class="space-y-6">
+                    @foreach ($activities as $activity)
+                        @php
+                            $configuration =
+                                $typeConfiguration[
+                                    $activity['type']
+                                ]
+                                ?? [
+                                    'background' =>
+                                        'bg-gray-100',
 
-            {{-- Vertical Line --}}
-            <div
-                class="absolute left-5 top-5 bottom-5 w-px bg-gray-200">
+                                    'text' =>
+                                        'text-gray-600',
+
+                                    'label' =>
+                                        'Aktivitas',
+                                ];
+                        @endphp
+
+                        <a
+                            href="{{ $activity['href'] }}"
+                            wire:navigate
+                            wire:key="dashboard-activity-{{ $activity['key'] }}"
+                            class="group relative flex items-start gap-4"
+                        >
+                            <div class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-4 ring-white {{ $configuration['background'] }} {{ $configuration['text'] }}">
+                                @if ($activity['type'] === 'client')
+                                    <x-icon.client-activity class="h-5 w-5" />
+                                @elseif ($activity['type'] === 'project')
+                                    <x-icon.project-activity class="h-5 w-5" />
+                                @elseif ($activity['type'] === 'invoice')
+                                    <x-icon.invoice-activity class="h-5 w-5" />
+                                @else
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke-width="1.8"
+                                        stroke="currentColor"
+                                        class="h-5 w-5"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M8.25 18.75a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6.75m-9.75 0H3.75V6.75A2.25 2.25 0 0 1 6 4.5h7.5v14.25m1.5 0a1.5 1.5 0 1 0 3 0m-3 0a1.5 1.5 0 0 1 3 0m0 0h2.25v-6.75l-3-3H13.5"
+                                        />
+                                    </svg>
+                                @endif
+                            </div>
+
+                            <div class="min-w-0 flex-1 pt-0.5">
+                                <h3 class="truncate font-semibold text-gray-900 transition group-hover:text-blue-600">
+                                    {{ $activity['title'] }}
+                                </h3>
+
+                                <p class="mt-1 line-clamp-2 text-sm leading-5 text-gray-500">
+                                    {{ $activity['description'] }}
+                                </p>
+
+                                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <span class="text-xs font-semibold uppercase tracking-wide {{ $configuration['text'] }}">
+                                        {{ $configuration['label'] }}
+                                    </span>
+
+                                    <time
+                                        datetime="{{ $activity['occurred_at']->toIso8601String() }}"
+                                        class="text-xs text-gray-400"
+                                    >
+                                        {{ $activity['occurred_at']->diffForHumans() }}
+                                    </time>
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
             </div>
+        @else
+            <div class="flex min-h-[340px] items-center justify-center text-center">
+                <div>
+                    <p class="font-semibold text-gray-700">
+                        Belum ada aktivitas
+                    </p>
 
-            <div class="space-y-8">
-
-                {{-- Item 1 --}}
-                <div class="relative flex items-start gap-4">
-
-                    <div class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 ring-4 ring-white">
-
-                        <x-icon.project-activity class="h-5 w-5"/>
-
-                    </div>
-
-                    <div class="pt-1">
-
-                        <h3 class="font-semibold text-gray-900">
-                            Project Rumah Budi dibuat
-                        </h3>
-
-                        <p class="mt-1 text-sm text-gray-500">
-                            Project Management
-                        </p>
-
-                        <p class="mt-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                            2 Jam Yang Lalu
-                        </p>
-
-                    </div>
-
+                    <p class="mt-1 text-sm text-gray-500">
+                        Aktivitas terbaru akan muncul di sini.
+                    </p>
                 </div>
-
-                {{-- Item 2 --}}
-                <div class="relative flex items-start gap-4">
-
-                    <div class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 ring-4 ring-white">
-
-                        <x-icon.client-activity class="h-5 w-5"/>
-
-                    </div>
-
-                    <div class="pt-1">
-
-                        <h3 class="font-semibold text-gray-900">
-                            Client PT Maju Bersama ditambahkan
-                        </h3>
-
-                        <p class="mt-1 text-sm text-gray-500">
-                            Client Management
-                        </p>
-
-                        <p class="mt-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                            Kemarin
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {{-- Item 3 --}}
-                <div class="relative flex items-start gap-4">
-
-                    <div class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 ring-4 ring-white">
-
-                        <x-icon.monitoring-activity class="h-5 w-5"/>
-
-                    </div>
-
-                    <div class="pt-1">
-
-                        <h3 class="font-semibold text-gray-900">
-                            Progress Gudang ABC diperbarui
-                        </h3>
-
-                        <p class="mt-1 text-sm text-gray-500">
-                            Monitoring
-                        </p>
-
-                        <p class="mt-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                            2 Hari Yang Lalu
-                        </p>
-
-                    </div>
-
-                </div>
-
-                {{-- Item 4 --}}
-                <div class="relative flex items-start gap-4 opacity-70">
-
-                    <div class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 ring-4 ring-white">
-
-                        <x-icon.invoice-activity class="h-5 w-5"/>
-
-                    </div>
-
-                    <div class="pt-1">
-
-                        <h3 class="font-semibold text-gray-700">
-                            Invoice berhasil dibuat
-                        </h3>
-
-                        <p class="mt-1 text-sm text-gray-500">
-                            Administration
-                        </p>
-
-                        <p class="mt-2 text-xs font-medium uppercase tracking-wide text-gray-400">
-                            3 Hari Yang Lalu
-                        </p>
-
-                    </div>
-
-                </div>
-
             </div>
-
-        </div>
-
+        @endif
     </div>
-
 </div>
