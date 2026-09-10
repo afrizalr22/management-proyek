@@ -19,6 +19,7 @@ use Spatie\Permission\Traits\HasRoles;
     'phone',
     'photo',
     'status',
+    'email_verified_at',
     'password',
 ])]
 #[Hidden([

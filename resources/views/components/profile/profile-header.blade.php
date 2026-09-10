@@ -1,9 +1,18 @@
+@props([
+    'user',
+])
+
 <div>
-    <h1 class="text-3xl font-bold text-gray-900">
-        Account Settings
+    <p class="text-sm font-semibold text-blue-600">
+        Pengaturan Akun
+    </p>
+
+    <h1 class="mt-2 text-3xl font-bold text-gray-900">
+        Profil Owner
     </h1>
 
     <p class="mt-2 max-w-2xl text-gray-500">
-        Kelola informasi pribadi, akun, dan keamanan profil Anda.
+        Kelola informasi pribadi, foto profil, email, dan keamanan akun
+        {{ $user->name }}.
     </p>
 </div>
