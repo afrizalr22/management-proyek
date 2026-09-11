@@ -133,7 +133,8 @@
             <x-user.user-summary
                 :user="$user"
                 :role="$role"
-                :project-history="$projectHistory"
+                :total-projects="$totalProjects"
+                :active-projects="$activeProjects"
             />
         </div>
     </div>

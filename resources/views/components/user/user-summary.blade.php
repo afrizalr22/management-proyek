@@ -1,7 +1,8 @@
 @props([
     'user',
     'role' => '-',
-    'projectHistory' => collect(),
+    'totalProjects' => 0,
+    'activeProjects' => collect(),
 ])
 
 @php
@@ -12,36 +13,35 @@
         default => '-',
     };
 
-    $totalProjects = $projectHistory->count();
-
-    $activeProjects = $projectHistory
-        ->filter(function ($project) {
-            if (($project['role'] ?? null) === 'Pekerja') {
-                return ($project['assignment_status'] ?? null) === 'active';
-            }
-
-            return in_array(
-                $project['status'] ?? null,
-                ['planning', 'on_progress'],
-                true
-            );
-        })
-        ->count();
+    $activeProjectCount = $activeProjects->count();
 
     $availabilityText = match (true) {
-        $user->status !== 'active' => 'Akun tidak aktif',
-        $role === 'pekerja' && $activeProjects > 0 => 'Sedang bertugas',
-        $role === 'pekerja' => 'Tersedia',
-        $role === 'mandor' && $activeProjects > 0 => 'Mengelola Project',
-        $role === 'mandor' => 'Tersedia',
-        default => 'Akses sistem',
+        $user->status !== 'active' =>
+            'Akun tidak aktif',
+
+        $role === 'pekerja'
+            && $activeProjectCount > 0 =>
+            'Sedang bertugas',
+
+        $role === 'pekerja' =>
+            'Tersedia',
+
+        $role === 'mandor'
+            && $activeProjectCount > 0 =>
+            'Mengelola Project',
+
+        $role === 'mandor' =>
+            'Tersedia',
+
+        default =>
+            'Akses sistem',
     };
 
     $availabilityClasses = match (true) {
         $user->status !== 'active' =>
             'border-red-200 bg-red-50 text-red-700',
 
-        $activeProjects > 0 =>
+        $activeProjectCount > 0 =>
             'border-yellow-200 bg-yellow-50 text-yellow-700',
 
         default =>
@@ -63,23 +63,32 @@
 
         <div class="space-y-5">
             <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
-                <span class="text-gray-500">Role</span>
+                <span class="text-gray-500">
+                    Role
+                </span>
+
                 <span class="font-semibold text-gray-800">
                     {{ $roleText }}
                 </span>
             </div>
 
             <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
-                <span class="text-gray-500">Total Project</span>
+                <span class="text-gray-500">
+                    Total Project
+                </span>
+
                 <span class="font-semibold text-gray-800">
                     {{ $totalProjects }}
                 </span>
             </div>
 
             <div class="flex items-center justify-between gap-4 border-b border-gray-100 pb-3">
-                <span class="text-gray-500">Project Aktif</span>
+                <span class="text-gray-500">
+                    Project Aktif
+                </span>
+
                 <span class="font-semibold text-gray-800">
-                    {{ $activeProjects }}
+                    {{ $activeProjectCount }}
                 </span>
             </div>
 
@@ -88,7 +97,9 @@
                     Ketersediaan
                 </span>
 
-                <div class="rounded-xl border px-4 py-3 text-sm font-semibold {{ $availabilityClasses }}">
+                <div
+                    class="rounded-xl border px-4 py-3 text-sm font-semibold {{ $availabilityClasses }}"
+                >
                     {{ $availabilityText }}
                 </div>
             </div>

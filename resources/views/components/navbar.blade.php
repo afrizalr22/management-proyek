@@ -25,6 +25,112 @@
         'owner' => route('owner.profile'),
         default => null,
     };
+
+    /*
+     * Menentukan konteks halaman berdasarkan route
+     * yang sedang dibuka.
+     */
+    [$sectionLabel, $pageLabel] = match (true) {
+        request()->routeIs('owner.dashboard') => [
+            'Utama',
+            'Dashboard',
+        ],
+
+        request()->routeIs('owner.clients.*') => [
+            'Penjualan',
+            'Client',
+        ],
+
+        request()->routeIs('owner.quotations.*') => [
+            'Penjualan',
+            'Quotation',
+        ],
+
+        request()->routeIs('owner.invoices.*') => [
+            'Penjualan',
+            'Invoice',
+        ],
+
+        request()->routeIs('owner.projects.*') => [
+            'Operasional',
+            'Project',
+        ],
+
+        request()->routeIs('owner.delivery-orders.*') => [
+            'Operasional',
+            'Surat Jalan',
+        ],
+
+        request()->routeIs('owner.monitoring.*') => [
+            'Operasional',
+            'Project Monitoring',
+        ],
+
+        request()->routeIs('owner.users.*') => [
+            'Pengaturan',
+            'User Management',
+        ],
+
+        request()->routeIs('owner.profile') => [
+            'Akun',
+            'Profil',
+        ],
+
+        request()->routeIs('mandor.dashboard') => [
+            'Utama',
+            'Dashboard Mandor',
+        ],
+
+        request()->routeIs('mandor.projects.*') => [
+            'Operasional',
+            'Project',
+        ],
+
+        request()->routeIs('mandor.work-progress.*') => [
+            'Operasional',
+            'Progress Pekerjaan',
+        ],
+
+        request()->routeIs('mandor.documentations.*') => [
+            'Operasional',
+            'Dokumentasi',
+        ],
+
+        request()->routeIs('mandor.daily-reports.*') => [
+            'Operasional',
+            'Laporan Harian',
+        ],
+
+        request()->routeIs('pekerja.dashboard') => [
+            'Utama',
+            'Dashboard Pekerja',
+        ],
+
+        request()->routeIs('pekerja.tasks.*') => [
+            'Pekerjaan',
+            'Task',
+        ],
+
+        request()->routeIs('pekerja.documentation.*') => [
+            'Pekerjaan',
+            'Dokumentasi',
+        ],
+
+        request()->routeIs('pekerja.report.*') => [
+            'Pekerjaan',
+            'Laporan',
+        ],
+
+        request()->routeIs('pekerja.profile.*') => [
+            'Akun',
+            'Profil',
+        ],
+
+        default => [
+            'Sistem',
+            'Management Proyek',
+        ],
+    };
 @endphp
 
 <nav
@@ -45,11 +151,12 @@
     class="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6"
 >
     {{-- Bagian kiri --}}
-    <div class="flex min-w-0 items-center gap-4">
+    <div class="flex min-w-0 items-center gap-3">
+        {{-- Tombol menu mobile --}}
         <button
             type="button"
             x-on:click="sidebarOpen = true"
-            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 lg:hidden"
+            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-600 transition hover:bg-gray-100 lg:hidden"
             aria-label="Buka menu navigasi"
         >
             <svg
@@ -58,7 +165,7 @@
                 viewBox="0 0 24 24"
                 stroke-width="2"
                 stroke="currentColor"
-                class="h-7 w-7"
+                class="h-6 w-6"
             >
                 <path
                     stroke-linecap="round"
@@ -68,14 +175,24 @@
             </svg>
         </button>
 
+        {{-- Informasi halaman --}}
         <div class="min-w-0">
-            <h1 class="text-lg font-semibold text-gray-900">
-                Dashboard
-            </h1>
+            <div class="flex min-w-0 items-center gap-2">
+                <span class="hidden text-[11px] font-bold uppercase tracking-[0.14em] text-blue-600 sm:inline">
+                    {{ $sectionLabel }}
+                </span>
 
-            <p class="truncate text-sm text-gray-500">
+                <span class="hidden text-gray-300 sm:inline">
+                    /
+                </span>
+
+                <h1 class="truncate text-base font-bold text-gray-900 sm:text-lg">
+                    {{ $pageLabel }}
+                </h1>
+            </div>
+
+            <p class="mt-0.5 hidden truncate text-xs text-gray-500 sm:block">
                 Selamat datang,
-
                 <span x-text="name"></span>
             </p>
         </div>
@@ -86,7 +203,7 @@
         <div class="hidden flex-col items-end md:flex">
             <span
                 x-text="name"
-                class="max-w-48 truncate font-medium text-gray-900"
+                class="max-w-48 truncate text-sm font-semibold text-gray-900"
             ></span>
 
             <span class="text-xs text-gray-500">
@@ -98,8 +215,9 @@
             <a
                 href="{{ $profileRoute }}"
                 wire:navigate
-                class="relative block h-10 w-10 shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                class="relative block h-10 w-10 shrink-0 overflow-hidden rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 title="Buka profil"
+                aria-label="Buka profil pengguna"
             >
                 <img
                     x-show="photo"
@@ -110,7 +228,7 @@
                 >
 
                 <div
-                    x-show="! photo"
+                    x-show="!photo"
                     x-cloak
                     x-text="
                         name
@@ -123,7 +241,7 @@
                 ></div>
             </a>
         @else
-            <div class="relative h-10 w-10 shrink-0">
+            <div class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
                 <img
                     x-show="photo"
                     x-bind:src="photo"
@@ -133,7 +251,7 @@
                 >
 
                 <div
-                    x-show="! photo"
+                    x-show="!photo"
                     x-cloak
                     x-text="
                         name

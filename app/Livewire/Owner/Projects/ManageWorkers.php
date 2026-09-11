@@ -132,12 +132,20 @@ class ManageWorkers extends Component
             ->sort()
             ->values();
 
+        /*
+        * Memastikan seluruh pengguna yang dipilih
+        * benar-benar mempunyai role Pekerja.
+        */
         $validWorkerIds = User::query()
             ->role('pekerja')
-            ->whereIn('id', $selectedWorkerIds)
+            ->whereIn(
+                'id',
+                $selectedWorkerIds
+            )
             ->pluck('id')
             ->map(
-                fn ($workerId): int => (int) $workerId
+                fn ($workerId): int =>
+                    (int) $workerId
             )
             ->sort()
             ->values();
@@ -149,6 +157,54 @@ class ManageWorkers extends Component
             $this->addError(
                 'workers',
                 'Pilihan mengandung pengguna yang bukan Pekerja.'
+            );
+
+            return;
+        }
+
+        /*
+        * Status aktif hanya diwajibkan untuk pekerja
+        * yang baru akan ditambahkan ke Project.
+        *
+        * Pekerja lama yang kemudian dinonaktifkan
+        * tetap dapat diproses sebagai riwayat penugasan.
+        */
+        $originalWorkerIds = collect(
+            $this->originalWorkerIds
+        )
+            ->map(
+                fn ($workerId): int =>
+                    (int) $workerId
+            )
+            ->unique()
+            ->values();
+
+        $newWorkerIds = $selectedWorkerIds
+            ->diff($originalWorkerIds)
+            ->values();
+
+        $activeNewWorkerIds = User::query()
+            ->role('pekerja')
+            ->where('status', 'active')
+            ->whereIn(
+                'id',
+                $newWorkerIds
+            )
+            ->pluck('id')
+            ->map(
+                fn ($workerId): int =>
+                    (int) $workerId
+            )
+            ->sort()
+            ->values();
+
+        if (
+            $activeNewWorkerIds->count()
+            !== $newWorkerIds->count()
+        ) {
+            $this->addError(
+                'workers',
+                'Pekerja yang tidak aktif tidak dapat ditugaskan ke Project.'
             );
 
             return;
@@ -570,7 +626,8 @@ class ManageWorkers extends Component
                 ->keyBy('worker_id');
 
         $workers = User::query()
-            ->role('pekerja')
+        ->role('pekerja')
+        ->where('status', 'active')
             ->when(
                 trim($this->search) !== '',
                 function ($query): void {
@@ -603,6 +660,7 @@ class ManageWorkers extends Component
                 'id',
                 'name',
                 'email',
+                'status',
             ]);
 
         $selectedWorkerIds = collect(

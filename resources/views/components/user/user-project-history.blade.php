@@ -21,7 +21,7 @@
             </h2>
 
             <p class="mt-2 text-gray-500">
-                Daftar Project yang pernah maupun sedang ditangani pengguna.
+                Daftar Project yang telah diselesaikan oleh pengguna.
             </p>
         </div>
 
@@ -104,15 +104,6 @@
                                     <x-ui.badge :color="$statusColor">
                                         {{ $statusText }}
                                     </x-ui.badge>
-
-                                    @if ($project['assignment_status'])
-                                        <p class="mt-2 text-xs text-gray-500">
-                                            Penugasan:
-                                            {{ $project['assignment_status'] === 'active'
-                                                ? 'Aktif'
-                                                : 'Tidak Aktif' }}
-                                        </p>
-                                    @endif
                                 </td>
 
                                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
@@ -140,7 +131,7 @@
                 </p>
 
                 <p class="mt-1 text-sm text-gray-500">
-                    Pengguna ini belum pernah ditugaskan pada Project.
+                    Pengguna ini belum menyelesaikan Project.
                 </p>
             </div>
         @endif

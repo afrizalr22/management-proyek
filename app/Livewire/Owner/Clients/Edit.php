@@ -129,25 +129,69 @@ class Edit extends Component
         $user = Auth::user();
 
         abort_unless(
-            $user instanceof User && $user->can('update clients'),
+            $user instanceof User
+                && $user->can('update clients'),
             403
         );
 
         $validated = $this->validate();
 
-        $this->client->update([
-            'contact_person' => trim($validated['name']),
-            'company_name' => trim($validated['company']),
-            'email' => strtolower(trim($validated['email'])),
-            'phone' => $this->normalizePhone($validated['phone']),
-            'city' => trim($validated['city']),
-            'address' => trim($validated['address']),
-            'status' => $validated['status'],
+        /*
+        * Masukkan data ke model terlebih dahulu
+        * tanpa langsung menyimpannya.
+        */
+        $this->client->fill([
+            'contact_person' =>
+                trim($validated['name']),
+
+            'company_name' =>
+                trim($validated['company']),
+
+            'email' =>
+                strtolower(
+                    trim($validated['email'])
+                ),
+
+            'phone' =>
+                $this->normalizePhone(
+                    $validated['phone']
+                ),
+
+            'city' =>
+                trim($validated['city']),
+
+            'address' =>
+                trim($validated['address']),
+
+            'status' =>
+                $validated['status'],
         ]);
+
+        /*
+        * Jangan menjalankan query UPDATE apabila
+        * tidak ada nilai yang berubah.
+        */
+        if (!$this->client->isDirty()) {
+            session()->flash('notification', [
+                'type' => 'warning',
+                'message' =>
+                    'Tidak ada perubahan data Client yang perlu disimpan.',
+            ]);
+
+            $this->redirectRoute(
+                'owner.clients.index',
+                navigate: true
+            );
+
+            return;
+        }
+
+        $this->client->save();
 
         session()->flash('notification', [
             'type' => 'update',
-            'message' => 'Data client berhasil diperbarui.',
+            'message' =>
+                'Data Client berhasil diperbarui.',
         ]);
 
         $this->redirectRoute(

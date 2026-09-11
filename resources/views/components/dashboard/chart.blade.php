@@ -73,8 +73,8 @@
                 >
                     <div class="flex">
                         {{-- Sumbu Persentase --}}
-                        <div class="relative h-80 w-14 shrink-0">
-                            <span class="absolute -top-2 right-3 text-xs font-medium text-gray-400">
+                        <div class="relative h-80 w-14 shrink-0 xl:h-[520px]">
+                            <span class="absolute right-3 top-1 text-xs font-medium text-gray-400">
                                 100%
                             </span>
 
@@ -90,14 +90,14 @@
                                 25%
                             </span>
 
-                            <span class="absolute -bottom-2 right-3 text-xs font-medium text-gray-400">
+                            <span class="absolute bottom-0 right-3 text-xs font-medium text-gray-400">
                                 0%
                             </span>
                         </div>
 
                         {{-- Grafik --}}
                         <div class="min-w-0 flex-1">
-                            <div class="relative h-80 border-b border-l border-gray-300">
+                            <div class="relative h-80 border-b border-l border-gray-300 xl:h-[520px]">
                                 {{-- Garis Skala --}}
                                 <div class="pointer-events-none absolute inset-0">
                                     <div class="absolute left-0 right-0 top-0 border-t border-dashed border-gray-200"></div>
@@ -165,7 +165,17 @@
                                                 `"
                                                 class="relative w-full max-w-24 rounded-t-xl transition-all duration-500 hover:opacity-85 {{ $barColor }}"
                                             >
-                                                <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-bold text-gray-700">
+                                                <span
+                                                    @class([
+                                                        'absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap text-sm font-bold',
+
+                                                        'top-2 text-white' =>
+                                                            $progress >= 95,
+
+                                                        '-top-8 text-gray-700' =>
+                                                            $progress < 95,
+                                                    ])
+                                                >
                                                     {{ $progress }}%
                                                 </span>
 
@@ -223,7 +233,7 @@
                     </div>
 
                     {{-- Legenda --}}
-                    <div class="mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 border-t border-gray-100 pt-5">
+                    <div class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-gray-100 pt-4">
                         <div class="flex items-center gap-2">
                             <span class="h-3 w-3 rounded-full bg-gray-400"></span>
 

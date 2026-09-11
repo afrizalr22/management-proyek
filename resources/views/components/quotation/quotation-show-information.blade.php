@@ -16,27 +16,27 @@
                 </p>
 
                 <h3 class="mt-2 break-words text-lg font-bold text-gray-900">
-                    {{ $quotation->client_name
-                        ?: $quotation->client?->company_name
+                    {{ $quotation->client?->company_name
+                        ?: $quotation->client_name
                         ?: '-' }}
                 </h3>
 
                 <div class="mt-3 space-y-1.5 text-sm text-gray-500">
                     <p class="break-words">
-                        {{ $quotation->client_contact_person
-                            ?: $quotation->client?->contact_person
+                        {{ $quotation->client?->contact_person
+                            ?: $quotation->client_contact_person
                             ?: '-' }}
                     </p>
 
                     <p class="break-all">
-                        {{ $quotation->client_email
-                            ?: $quotation->client?->email
+                        {{ $quotation->client?->email
+                            ?: $quotation->client_email
                             ?: '-' }}
                     </p>
 
                     <p>
-                        {{ $quotation->client_phone
-                            ?: $quotation->client?->phone
+                        {{ $quotation->client?->phone
+                            ?: $quotation->client_phone
                             ?: '-' }}
                     </p>
                 </div>
@@ -165,15 +165,16 @@
         </div>
 
         {{-- Alamat client --}}
-        @if ($quotation->client_address || $quotation->client?->address)
+       @if ($quotation->client?->address || $quotation->client_address)
             <div class="mt-8 border-t border-gray-200 pt-6">
                 <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
                     Alamat Client
                 </p>
 
                 <p class="mt-2 whitespace-pre-line break-words text-sm leading-6 text-gray-700">
-                    {{ $quotation->client_address
-                        ?: $quotation->client?->address }}
+                    {{ $quotation->client?->address
+                        ?: $quotation->client_address
+                        ?: '-' }}
                 </p>
             </div>
         @endif

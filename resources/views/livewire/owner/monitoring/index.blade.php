@@ -21,7 +21,7 @@
 
     {{-- Daftar Project --}}
     @if ($projects->isNotEmpty())
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:grid-cols-3">
             @foreach ($projects as $project)
                 <x-monitoring.monitoring-card
                     :project="$project"

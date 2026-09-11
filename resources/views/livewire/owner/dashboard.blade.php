@@ -13,14 +13,14 @@
     />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-    <x-dashboard.chart
-        :projects="$chartProjects"
-    />
+        <x-dashboard.chart
+            :projects="$chartProjects"
+        />
 
-    <x-dashboard.recent-activity
-        :activities="$recentActivities"
-    />
-</div>
+        <x-dashboard.recent-activity
+            :activities="$recentActivities"
+        />
+    </div>
 
     <x-dashboard.project-pipeline
         :projects="$pipelineProjects"

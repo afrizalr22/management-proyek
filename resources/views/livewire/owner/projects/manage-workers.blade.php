@@ -19,7 +19,9 @@
             ></button>
 
             {{-- Modal --}}
-            <div class="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div
+                class="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            >
                 {{-- Header --}}
                 <div class="border-b border-gray-200 px-5 py-5 sm:px-6">
                     <div class="flex items-start justify-between gap-4">
@@ -32,7 +34,9 @@
                             </h2>
 
                             <p class="mt-1 text-sm leading-6 text-gray-500">
-                                Centang pekerja untuk menambahkan dan hapus centang untuk menonaktifkan dari Project.
+                                Pilih Pekerja untuk menambahkannya ke Project
+                                atau hapus pilihan untuk menonaktifkan
+                                penugasannya.
                             </p>
                         </div>
 
@@ -49,21 +53,38 @@
                     </div>
                 </div>
 
-                {{-- Keterangan --}}
+                {{-- Keterangan status --}}
                 <div class="border-b border-blue-100 bg-blue-50 px-5 py-4 sm:px-6">
-                    <div class="grid gap-2 text-xs text-blue-700 sm:grid-cols-3">
+                    <div class="grid gap-3 text-xs text-blue-700 sm:grid-cols-2 lg:grid-cols-4">
                         <div class="flex items-center gap-2">
-                            <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                            Terpilih pada Project ini
+                            <span
+                                class="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-500"
+                            ></span>
+
+                            Tersedia
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                            <span
+                                class="h-2.5 w-2.5 shrink-0 rounded-full bg-green-500"
+                            ></span>
+
+                            Dipilih
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500"
+                            ></span>
+
                             Memiliki tugas aktif
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <span class="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
+                            <span
+                                class="h-2.5 w-2.5 shrink-0 rounded-full bg-gray-400"
+                            ></span>
+
                             Aktif pada Project lain
                         </div>
                     </div>
@@ -74,7 +95,8 @@
                     <input
                         type="search"
                         wire:model.live.debounce.300ms="search"
-                        placeholder="Cari nama atau email pekerja..."
+                        placeholder="Cari nama atau email Pekerja..."
+                        autocomplete="off"
                         class="w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500"
                     >
                 </div>
@@ -103,35 +125,44 @@
                         <div class="space-y-3">
                             @foreach ($workers as $worker)
                                 @php
+                                    /*
+                                     * Penugasan Pekerja pada Project
+                                     * yang sedang dibuka.
+                                     */
                                     $assignment = $assignments->get(
                                         $worker->id
                                     );
 
                                     $isCurrentlyActive =
-                                        $assignment?->status
-                                        === 'active';
+                                        $assignment?->status === 'active';
 
+                                    /*
+                                     * Jumlah Task aktif milik Pekerja
+                                     * pada Project ini.
+                                     */
                                     $activeTaskCount = (int) (
                                         $activeTaskCounts->get(
                                             $worker->id
                                         ) ?? 0
                                     );
 
+                                    /*
+                                     * Penugasan aktif pada Project lain.
+                                     */
                                     $otherAssignment =
-                                        $otherProjectAssignments
-                                            ->get(
-                                                $worker->id
-                                            );
+                                        $otherProjectAssignments->get(
+                                            $worker->id
+                                        );
 
                                     $hasOtherProject =
-                                        $otherAssignment
-                                        !== null;
+                                        $otherAssignment !== null;
 
                                     /*
-                                     * Checkbox dikunci jika:
-                                     * 1. Pekerja aktif di sini dan masih
-                                     *    memiliki tugas aktif.
-                                     * 2. Pekerja sedang aktif di Project lain.
+                                     * Checkbox dikunci apabila:
+                                     * 1. Pekerja aktif pada Project ini
+                                     *    dan masih memiliki Task aktif.
+                                     * 2. Pekerja sedang aktif pada
+                                     *    Project lain.
                                      */
                                     $checkboxDisabled =
                                         (
@@ -177,15 +208,19 @@
                                     wire:key="worker-option-{{ $worker->id }}"
                                     @class([
                                         'block rounded-xl border p-4 transition',
+
                                         'cursor-not-allowed border-amber-200 bg-amber-50' =>
                                             $isCurrentlyActive
                                             && $activeTaskCount > 0,
+
                                         'cursor-not-allowed border-gray-200 bg-gray-100' =>
                                             !$isCurrentlyActive
                                             && $hasOtherProject,
+
                                         'cursor-pointer border-green-200 bg-green-50 hover:border-green-300' =>
                                             $isSelected
                                             && !$checkboxDisabled,
+
                                         'cursor-pointer border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/40' =>
                                             !$isSelected
                                             && !$checkboxDisabled,
@@ -204,7 +239,9 @@
                                         </div>
 
                                         {{-- Avatar --}}
-                                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+                                        <div
+                                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700"
+                                        >
                                             {{ $initials ?: 'P' }}
                                         </div>
 
@@ -225,7 +262,8 @@
                                                 <p class="mt-2 text-xs font-medium leading-5 text-amber-700">
                                                     Masih memiliki
                                                     {{ $activeTaskCount }}
-                                                    tugas aktif. Pekerja belum dapat dikeluarkan.
+                                                    Task aktif. Pekerja belum
+                                                    dapat dikeluarkan.
                                                 </p>
                                             @elseif (
                                                 !$isCurrentlyActive
@@ -233,6 +271,7 @@
                                             )
                                                 <p class="mt-2 text-xs font-medium leading-5 text-gray-600">
                                                     Sedang ditugaskan di
+
                                                     {{ $otherAssignment
                                                         ->project
                                                         ?->project_code
@@ -249,16 +288,18 @@
                                                             ->project_name }}
                                                     @endif
                                                 </p>
+                                            @elseif ($isSelected)
+                                                <p class="mt-2 text-xs font-medium text-green-700">
+                                                    Pekerja dipilih untuk
+                                                    Project ini.
+                                                </p>
                                             @elseif (
                                                 $assignment
                                                 && !$isCurrentlyActive
                                             )
                                                 <p class="mt-2 text-xs text-gray-500">
-                                                    Pernah bergabung dan dapat diaktifkan kembali.
-                                                </p>
-                                            @elseif ($isSelected)
-                                                <p class="mt-2 text-xs font-medium text-green-700">
-                                                    Akan ditambahkan ke Project.
+                                                    Pernah bergabung dan
+                                                    tersedia untuk Project ini.
                                                 </p>
                                             @else
                                                 <p class="mt-2 text-xs text-gray-500">
@@ -287,13 +328,6 @@
                                                 <x-ui.badge color="green">
                                                     Dipilih
                                                 </x-ui.badge>
-                                            @elseif (
-                                                $assignment
-                                                && !$isCurrentlyActive
-                                            )
-                                                <x-ui.badge color="gray">
-                                                    Tidak Aktif
-                                                </x-ui.badge>
                                             @else
                                                 <x-ui.badge color="blue">
                                                     Tersedia
@@ -305,26 +339,32 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-5 py-10 text-center">
+                        <div
+                            class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-5 py-10 text-center"
+                        >
                             <p class="font-semibold text-gray-700">
                                 Pekerja tidak ditemukan
                             </p>
 
                             <p class="mt-1 text-sm text-gray-500">
-                                Belum tersedia pengguna dengan role Pekerja atau kata pencarian tidak sesuai.
+                                Belum tersedia Pekerja aktif atau kata
+                                pencarian tidak sesuai.
                             </p>
                         </div>
                     @endif
                 </div>
 
                 {{-- Footer --}}
-                <div class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <div
+                    class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                >
                     <div>
                         <p class="text-sm text-gray-500">
                             <span class="font-semibold text-gray-800">
                                 {{ count($selectedWorkerIds) }}
                             </span>
-                            pekerja dipilih
+
+                            Pekerja dipilih
                         </p>
 
                         @if ($hasChanges)
@@ -357,8 +397,10 @@
                             @disabled(!$hasChanges)
                             @class([
                                 'inline-flex min-h-11 items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-4',
+
                                 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-100' =>
                                     $hasChanges,
+
                                 'cursor-not-allowed bg-gray-300 text-gray-500' =>
                                     !$hasChanges,
                             ])

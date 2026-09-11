@@ -108,7 +108,7 @@ class Create extends Component
             'phone.regex' =>
                 'Nomor telepon harus terdiri dari 8 sampai 15 angka.',
 
-            'city.required' => 'Kota wajib dipilih.',
+            'city.required' => 'Kota wajib diisi.',
             'city.max' => 'Nama kota maksimal 100 karakter.',
 
             'status.required' => 'Status Client wajib dipilih.',
