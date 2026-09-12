@@ -1,6 +1,25 @@
+@props([
+    'href' => null,
+    'panel' => 'Panel',
+])
+
+@php
+    $homeRoute = $href
+        ?? match (true) {
+            request()->routeIs('mandor.*') =>
+                route('mandor.dashboard'),
+
+            request()->routeIs('pekerja.*') =>
+                route('pekerja.dashboard'),
+
+            default =>
+                route('owner.dashboard'),
+        };
+@endphp
+
 <div class="shrink-0 border-b border-gray-200 px-5 py-5">
     <a
-        href="{{ route('owner.dashboard') }}"
+        href="{{ $homeRoute }}"
         wire:navigate
         x-on:click="sidebarOpen = false"
         class="flex items-center gap-3"
@@ -28,7 +47,7 @@
             </p>
 
             <p class="mt-0.5 text-xs font-medium text-gray-500">
-                Owner Panel
+                {{ $panel }}
             </p>
         </div>
     </a>

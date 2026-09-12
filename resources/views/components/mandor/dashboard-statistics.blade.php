@@ -1,254 +1,239 @@
-<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+@props([
+    'statistics' => [],
+])
 
-    {{-- Active Workers --}}
+@php
+    $activeProjects = (int) (
+        $statistics['active_projects']
+        ?? 0
+    );
+
+    $activeWorkers = (int) (
+        $statistics['active_workers']
+        ?? 0
+    );
+
+    $todayTasks = (int) (
+        $statistics['today_tasks']
+        ?? 0
+    );
+
+    $completedTodayTasks = (int) (
+        $statistics['completed_today_tasks']
+        ?? 0
+    );
+
+    $todayTaskProgress = min(
+        max(
+            (int) (
+                $statistics['today_task_progress']
+                ?? 0
+            ),
+            0
+        ),
+        100
+    );
+
+    $todayReports = (int) (
+        $statistics['today_reports']
+        ?? 0
+    );
+
+    $reportsAwaitingReview = (int) (
+        $statistics['reports_awaiting_review']
+        ?? 0
+    );
+@endphp
+
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    {{-- Project aktif --}}
     <x-ui.info-card>
-
-        <div class="p-6">
-
-            <div class="flex items-start justify-between">
-
+        <div class="flex h-full flex-col p-5 sm:p-6">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-
                     <p class="text-sm font-medium text-gray-500">
-                        Active Workers
+                        Project Aktif
                     </p>
 
-                    <h3 class="mt-3 text-3xl font-bold text-gray-900">
-                        42
-                    </h3>
-
+                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                        {{ $activeProjects }}
+                    </p>
                 </div>
 
-                <div
-                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
-                >
-
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="h-6 w-6"
                         fill="none"
                         viewBox="0 0 24 24"
+                        stroke-width="1.8"
                         stroke="currentColor"
-                        stroke-width="2"
+                        class="h-6 w-6"
                     >
-
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-9a4 4 0 11-8 0 4 4 0 018 0zm6 2a3 3 0 10-6 0"
+                            d="M2.25 12 11.204 3.045a1.125 1.125 0 0 1 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-5.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"
                         />
-
                     </svg>
-
                 </div>
-
             </div>
 
-            <div class="mt-4">
-
-                <span class="text-sm font-medium text-emerald-600">
-                    5%
-                </span>
-
-                <span class="text-sm text-gray-400">
-                    vs yesterday
-                </span>
-
-            </div>
-
+            <p class="mt-auto pt-4 text-sm text-gray-400">
+                Project yang sedang dikelola
+            </p>
         </div>
-
     </x-ui.info-card>
 
-
-    {{-- Today's Tasks --}}
+    {{-- Pekerja aktif --}}
     <x-ui.info-card>
-
-        <div class="p-6">
-
-            <div class="flex items-start justify-between">
-
+        <div class="flex h-full flex-col p-5 sm:p-6">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-
                     <p class="text-sm font-medium text-gray-500">
-                        Today's Tasks
+                        Pekerja Aktif
                     </p>
 
-                    <h3 class="mt-3 text-3xl font-bold text-gray-900">
-                        12
-                        <span class="text-lg font-medium text-gray-400">
-                            / 18
-                        </span>
-                    </h3>
-
+                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                        {{ $activeWorkers }}
+                    </p>
                 </div>
 
-                <div
-                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
-                >
-
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="h-6 w-6"
                         fill="none"
                         viewBox="0 0 24 24"
+                        stroke-width="1.8"
                         stroke="currentColor"
-                        stroke-width="2"
+                        class="h-6 w-6"
                     >
-
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.205-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m10.117 0a9.027 9.027 0 0 1 .941 3.197M6 18.72c-1.355 0-2.638-.3-3.741-.479a3 3 0 0 1 4.682-2.72M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
                         />
-
                     </svg>
-
                 </div>
-
             </div>
 
-            <div class="mt-4">
+            <p class="mt-auto pt-4 text-sm text-gray-400">
+                Ditugaskan pada Project aktif
+            </p>
+        </div>
+    </x-ui.info-card>
 
+    {{-- Task hari ini --}}
+    <x-ui.info-card>
+        <div class="flex h-full flex-col p-5 sm:p-6">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">
+                        Task Hari Ini
+                    </p>
+
+                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                        {{ $completedTodayTasks }}
+
+                        <span class="text-lg font-medium text-gray-400">
+                            / {{ $todayTasks }}
+                        </span>
+                    </p>
+                </div>
+
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-600">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.8"
+                        stroke="currentColor"
+                        class="h-6 w-6"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-4">
                 <div class="h-2 overflow-hidden rounded-full bg-gray-100">
-
                     <div
-                        class="h-full rounded-full bg-emerald-500"
-                        style="width: 67%;"
+                        x-data="{
+                            progress: @js($todayTaskProgress)
+                        }"
+                        x-bind:style="{
+                            width: progress + '%'
+                        }"
+                        class="h-full rounded-full bg-green-500 transition-all duration-500"
                     ></div>
-
                 </div>
 
                 <p class="mt-2 text-sm text-gray-400">
-                    67% completed
+                    {{ $todayTaskProgress }}% selesai
                 </p>
-
             </div>
-
         </div>
-
     </x-ui.info-card>
 
-
-    {{-- Daily Reports --}}
+    {{-- Laporan --}}
     <x-ui.info-card>
-
-        <div class="p-6">
-
-            <div class="flex items-start justify-between">
-
+        <div class="flex h-full flex-col p-5 sm:p-6">
+            <div class="flex items-start justify-between gap-4">
                 <div>
-
                     <p class="text-sm font-medium text-gray-500">
-                        Daily Reports
+                        Laporan Hari Ini
                     </p>
 
-                    <h3 class="mt-3 text-3xl font-bold text-gray-900">
-                        02
-                    </h3>
-
+                    <p class="mt-2 text-3xl font-bold text-gray-900">
+                        {{ $todayReports }}
+                    </p>
                 </div>
 
                 <div
-                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600"
+                    @class([
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+                        'bg-amber-50 text-amber-600' =>
+                            $reportsAwaitingReview > 0,
+                        'bg-indigo-50 text-indigo-600' =>
+                            $reportsAwaitingReview === 0,
+                    ])
                 >
-
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        class="h-6 w-6"
                         fill="none"
                         viewBox="0 0 24 24"
+                        stroke-width="1.8"
                         stroke="currentColor"
-                        stroke-width="2"
+                        class="h-6 w-6"
                     >
-
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h6l4 4v12a2 2 0 01-2 2z"
+                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5A3.375 3.375 0 0 0 10.125 2.25H8.25m0 12.75h7.5m-7.5 3h4.5m-7.5 3h9a2.25 2.25 0 0 0 2.25-2.25V8.108a2.25 2.25 0 0 0-.659-1.591l-3.108-3.108a2.25 2.25 0 0 0-1.591-.659H5.25A2.25 2.25 0 0 0 3 5v13.75A2.25 2.25 0 0 0 5.25 21Z"
                         />
-
                     </svg>
-
                 </div>
-
             </div>
 
-            <div class="mt-4">
-
-                <span class="text-sm font-medium text-blue-600">
-                    Today
-                </span>
-
-                <span class="text-sm text-gray-400">
-                    reports submitted
-                </span>
-
-            </div>
-
+            <p
+                @class([
+                    'mt-auto pt-4 text-sm',
+                    'font-medium text-amber-600' =>
+                        $reportsAwaitingReview > 0,
+                    'text-gray-400' =>
+                        $reportsAwaitingReview === 0,
+                ])
+            >
+                @if ($reportsAwaitingReview > 0)
+                    {{ $reportsAwaitingReview }}
+                    laporan menunggu pemeriksaan
+                @else
+                    Seluruh laporan telah diperiksa
+                @endif
+            </p>
         </div>
-
     </x-ui.info-card>
-
-
-    {{-- Safety Alerts --}}
-    <x-ui.info-card>
-
-        <div class="p-6">
-
-            <div class="flex items-start justify-between">
-
-                <div>
-
-                    <p class="text-sm font-medium text-gray-500">
-                        Safety Alerts
-                    </p>
-
-                    <h3 class="mt-3 text-3xl font-bold text-gray-900">
-                        0
-                    </h3>
-
-                </div>
-
-                <div
-                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600"
-                >
-
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M12 9v4m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
-                        />
-
-                    </svg>
-
-                </div>
-
-            </div>
-
-            <div class="mt-4">
-
-                <span class="text-sm font-medium text-emerald-600">
-                    All clear
-                </span>
-
-                <span class="text-sm text-gray-400">
-                    no safety alerts
-                </span>
-
-            </div>
-
-        </div>
-
-    </x-ui.info-card>
-
 </div>

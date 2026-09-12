@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Livewire\Mandor\DailyReports;
-use Livewire\WithFileUploads;
+
+use App\Models\DailyReport;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class Edit extends Component
 {
@@ -24,38 +27,98 @@ class Edit extends Component
     public string $obstacles = '';
     public string $notes = '';
 
-    public function mount(int $report): void
-    {
-        $this->reportId = $report;
+    public function mount(
+        DailyReport $report
+    ): void {
+        $this->authorizeReport(
+            $report
+        );
 
-        $this->projectName = 'Pembangunan Gedung Perkantoran Sudirman';
-        $this->reportDate = '2026-08-25';
+        $this->reportId = $report->id;
 
-        $this->activities = 'Pengecoran kolom lantai dua zona A telah diselesaikan.';
-        $this->obstacles = 'Pengiriman material mengalami keterlambatan.';
-        $this->notes = 'Persiapan pekerjaan berikutnya dilakukan di zona B.';
+        $this->projectName =
+            $report->project?->project_name
+            ?? 'Project tidak ditemukan';
 
-        $this->existingDocumentations = [
-            [
-                'id' => 1,
-                'photo' => null,
-                'description' => 'Proses pengecoran kolom lantai dua zona A.',
-                'time' => '10:15 WIB',
-            ],
-            [
-                'id' => 2,
-                'photo' => null,
-                'description' => 'Pemeriksaan hasil pekerjaan dan area sekitar.',
-                'time' => '14:30 WIB',
-            ],
-        ];
+        $this->reportDate =
+            $report->report_date
+                ?->format('Y-m-d')
+            ?? today()->format('Y-m-d');
+
+        $this->activities =
+            $report->activities
+            ?? '';
+
+        $this->obstacles =
+            $report->obstacles
+            ?? '';
+
+        $this->notes =
+            $report->notes
+            ?? '';
+
+        $this->existingDocumentations =
+            $report->documentations()
+                ->orderBy('id')
+                ->get()
+                ->map(
+                    fn ($documentation): array => [
+                        'id' =>
+                            $documentation->id,
+
+                        'photo' =>
+                            $documentation->photo,
+
+                        'description' =>
+                            $documentation->description
+                            ?? $documentation->title
+                            ?? 'Dokumentasi pekerjaan',
+
+                        'time' =>
+                            (
+                                $documentation->taken_at
+                                ?? $documentation->created_at
+                            )?->format('H:i').' WIB',
+                    ]
+                )
+                ->all();
 
         $this->removedDocumentationIds = [];
         $this->newPhotos = [];
     }
 
+    private function authorizeReport(
+        DailyReport $report
+    ): void {
+        $isOwnedByMandor = DailyReport::query()
+            ->whereKey($report->id)
+            ->whereHas(
+                'project',
+                fn ($query) => $query->where(
+                    'mandor_id',
+                    Auth::id()
+                )
+            )
+            ->exists();
+
+        abort_unless(
+            $isOwnedByMandor,
+            403
+        );
+    }
+
     public function updateReport(): void
     {
+        $report = DailyReport::query()
+            ->with('project')
+            ->findOrFail(
+                $this->reportId
+            );
+
+        $this->authorizeReport(
+            $report
+        );
+
         $this->validate();
 
         session()->flash(
