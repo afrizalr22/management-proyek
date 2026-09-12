@@ -1,250 +1,247 @@
+@props([
+    'project',
+    'documentations' => collect(),
+    'total' => 0,
+])
+
+@php
+    $categoryLabels = [
+        'progress' => 'Progress',
+        'before' => 'Sebelum Pekerjaan',
+        'after' => 'Setelah Pekerjaan',
+        'material' => 'Material',
+        'safety' => 'Keselamatan',
+        'issue' => 'Kendala',
+        'other' => 'Lainnya',
+    ];
+@endphp
+
 <x-ui.info-card class="overflow-hidden">
-
     {{-- Header --}}
-    <div
-        class="flex flex-col gap-4 border-b border-gray-200
-               px-6 py-5 sm:flex-row sm:items-center
-               sm:justify-between"
-    >
-
+    <div class="flex flex-col gap-3 border-b border-gray-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
             <h2 class="text-base font-bold text-gray-900">
-                Dokumentasi Proyek
+                Dokumentasi Project
             </h2>
 
             <p class="mt-1 text-sm text-gray-500">
-                Foto perkembangan pekerjaan di lokasi proyek
+                Foto terbaru dari aktivitas pekerjaan lapangan.
             </p>
         </div>
 
-        <div class="flex items-center gap-3">
+        <a
+            href="{{ route(
+                'mandor.projects.documentations.index',
+                [
+                    'project' => $project->id,
+                ]
+            ) }}"
+            wire:navigate
+            class="inline-flex w-fit items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
+        >
+            Lihat Semua Foto
 
-            {{-- Photo Counter --}}
-            <span
-                class="rounded-full bg-blue-50 px-3 py-1.5
-                       text-xs font-semibold text-blue-700"
+            @if ((int) $total > 0)
+                <span class="rounded-full bg-blue-50 px-2 py-0.5 text-xs">
+                    {{ $total }}
+                </span>
+            @endif
+
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="h-4 w-4"
             >
-                6 Foto
-            </span>
-
-
-
-        </div>
-
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m9 18 6-6-6-6"
+                />
+            </svg>
+        </a>
     </div>
 
-    {{-- Documentation Gallery --}}
-    <div class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
+    @if ($documentations->isNotEmpty())
+        <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
+            @foreach ($documentations as $documentation)
+                @php
+                    $imageUrl = filled(
+                        $documentation->photo
+                    )
+                        ? asset(
+                            'storage/'
+                            .ltrim(
+                                $documentation->photo,
+                                '/'
+                            )
+                        )
+                        : null;
 
-        {{-- Photo 1 --}}
-        <article
-            class="group relative aspect-[4/3] overflow-hidden
-                   rounded-xl bg-gray-200"
-        >
+                    $documentationDate =
+                        $documentation
+                            ->documentation_date
+                        ?? $documentation->taken_at
+                        ?? $documentation->created_at;
 
-            <img
-                src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80"
-                alt="Pekerjaan konstruksi proyek"
-                class="h-full w-full object-cover transition
-                       duration-300 group-hover:scale-105"
-            >
+                    $categoryLabel =
+                        $categoryLabels[
+                            $documentation->category
+                        ]
+                        ?? ucfirst(
+                            str_replace(
+                                '_',
+                                ' ',
+                                $documentation->category
+                                    ?: 'Lainnya'
+                            )
+                        );
+                @endphp
 
-            <div
-                class="absolute inset-0 bg-gradient-to-t
-                       from-black/80 via-black/10 to-transparent"
-            ></div>
-
-            <div class="absolute inset-x-0 bottom-0 p-4">
-
-                <h3 class="text-sm font-semibold text-white">
-                    Pekerjaan Struktur
-                </h3>
-
-                <p class="mt-1 text-xs text-white/70">
-                    24 Mei 2026
-                </p>
-
-            </div>
-
-        </article>
-
-        {{-- Photo 2 --}}
-        <article
-            class="group relative aspect-[4/3] overflow-hidden
-                   rounded-xl bg-gray-200"
-        >
-
-            <img
-                src="https://images.unsplash.com/photo-1541971875076-8f970d573be6?auto=format&fit=crop&w=800&q=80"
-                alt="Pemasangan struktur bangunan"
-                class="h-full w-full object-cover transition
-                       duration-300 group-hover:scale-105"
-            >
-
-            <div
-                class="absolute inset-0 bg-gradient-to-t
-                       from-black/80 via-black/10 to-transparent"
-            ></div>
-
-            <div class="absolute inset-x-0 bottom-0 p-4">
-
-                <h3 class="text-sm font-semibold text-white">
-                    Pemasangan Tulangan
-                </h3>
-
-                <p class="mt-1 text-xs text-white/70">
-                    23 Mei 2026
-                </p>
-
-            </div>
-
-        </article>
-
-        {{-- Photo 3 --}}
-        <article
-            class="group relative aspect-[4/3] overflow-hidden
-                   rounded-xl bg-gray-200"
-        >
-
-            <img
-                src="https://images.unsplash.com/photo-1590644365607-1c5a38e88a8c?auto=format&fit=crop&w=800&q=80"
-                alt="Aktivitas pekerja lapangan"
-                class="h-full w-full object-cover transition
-                       duration-300 group-hover:scale-105"
-            >
-
-            <div
-                class="absolute inset-0 bg-gradient-to-t
-                       from-black/80 via-black/10 to-transparent"
-            ></div>
-
-            <div class="absolute inset-x-0 bottom-0 p-4">
-
-                <h3 class="text-sm font-semibold text-white">
-                    Aktivitas Lapangan
-                </h3>
-
-                <p class="mt-1 text-xs text-white/70">
-                    22 Mei 2026
-                </p>
-
-            </div>
-
-        </article>
-
-        {{-- Photo 4 --}}
-        <article
-            class="group relative aspect-[4/3] overflow-hidden
-                   rounded-xl bg-gray-200"
-        >
-
-            <img
-                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80"
-                alt="Bangunan dalam proses konstruksi"
-                class="h-full w-full object-cover transition
-                       duration-300 group-hover:scale-105"
-            >
-
-            <div
-                class="absolute inset-0 bg-gradient-to-t
-                       from-black/80 via-black/10 to-transparent"
-            ></div>
-
-            <div class="absolute inset-x-0 bottom-0 p-4">
-
-                <h3 class="text-sm font-semibold text-white">
-                    Perkembangan Bangunan
-                </h3>
-
-                <p class="mt-1 text-xs text-white/70">
-                    21 Mei 2026
-                </p>
-
-            </div>
-
-        </article>
-
-        {{-- Photo 5 --}}
-        <article
-            class="group relative aspect-[4/3] overflow-hidden
-                   rounded-xl bg-gray-200"
-        >
-
-            <img
-                src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=800&q=80"
-                alt="Pemeriksaan lokasi proyek"
-                class="h-full w-full object-cover transition
-                       duration-300 group-hover:scale-105"
-            >
-
-            <div
-                class="absolute inset-0 bg-gradient-to-t
-                       from-black/80 via-black/10 to-transparent"
-            ></div>
-
-            <div class="absolute inset-x-0 bottom-0 p-4">
-
-                <h3 class="text-sm font-semibold text-white">
-                    Pemeriksaan Lokasi
-                </h3>
-
-                <p class="mt-1 text-xs text-white/70">
-                    20 Mei 2026
-                </p>
-
-            </div>
-
-        </article>
-
-        {{-- View All Photos --}}
-        <button
-            type="button"
-            class="group relative flex aspect-[4/3]
-                   items-center justify-center overflow-hidden
-                   rounded-xl bg-slate-900 transition
-                   hover:bg-slate-800"
-        >
-
-            <div class="text-center">
-
-                <div
-                    class="mx-auto flex h-12 w-12 items-center
-                           justify-center rounded-full bg-white/10
-                           text-white transition group-hover:bg-white/20"
+                <a
+                    href="{{ route(
+                        'mandor.projects.documentations.index',
+                        [
+                            'project' => $project->id,
+                        ]
+                    ) }}"
+                    wire:navigate
+                    wire:key="mandor-project-documentation-{{ $documentation->id }}"
+                    class="group relative aspect-[4/3] overflow-hidden rounded-xl bg-gray-100"
                 >
-                    <svg
-                        class="h-6 w-6"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <rect
-                            x="3"
-                            y="3"
-                            width="18"
-                            height="18"
-                            rx="2"
-                        />
+                    @if ($imageUrl)
+                        <img
+                            src="{{ $imageUrl }}"
+                            alt="{{ $documentation->title
+                                ?: 'Dokumentasi Project' }}"
+                            loading="lazy"
+                            class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                        >
+                    @else
+                        <div class="flex h-full w-full items-center justify-center text-gray-300">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="h-12 w-12"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z"
+                                />
+                            </svg>
+                        </div>
+                    @endif
 
-                        <circle cx="8.5" cy="8.5" r="1.5" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-950/85 via-gray-950/10 to-transparent"></div>
 
-                        <path d="M21 15l-5-5L5 21" />
-                    </svg>
-                </div>
+                    {{-- Kategori --}}
+                    <span class="absolute right-3 top-3 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-semibold text-gray-700 shadow-sm backdrop-blur-sm">
+                        {{ $categoryLabel }}
+                    </span>
 
-                <p class="mt-3 text-sm font-semibold text-white">
-                    Lihat Semua Foto
-                </p>
+                    {{-- Informasi --}}
+                    <div class="absolute inset-x-0 bottom-0 p-4">
+                        <h3 class="line-clamp-2 text-sm font-semibold text-white">
+                            {{ $documentation->title
+                                ?: 'Dokumentasi pekerjaan' }}
+                        </h3>
 
-                <p class="mt-1 text-xs text-white/60">
-                    Buka galeri proyek
-                </p>
+                        <div class="mt-1 flex items-center justify-between gap-3 text-xs text-white/70">
+                            <span>
+                                {{ $documentationDate
+                                    ?->translatedFormat(
+                                        'd M Y'
+                                    ) ?? '-' }}
+                            </span>
 
+                            <span class="truncate">
+                                {{ $documentation->user?->name
+                                    ?? 'Pengguna' }}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+
+            {{-- Lihat semua --}}
+            @if ((int) $total > $documentations->count())
+                <a
+                    href="{{ route(
+                        'mandor.projects.documentations.index',
+                        [
+                            'project' => $project->id,
+                        ]
+                    ) }}"
+                    wire:navigate
+                    class="group flex aspect-[4/3] items-center justify-center rounded-xl bg-slate-900 text-white transition hover:bg-slate-800"
+                >
+                    <div class="text-center">
+                        <div class="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-white/20">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.8"
+                                stroke="currentColor"
+                                class="h-5 w-5"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z"
+                                />
+                            </svg>
+                        </div>
+
+                        <p class="mt-3 text-sm font-semibold">
+                            Lihat Semua Foto
+                        </p>
+
+                        <p class="mt-1 text-xs text-white/60">
+                            {{ max(
+                                0,
+                                (int) $total
+                                - $documentations->count()
+                            ) }}
+                            foto lainnya
+                        </p>
+                    </div>
+                </a>
+            @endif
+        </div>
+    @else
+        {{-- Kondisi kosong --}}
+        <div class="px-6 py-10 text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.8"
+                    stroke="currentColor"
+                    class="h-6 w-6"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z"
+                    />
+                </svg>
             </div>
 
-        </button>
+            <p class="mt-4 font-semibold text-gray-700">
+                Belum ada dokumentasi
+            </p>
 
-    </div>
-
+            <p class="mt-1 text-sm text-gray-500">
+                Dokumentasi pekerjaan dari Pekerja akan muncul di sini.
+            </p>
+        </div>
+    @endif
 </x-ui.info-card>

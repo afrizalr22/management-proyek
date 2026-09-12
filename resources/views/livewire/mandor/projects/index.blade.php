@@ -1,11 +1,24 @@
 <div class="space-y-6">
-
+    {{-- Header --}}
     <x-mandor.projects.page-header />
 
-    <x-mandor.projects.project-toolbar />
+    {{-- Ringkasan --}}
+    <x-mandor.projects.project-summary
+        :statistics="$statistics"
+    />
 
-    <x-mandor.projects.project-grid />
+    {{-- Toolbar --}}
+    <x-mandor.projects.project-toolbar
+        :search="$search"
+        :status="$status"
+        :sort="$sort"
+    />
 
-    <x-mandor.projects.project-summary />
-
+    {{-- Daftar Project --}}
+    <x-mandor.projects.project-grid
+        :projects="$projects"
+        :search="$search"
+        :status="$status"
+        :sort="$sort"
+    />
 </div>
