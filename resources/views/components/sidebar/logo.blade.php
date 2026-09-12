@@ -1,4 +1,4 @@
-<div class="border-b border-gray-200 px-5 py-5">
+<div class="shrink-0 border-b border-gray-200 px-5 py-5">
     <a
         href="{{ route('owner.dashboard') }}"
         wire:navigate

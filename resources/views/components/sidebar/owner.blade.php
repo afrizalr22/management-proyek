@@ -1,10 +1,10 @@
-<div class="flex h-full flex-col bg-white">
+<div class="flex h-full min-h-0 flex-col overflow-hidden bg-white">
     {{-- Logo --}}
     <x-sidebar.logo />
 
     {{-- Navigasi --}}
     <nav
-        class="flex-1 space-y-4 overflow-y-auto px-3 py-4"
+        class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-4"
         aria-label="Navigasi Owner"
     >
         {{-- Utama --}}
@@ -213,7 +213,7 @@
     </nav>
 
     {{-- Menu akun --}}
-    <div class="border-t border-gray-200 px-3 py-4">
+    <div class="shrink-0 border-t border-gray-200 bg-white px-3 py-3">
         <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-gray-400">
             Akun
         </p>
