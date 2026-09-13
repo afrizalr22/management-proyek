@@ -1,18 +1,18 @@
-<div
-    class="flex flex-col gap-5
-           lg:flex-row lg:items-end lg:justify-between"
->
+@props([
+    'statistics' => [],
+])
 
-    {{-- Page Information --}}
+<header class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+
     <div>
-
-        {{-- Breadcrumb --}}
-        <div class="flex flex-wrap items-center gap-2 text-sm">
-
+        <nav
+            class="flex flex-wrap items-center gap-2 text-sm"
+            aria-label="Breadcrumb"
+        >
             <a
                 href="{{ route('mandor.dashboard') }}"
-                class="font-medium text-blue-600
-                       transition hover:text-blue-700"
+                wire:navigate
+                class="font-medium text-blue-600 transition hover:text-blue-700"
             >
                 Dashboard
             </a>
@@ -34,45 +34,61 @@
             <span class="font-medium text-gray-500">
                 Laporan Harian
             </span>
+        </nav>
 
-        </div>
+        <p class="mt-4 text-sm font-semibold text-blue-600">
+            Validasi Pekerjaan
+        </p>
 
-        {{-- Title --}}
-        <h1 class="mt-3 text-2xl font-bold text-gray-900 sm:text-3xl">
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
             Laporan Harian
         </h1>
 
-        {{-- Description --}}
         <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-            Catat dan pantau aktivitas, kendala, serta perkembangan
-            pekerjaan proyek setiap hari.
+            Pantau dan validasi laporan pekerjaan yang dikirim oleh
+            Pekerja dari seluruh proyek yang Anda kelola.
         </p>
-
     </div>
 
-    {{-- Create Report Button --}}
-   <a
-    href="{{ route('mandor.daily-reports.create') }}"
-    class="inline-flex h-11 w-fit items-center
-           justify-center gap-2 rounded-lg bg-blue-600
-           px-5 text-sm font-semibold text-white
-           shadow-sm transition hover:bg-blue-700"
->
-    <svg
-        class="h-5 w-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-    >
-        <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 5v14M5 12h14"
-        />
-    </svg>
+    <div class="inline-flex w-fit items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+        <span
+            @class([
+                'flex h-10 w-10 items-center justify-center rounded-lg',
+                'bg-amber-50 text-amber-600' =>
+                    ($statistics['submitted'] ?? 0) > 0,
+                'bg-emerald-50 text-emerald-600' =>
+                    ($statistics['submitted'] ?? 0) === 0,
+            ])
+        >
+            <svg
+                class="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <rect
+                    x="4"
+                    y="3"
+                    width="16"
+                    height="18"
+                    rx="2"
+                />
 
-    Tambah Laporan Harian
-</a>
+                <path d="M8 8h8M8 12h8M8 16h5" />
+            </svg>
+        </span>
 
-</div>
+        <div>
+            <p class="text-xs font-medium text-gray-500">
+                Menunggu Validasi
+            </p>
+
+            <p class="text-lg font-bold text-gray-900">
+                {{ number_format($statistics['submitted'] ?? 0) }}
+                Laporan
+            </p>
+        </div>
+    </div>
+
+</header>

@@ -1,17 +1,27 @@
-@props([
-    'reportId',
-])
+<div class="w-full min-w-0 space-y-6">
 
-<div class="space-y-6">
-    <x-mandor.daily-reports.edit-report-information />
-
-    <x-mandor.daily-reports.edit-work-activities />
-
-    <x-mandor.daily-reports.edit-documentations />
-
-    <x-mandor.daily-reports.edit-additional-information />
-
-    <x-mandor.daily-reports.form-actions
-        :report-id="$reportId"
+    <x-mandor.daily-reports.edit-page-header
+        :report="$report"
     />
+
+    <x-mandor.daily-reports.report-overview
+        :report="$report"
+    />
+
+    <x-mandor.daily-reports.report-activities
+        :report="$report"
+    />
+
+    <x-mandor.daily-reports.report-documentations
+        :documentations="$report->documentations"
+    />
+
+    <x-mandor.daily-reports.report-obstacles-notes
+        :report="$report"
+    />
+
+    <x-mandor.daily-reports.validation-form
+        :report="$report"
+    />
+
 </div>

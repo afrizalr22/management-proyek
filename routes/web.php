@@ -33,7 +33,6 @@ use App\Livewire\Owner\Invoices\Index as InvoicesIndex;
 use App\Livewire\Owner\Invoices\Create as InvoicesCreate;
 use App\Livewire\Owner\Invoices\Edit as InvoicesEdit;
 use App\Livewire\Owner\Invoices\Show as InvoicesShow;
-use App\Livewire\Owner\Invoices\Delete as InvoicesDelete;
 
 // Delivery Orders
 use App\Livewire\Owner\DeliveryOrders\Index as DeliveryOrdersIndex;
@@ -60,9 +59,9 @@ use App\Livewire\Mandor\WorkProgress\Index as MandorWorkProgressIndex;
 use App\Livewire\Mandor\Documentations\Index as MandorDocumentationsIndex;
 
 use App\Livewire\Mandor\DailyReports\Index as MandorDailyReportsIndex;
-use App\Livewire\Mandor\DailyReports\Create as MandoDailyReportsCreate;
 use App\Livewire\Mandor\DailyReports\Show as MandorDailyReportsShow;
-use App\Livewire\Mandor\DailyReports\Edit as MandorDailyReportsEdit;
+use App\Livewire\Mandor\DailyReports\Edit as MandorDailyReportsValidation;
+
 
 use App\Livewire\Pekerja\Tasks\Index as PekerjaTaskIndex;
 
@@ -303,10 +302,20 @@ Route::middleware(['auth','role:mandor',])->group(function () {
     Route::get('/projects/{project}',MandorProjectsShow::class)->name('mandor.projects.show');
     Route::get('/projects/{project}/work-progress', MandorWorkProgressIndex::class)->name('mandor.projects.work-progress.index');
     Route::get('/projects/{project}/documentations', MandorDocumentationsIndex::class)->name('mandor.projects.documentations.index');
-    Route::get('/daily-reports', MandorDailyReportsIndex::class)->name('mandor.daily-reports.index');
-    Route::get('/daily-reports/create', MandoDailyReportsCreate::class)->name('mandor.daily-reports.create');
-    Route::get('/daily-reports/{report}', MandorDailyReportsShow::class)->name('mandor.daily-reports.show');
-    Route::get('/daily-reports/{report}/edit', MandorDailyReportsEdit::class)->name('mandor.daily-reports.edit');
+    Route::get(
+    '/daily-reports',
+        MandorDailyReportsIndex::class
+    )->name('mandor.daily-reports.index');
+
+    Route::get(
+        '/daily-reports/{report}',
+        MandorDailyReportsShow::class
+    )->name('mandor.daily-reports.show');
+
+    Route::get(
+        '/daily-reports/{report}/validate',
+        MandorDailyReportsValidation::class
+    )->name('mandor.daily-reports.validate');
 });
 
 

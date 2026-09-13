@@ -1,18 +1,34 @@
 <div class="space-y-6">
 
-    {{-- Page Header --}}
-    <x-mandor.daily-reports.page-header />
+    <x-mandor.daily-reports.page-header
+        :statistics="$statistics"
+    />
 
-    {{-- Report Statistics --}}
-    <x-mandor.daily-reports.report-statistics />
+    <x-mandor.daily-reports.report-statistics
+        :statistics="$statistics"
+    />
 
-    {{-- Report Search and Filter --}}
-    <x-mandor.daily-reports.report-filter />
+    <x-mandor.daily-reports.report-filter
+        :projects="$projects"
+        :project-filter="$projectFilter"
+        :status="$status"
+        :sort="$sort"
+        :result-count="$reports->total()"
+        :has-active-filters="$hasActiveFilters"
+    />
 
-    {{-- Daily Report List --}}
-    <x-mandor.daily-reports.report-list />
+    @if ($reports->isNotEmpty())
+        <x-mandor.daily-reports.report-list
+            :reports="$reports"
+        />
 
-    {{-- Report Navigation --}}
-    <x-mandor.daily-reports.report-footer />
+        <x-mandor.daily-reports.report-footer
+            :reports="$reports"
+        />
+    @else
+        <x-mandor.daily-reports.report-empty
+            :has-active-filters="$hasActiveFilters"
+        />
+    @endif
 
-</div> 
+</div>

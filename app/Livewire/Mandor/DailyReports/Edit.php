@@ -3,29 +3,21 @@
 namespace App\Livewire\Mandor\DailyReports;
 
 use App\Models\DailyReport;
+use App\Models\Project;
+use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use Livewire\WithFileUploads;
+use App\Models\Documentation;
+use Illuminate\Support\Facades\Storage;
 
 class Edit extends Component
 {
-    use WithFileUploads;
     public int $reportId;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Data laporan
-    |--------------------------------------------------------------------------
-    */
-    public array $existingDocumentations = [];
-    public array $removedDocumentationIds = [];
-    public array $newPhotos = [];
-    public string $documentationDescription = '';
-    public string $projectName = 'Pembangunan Gedung Perkantoran Sudirman';
-    public string $reportDate = '2026-08-25';
-    public string $activities = '';
-    public string $obstacles = '';
-    public string $notes = '';
+    public DailyReport $report;
+
+    public string $reviewNotes = '';
 
     public function mount(
         DailyReport $report
@@ -34,64 +26,292 @@ class Edit extends Component
             $report
         );
 
+        abort_unless(
+            $report->status === 'submitted',
+            409,
+            'Laporan ini sudah diperiksa.'
+        );
+
         $this->reportId = $report->id;
+        $this->report = $report;
+        $this->reviewNotes = '';
+    }
 
-        $this->projectName =
-            $report->project?->project_name
-            ?? 'Project tidak ditemukan';
+    public function approveReport(): void
+    {
+        $this->validate([
+            'reviewNotes' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
+        ]);
 
-        $this->reportDate =
-            $report->report_date
-                ?->format('Y-m-d')
-            ?? today()->format('Y-m-d');
+        $currentReport = $this->findReport();
 
-        $this->activities =
-            $report->activities
-            ?? '';
+        if (
+            $currentReport->work_status === 'completed'
+            && (int) $currentReport->reported_progress < 100
+        ) {
+            $this->addError(
+                'decision',
+                'Laporan berstatus pekerjaan selesai harus memiliki progress 100%. Minta Pekerja melakukan revisi.'
+            );
 
-        $this->obstacles =
-            $report->obstacles
-            ?? '';
+            return;
+        }
 
-        $this->notes =
-            $report->notes
-            ?? '';
+        DB::transaction(
+            function (): void {
+                $report = DailyReport::query()
+                    ->with([
+                        'project',
+                        'task',
+                    ])
+                    ->lockForUpdate()
+                    ->findOrFail(
+                        $this->reportId
+                    );
 
-        $this->existingDocumentations =
-            $report->documentations()
-                ->orderBy('id')
-                ->get()
-                ->map(
-                    fn ($documentation): array => [
-                        'id' =>
-                            $documentation->id,
+                $this->authorizeReport(
+                    $report
+                );
 
-                        'photo' =>
-                            $documentation->photo,
+                abort_unless(
+                    $report->status === 'submitted',
+                    409,
+                    'Laporan ini sudah diperiksa.'
+                );
 
-                        'description' =>
-                            $documentation->description
-                            ?? $documentation->title
-                            ?? 'Dokumentasi pekerjaan',
+                $report->update([
+                    'status' => 'approved',
+                    'reviewed_by' => Auth::id(),
+                    'reviewed_at' => now(),
+                    'review_notes' => filled(
+                        $this->reviewNotes
+                    )
+                        ? trim($this->reviewNotes)
+                        : null,
+                ]);
 
-                        'time' =>
-                            (
-                                $documentation->taken_at
-                                ?? $documentation->created_at
-                            )?->format('H:i').' WIB',
-                    ]
-                )
-                ->all();
+                if ($report->task) {
+                    $this->approveTaskProgress(
+                        $report,
+                        $report->task
+                    );
+                }
 
-        $this->removedDocumentationIds = [];
-        $this->newPhotos = [];
+                if ($report->project) {
+                    $this->synchronizeProjectProgress(
+                        $report->project
+                    );
+                }
+            }
+        );
+
+        session()->flash(
+            'success',
+            'Laporan berhasil disetujui dan progress Task telah diperbarui.'
+        );
+
+        $this->redirect(
+            route(
+                'mandor.daily-reports.show',
+                $this->reportId
+            ),
+            navigate: true
+        );
+    }
+
+    public function requestRevision(): void
+    {
+        $this->validate([
+            'reviewNotes' => [
+                'required',
+                'string',
+                'min:10',
+                'max:2000',
+            ],
+        ], [
+            'reviewNotes.required' =>
+                'Alasan revisi wajib diisi.',
+
+            'reviewNotes.min' =>
+                'Alasan revisi minimal 10 karakter.',
+
+            'reviewNotes.max' =>
+                'Catatan validasi maksimal 2.000 karakter.',
+        ]);
+
+        DB::transaction(
+            function (): void {
+                $report = DailyReport::query()
+                    ->with([
+                        'project',
+                        'task',
+                    ])
+                    ->lockForUpdate()
+                    ->findOrFail(
+                        $this->reportId
+                    );
+
+                $this->authorizeReport(
+                    $report
+                );
+
+                abort_unless(
+                    $report->status === 'submitted',
+                    409,
+                    'Laporan ini sudah diperiksa.'
+                );
+
+                $report->update([
+                    'status' => 'revision',
+                    'reviewed_by' => Auth::id(),
+                    'reviewed_at' => now(),
+                    'review_notes' => trim(
+                        $this->reviewNotes
+                    ),
+                ]);
+
+                if (
+                    $report->task
+                    && ! in_array(
+                        $report->task->status,
+                        [
+                            'completed',
+                            'cancelled',
+                        ],
+                        true
+                    )
+                ) {
+                    $report->task->update([
+                        'status' => 'revision',
+                    ]);
+                }
+            }
+        );
+
+        session()->flash(
+            'success',
+            'Laporan dikembalikan kepada Pekerja untuk diperbaiki.'
+        );
+
+        $this->redirect(
+            route(
+                'mandor.daily-reports.show',
+                $this->reportId
+            ),
+            navigate: true
+        );
+    }
+
+    public function render()
+    {
+        $report = DailyReport::query()
+            ->with([
+                'project:id,mandor_id,project_code,project_name,location',
+
+                'task:id,project_id,mandor_id,worker_id,task_code,title,location,status,progress,weight',
+
+                'user:id,name,email,status',
+
+                'documentations' => fn ($query) =>
+                $query
+                    ->with([
+                        'user:id,name',
+                    ])
+                    ->orderBy('taken_at')
+                    ->orderBy('id'),
+            ])
+            ->findOrFail(
+                $this->reportId
+            );
+
+        $this->authorizeReport(
+            $report
+        );
+
+        $report->documentations->transform(
+        function (
+            Documentation $documentation
+        ): Documentation {
+            $photoExists = filled(
+                $documentation->photo
+            ) && Storage::disk('public')
+                ->exists(
+                    $documentation->photo
+                );
+
+            $documentation->setAttribute(
+                'photo_exists',
+                $photoExists
+            );
+
+            $documentation->setAttribute(
+                'photo_url',
+                $photoExists
+                    ? asset(
+                        'storage/'
+                            . ltrim(
+                                $documentation->photo,
+                                '/'
+                            )
+                    )
+                    : null
+            );
+
+            return $documentation;
+        }
+    );
+
+        abort_unless(
+            $report->status === 'submitted',
+            409,
+            'Laporan ini sudah diperiksa.'
+        );
+
+        $this->report = $report;
+
+        return view(
+            'livewire.mandor.daily-reports.edit',
+            [
+                'report' => $report,
+            ]
+        );
+    }
+
+    private function findReport(): DailyReport
+    {
+        $report = DailyReport::query()
+            ->with([
+                'project',
+                'task',
+            ])
+            ->findOrFail(
+                $this->reportId
+            );
+
+        $this->authorizeReport(
+            $report
+        );
+
+        abort_unless(
+            $report->status === 'submitted',
+            409,
+            'Laporan ini sudah diperiksa.'
+        );
+
+        return $report;
     }
 
     private function authorizeReport(
         DailyReport $report
     ): void {
         $isOwnedByMandor = DailyReport::query()
-            ->whereKey($report->id)
+            ->whereKey(
+                $report->id
+            )
             ->whereHas(
                 'project',
                 fn ($query) => $query->where(
@@ -107,140 +327,134 @@ class Edit extends Component
         );
     }
 
-    public function updateReport(): void
-    {
-        $report = DailyReport::query()
-            ->with('project')
-            ->findOrFail(
-                $this->reportId
-            );
-
-        $this->authorizeReport(
-            $report
+    private function approveTaskProgress(
+        DailyReport $report,
+        Task $task
+    ): void {
+        abort_unless(
+            (int) $task->project_id
+                === (int) $report->project_id,
+            422,
+            'Task tidak sesuai dengan Project laporan.'
         );
 
-        $this->validate();
-
-        session()->flash(
-            'success',
-            'Perubahan laporan berhasil divalidasi.'
-        );
-    }
-
-    public function render()
-    {
-        return view('livewire.mandor.daily-reports.edit');
-    }
-
-    protected function rules(): array
-    {
-        return [
-            'reportDate' => [
-                'required',
-                'date',
-                'before_or_equal:today',
-            ],
-
-            'activities' => [
-                'required',
-                'string',
-                'min:10',
-                'max:2000',
-            ],
-
-            'newPhotos' => [
-                'array',
-                'max:5',
-            ],
-
-            'newPhotos.*' => [
-                'image',
-                'mimes:jpg,jpeg,png,webp',
-                'max:5120',
-            ],
-
-            'documentationDescription' => [
-                'nullable',
-                'string',
-                'max:500',
-            ],
-        ];
-    }
-
-        protected function messages(): array
-    {
-        return [
-            'reportDate.required' => 'Tanggal laporan wajib diisi.',
-            'reportDate.date' => 'Format tanggal laporan tidak valid.',
-            'reportDate.before_or_equal' => 'Tanggal laporan tidak boleh melebihi hari ini.',
-
-            'activities.required' => 'Aktivitas pekerjaan wajib diisi.',
-            'activities.string' => 'Aktivitas pekerjaan harus berupa teks.',
-            'activities.min' => 'Aktivitas pekerjaan minimal 10 karakter.',
-            'activities.max' => 'Aktivitas pekerjaan maksimal 2.000 karakter.',
-
-            'newPhotos.max' => 'Dokumentasi maksimal 5 foto.',
-            'newPhotos.*.image' => 'File dokumentasi harus berupa gambar.',
-            'newPhotos.*.mimes' => 'Format foto harus JPG, JPEG, PNG, atau WEBP.',
-            'newPhotos.*.max' => 'Ukuran setiap foto maksimal 5 MB.',
-            'documentationDescription.max' => 'Keterangan dokumentasi maksimal 500 karakter.',
-        ];
-
-        
-    }
-
-    public function removeExistingDocumentation(int $documentationId): void
-    {
-        $this->removedDocumentationIds[] = $documentationId;
-
-        $this->existingDocumentations = array_values(
-            array_filter(
-                $this->existingDocumentations,
-                fn (array $documentation) =>
-                    $documentation['id'] !== $documentationId
+        $reportedProgress = max(
+            0,
+            min(
+                100,
+                (int) $report->reported_progress
             )
         );
-    }
 
-    public function removeNewPhoto(int $index): void
-    {
-        unset($this->newPhotos[$index]);
+        $newProgress = max(
+            (int) $task->progress,
+            $reportedProgress
+        );
 
-        $this->newPhotos = array_values($this->newPhotos);
-    }
+        $taskData = [
+            'progress' => $newProgress,
+        ];
 
-    public function updatedNewPhotos(): void
-    {
-        $this->newPhotos ??= [];
-        $this->existingDocumentations ??= [];
+        if (
+            $report->work_status === 'completed'
+            && $reportedProgress === 100
+        ) {
+            $taskData['status'] = 'completed';
 
-        $this->validate([
-            'newPhotos.*' => [
-                'image',
-                'mimes:jpg,jpeg,png,webp',
-                'max:5120',
-            ],
-        ]);
+            $taskData['completed_at'] =
+                $task->completed_at ?? now();
+        } elseif (
+            ! in_array(
+                $task->status,
+                [
+                    'completed',
+                    'cancelled',
+                ],
+                true
+            )
+        ) {
+            $taskData['status'] = 'in_progress';
 
-        $totalPhotos = count($this->existingDocumentations)
-            + count($this->newPhotos);
-
-        if ($totalPhotos > 5) {
-            $allowedNewPhotos = max(
-                0,
-                5 - count($this->existingDocumentations)
-            );
-
-            $this->newPhotos = array_slice(
-                $this->newPhotos,
-                0,
-                $allowedNewPhotos
-            );
-
-            $this->addError(
-                'newPhotos',
-                'Jumlah keseluruhan dokumentasi maksimal 5 foto.'
-            );
+            $taskData['started_at'] =
+                $task->started_at ?? now();
         }
+
+        $task->update(
+            $taskData
+        );
+    }
+
+    private function synchronizeProjectProgress(
+        Project $project
+    ): void {
+        $tasks = $project
+            ->tasks()
+            ->where(
+                'status',
+                '!=',
+                'cancelled'
+            )
+            ->get([
+                'id',
+                'project_id',
+                'progress',
+                'weight',
+            ]);
+
+        if ($tasks->isEmpty()) {
+            return;
+        }
+
+        $totalWeight = (float) $tasks->sum(
+            fn (Task $task) => max(
+                0.01,
+                (float) $task->weight
+            )
+        );
+
+        if ($totalWeight <= 0) {
+            return;
+        }
+
+        $weightedProgress = $tasks->sum(
+            fn (Task $task) =>
+                max(
+                    0,
+                    min(
+                        100,
+                        (int) $task->progress
+                    )
+                )
+                * max(
+                    0.01,
+                    (float) $task->weight
+                )
+        );
+
+        $projectProgress = max(
+            0,
+            min(
+                100,
+                (int) round(
+                    $weightedProgress
+                    / $totalWeight
+                )
+            )
+        );
+
+        $projectData = [
+            'progress' => $projectProgress,
+        ];
+
+        if (
+            $projectProgress > 0
+            && $project->status === 'planning'
+        ) {
+            $projectData['status'] = 'on_progress';
+        }
+
+        $project->update(
+            $projectData
+        );
     }
 }

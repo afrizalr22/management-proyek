@@ -1,234 +1,322 @@
-<x-ui.info-card class="overflow-hidden">
+@props([
+    'projects',
+    'projectFilter' => '',
+    'status' => '',
+    'sort' => 'newest',
+    'resultCount' => 0,
+    'hasActiveFilters' => false,
+])
 
-    <div class="p-5">
+@php
+    $selectedProject = $projects->first(
+        fn ($project) =>
+            (string) $project->id
+                === (string) $projectFilter
+    );
 
-        <div
-            class="grid grid-cols-1 gap-4
-                   md:grid-cols-2 xl:grid-cols-12"
-        >
+    $projectLabel = $selectedProject
+        ? $selectedProject->project_code
+        : 'Semua Project';
 
-            {{-- Search --}}
-            <div class="md:col-span-2 xl:col-span-4">
+    $statusLabel = match ($status) {
+        'submitted' => 'Menunggu Validasi',
+        'revision' => 'Perlu Revisi',
+        'approved' => 'Disetujui',
+        default => 'Semua Status',
+    };
 
-                <label
-                    for="report-search"
-                    class="mb-2 block text-xs font-semibold
-                           uppercase tracking-wide text-gray-500"
+    $sortLabel = match ($sort) {
+        'oldest' => 'Terlama',
+        'progress_highest' => 'Progress Tertinggi',
+        'progress_lowest' => 'Progress Terendah',
+        default => 'Terbaru',
+    };
+@endphp
+
+<div class="space-y-3">
+
+    <x-ui.toolbar>
+        <x-slot:left>
+            <div class="w-full">
+                <x-ui.search
+                    wire:model.live.debounce.300ms="search"
+                    placeholder="Cari nomor, aktivitas, Project, Task, atau Pekerja..."
+                />
+            </div>
+        </x-slot:left>
+
+        <x-slot:right>
+            <div class="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto lg:flex-nowrap">
+
+                {{-- Project --}}
+                <div
+                    x-data="{ open: false }"
+                    class="relative w-full sm:w-52"
                 >
-                    Cari Laporan
-                </label>
-
-                <div class="relative">
-
-                    <svg
-                        class="pointer-events-none absolute left-3.5 top-1/2
-                               h-5 w-5 -translate-y-1/2 text-gray-400"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
+                    <button
+                        type="button"
+                        x-on:click="open = !open"
+                        class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
                     >
-                        <circle cx="11" cy="11" r="7" />
+                        <span class="truncate">
+                            {{ $projectLabel }}
+                        </span>
 
-                        <path
-                            stroke-linecap="round"
-                            d="M20 20l-3.5-3.5"
-                        />
-                    </svg>
+                        <svg
+                            class="h-4 w-4 shrink-0 text-gray-500 transition"
+                            x-bind:class="{ 'rotate-180': open }"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                            />
+                        </svg>
+                    </button>
 
-                    <input
-                        id="report-search"
-                        type="text"
-                        placeholder="Cari aktivitas, kendala, atau catatan..."
-                        class="h-11 w-full rounded-lg border-gray-300
-                               bg-white pl-11 pr-4 text-sm text-gray-900
-                               placeholder:text-gray-400
-                               focus:border-blue-500 focus:ring-blue-500"
+                    <div
+                        x-cloak
+                        x-show="open"
+                        x-transition.origin.top
+                        x-on:click.outside="open = false"
+                        class="absolute right-0 z-50 mt-2 max-h-72 w-72 overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
                     >
+                        <button
+                            type="button"
+                            wire:click="$set('projectFilter', '')"
+                            x-on:click="open = false"
+                            class="block w-full px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
+                        >
+                            Semua Project
+                        </button>
 
+                        @foreach ($projects as $project)
+                            <button
+                                type="button"
+                                wire:key="report-project-{{ $project->id }}"
+                                wire:click="$set(
+                                    'projectFilter',
+                                    '{{ $project->id }}'
+                                )"
+                                x-on:click="open = false"
+                                @class([
+                                    'block w-full px-4 py-2.5 text-left transition hover:bg-gray-100',
+                                    'bg-blue-50' =>
+                                        (string) $projectFilter
+                                            === (string) $project->id,
+                                ])
+                            >
+                                <span class="block text-xs font-bold uppercase tracking-wide text-blue-600">
+                                    {{ $project->project_code }}
+                                </span>
+
+                                <span class="mt-0.5 block truncate text-sm text-gray-700">
+                                    {{ $project->project_name }}
+                                </span>
+                            </button>
+                        @endforeach
+                    </div>
                 </div>
 
-            </div>
-
-            {{-- Project Filter --}}
-            <div class="xl:col-span-3">
-
-                <label
-                    for="report-project"
-                    class="mb-2 block text-xs font-semibold
-                           uppercase tracking-wide text-gray-500"
+                {{-- Status --}}
+                <div
+                    x-data="{ open: false }"
+                    class="relative w-full sm:w-52"
                 >
-                    Proyek
-                </label>
+                    <button
+                        type="button"
+                        x-on:click="open = !open"
+                        class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                    >
+                        <span class="truncate">
+                            {{ $statusLabel }}
+                        </span>
 
-                <select
-                    id="report-project"
-                    class="h-11 w-full rounded-lg border-gray-300
-                           bg-white px-3 text-sm text-gray-700
-                           focus:border-blue-500 focus:ring-blue-500"
+                        <svg
+                            class="h-4 w-4 shrink-0 text-gray-500 transition"
+                            x-bind:class="{ 'rotate-180': open }"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                            />
+                        </svg>
+                    </button>
+
+                    <div
+                        x-cloak
+                        x-show="open"
+                        x-transition.origin.top
+                        x-on:click.outside="open = false"
+                        class="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                    >
+                        <button
+                            type="button"
+                            wire:click="$set('status', '')"
+                            x-on:click="open = false"
+                            class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
+                        >
+                            <span class="h-2.5 w-2.5 shrink-0"></span>
+
+                            Semua Status
+                        </button>
+
+                        <button
+                            type="button"
+                            wire:click="$set('status', 'submitted')"
+                            x-on:click="open = false"
+                            class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
+                        >
+                            <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500"></span>
+
+                            Menunggu Validasi
+                        </button>
+
+                        <button
+                            type="button"
+                            wire:click="$set('status', 'revision')"
+                            x-on:click="open = false"
+                            class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
+                        >
+                            <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-red-500"></span>
+
+                            Perlu Revisi
+                        </button>
+
+                        <button
+                            type="button"
+                            wire:click="$set('status', 'approved')"
+                            x-on:click="open = false"
+                            class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
+                        >
+                            <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500"></span>
+
+                            Disetujui
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Urutan --}}
+                <div
+                    x-data="{ open: false }"
+                    class="relative w-full sm:w-48"
                 >
-                    <option value="">
-                        Semua Proyek
-                    </option>
+                    <button
+                        type="button"
+                        x-on:click="open = !open"
+                        class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                    >
+                        <span class="truncate">
+                            {{ $sortLabel }}
+                        </span>
 
-                    <option value="1">
-                        Jakarta Sky Tower
-                    </option>
+                        <svg
+                            class="h-4 w-4 shrink-0 text-gray-500 transition"
+                            x-bind:class="{ 'rotate-180': open }"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                            />
+                        </svg>
+                    </button>
 
-                    <option value="2">
-                        Gedung Perkantoran Kemang
-                    </option>
+                    <div
+                        x-cloak
+                        x-show="open"
+                        x-transition.origin.top
+                        x-on:click.outside="open = false"
+                        class="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                    >
+                        @foreach ([
+                            'newest' => 'Terbaru',
+                            'oldest' => 'Terlama',
+                            'progress_highest' => 'Progress Tertinggi',
+                            'progress_lowest' => 'Progress Terendah',
+                        ] as $sortValue => $sortText)
+                            <button
+                                type="button"
+                                wire:key="report-sort-{{ $sortValue }}"
+                                wire:click="$set(
+                                    'sort',
+                                    '{{ $sortValue }}'
+                                )"
+                                x-on:click="open = false"
+                                @class([
+                                    'block w-full px-4 py-2.5 text-left text-sm transition hover:bg-gray-100',
+                                    'bg-blue-50 font-semibold text-blue-700' =>
+                                        $sort === $sortValue,
+                                    'text-gray-700' =>
+                                        $sort !== $sortValue,
+                                ])
+                            >
+                                {{ $sortText }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
 
-                    <option value="3">
-                        Renovasi Gudang Utama
-                    </option>
-                </select>
-
-            </div>
-
-            {{-- Date Filter --}}
-            <div class="xl:col-span-2">
-
-                <label
-                    for="report-date"
-                    class="mb-2 block text-xs font-semibold
-                           uppercase tracking-wide text-gray-500"
-                >
-                    Tanggal
-                </label>
-
-                <select
-                    id="report-date"
-                    class="h-11 w-full rounded-lg border-gray-300
-                           bg-white px-3 text-sm text-gray-700
-                           focus:border-blue-500 focus:ring-blue-500"
-                >
-                    <option value="">
-                        Semua Tanggal
-                    </option>
-
-                    <option value="today">
-                        Hari Ini
-                    </option>
-
-                    <option value="7">
-                        7 Hari Terakhir
-                    </option>
-
-                    <option value="30">
-                        30 Hari Terakhir
-                    </option>
-
-                    <option value="90">
-                        3 Bulan Terakhir
-                    </option>
-                </select>
-
-            </div>
-
-            {{-- Obstacle Filter --}}
-            <div class="xl:col-span-2">
-
-                <label
-                    for="report-obstacle"
-                    class="mb-2 block text-xs font-semibold
-                           uppercase tracking-wide text-gray-500"
-                >
-                    Kondisi
-                </label>
-
-                <select
-                    id="report-obstacle"
-                    class="h-11 w-full rounded-lg border-gray-300
-                           bg-white px-3 text-sm text-gray-700
-                           focus:border-blue-500 focus:ring-blue-500"
-                >
-                    <option value="">
-                        Semua Laporan
-                    </option>
-
-                    <option value="without-obstacle">
-                        Tanpa Kendala
-                    </option>
-
-                    <option value="with-obstacle">
-                        Dengan Kendala
-                    </option>
-                </select>
-
-            </div>
-
-            {{-- Reset Button --}}
-            <div class="flex items-end xl:col-span-1">
-
+                {{-- Reset --}}
                 <button
                     type="button"
-                    title="Reset filter"
-                    class="flex h-11 w-full items-center justify-center
-                           rounded-lg border border-gray-300 bg-white
-                           text-gray-500 transition
-                           hover:border-red-200 hover:bg-red-50
-                           hover:text-red-600"
+                    wire:click="resetFilters"
+                    wire:loading.attr="disabled"
+                    wire:target="resetFilters"
+                    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-400 hover:bg-gray-50 hover:text-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 >
-                    <svg
-                        class="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
+                    <span
+                        wire:loading.remove
+                        wire:target="resetFilters"
                     >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M4 4v6h6"
-                        />
+                        Reset
+                    </span>
 
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M20 20v-6h-6"
-                        />
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M5.5 15a7 7 0 0011.5 2l3-3"
-                        />
-
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M18.5 9A7 7 0 007 7l-3 3"
-                        />
-                    </svg>
-
+                    <span
+                        wire:loading
+                        wire:target="resetFilters"
+                    >
+                        Mereset...
+                    </span>
                 </button>
 
             </div>
+        </x-slot:right>
+    </x-ui.toolbar>
 
-        </div>
-
-    </div>
-
-    {{-- Filter Information --}}
-    <div
-        class="flex flex-col gap-2 border-t border-gray-100
-               bg-gray-50 px-5 py-4 sm:flex-row
-               sm:items-center sm:justify-between"
-    >
-
+    <div class="flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-gray-500">
-            Menampilkan
+            Ditemukan
             <span class="font-semibold text-gray-900">
-                12 laporan
+                {{ number_format($resultCount) }}
             </span>
-            dari semua proyek
+            laporan
         </p>
 
-        <p class="text-xs font-medium text-gray-400">
-            Diurutkan berdasarkan laporan terbaru
-        </p>
+        @if ($hasActiveFilters)
+            <div class="flex items-center gap-2 text-xs font-medium text-blue-600">
+                <span class="h-2 w-2 rounded-full bg-blue-500"></span>
 
+                Filter sedang diterapkan
+            </div>
+        @else
+            <p class="text-xs text-gray-400">
+                Laporan terbaru ditampilkan lebih dahulu
+            </p>
+        @endif
     </div>
 
-</x-ui.info-card>
+</div>
