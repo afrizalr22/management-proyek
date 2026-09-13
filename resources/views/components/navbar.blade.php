@@ -116,7 +116,7 @@
             'Dashboard Pekerja',
         ],
 
-        request()->routeIs('pekerja.tasks.*') => [
+        request()->routeIs('pekerja.task.*') => [
             'Pekerjaan',
             'Task',
         ],

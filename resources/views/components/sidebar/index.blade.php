@@ -9,7 +9,7 @@
         @endrole
 
         @role('pekerja')
-            <x-sidebar.worker />
+            <x-sidebar.pekerja />
         @endrole
     @endauth
 </div>
