@@ -51,6 +51,8 @@ use App\Livewire\Owner\Users\Create as UsersCreate;
 use App\Livewire\Owner\Users\Edit as UsersEdit;
 use App\Livewire\Owner\Users\Show as UsersShow;
 
+
+use App\Livewire\Mandor\Profile as MandorProfile;
 use App\Livewire\Mandor\Projects\Index as MandorProjectsIndex;
 use App\Livewire\Mandor\Projects\Show as MandorProjectsShow;
 
@@ -296,14 +298,48 @@ Route::prefix('invoices')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth','role:mandor',])->group(function () {
-    Route::get('/mandor/dashboard',MandorDashboard::class)->name('mandor.dashboard');
-    Route::get('/projects', MandorProjectsIndex::class)->name('mandor.projects.index');
-    Route::get('/projects/{project}',MandorProjectsShow::class)->name('mandor.projects.show');
-    Route::get('/projects/{project}/work-progress', MandorWorkProgressIndex::class)->name('mandor.projects.work-progress.index');
-    Route::get('/projects/{project}/documentations', MandorDocumentationsIndex::class)->name('mandor.projects.documentations.index');
+/*
+|--------------------------------------------------------------------------
+| Mandor Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'role:mandor',
+])->group(function (): void {
     Route::get(
-    '/daily-reports',
+        '/mandor/dashboard',
+        MandorDashboard::class
+    )->name('mandor.dashboard');
+
+    Route::get(
+        '/mandor/profile',
+        MandorProfile::class
+    )->name('mandor.profile');
+
+    Route::get(
+        '/projects',
+        MandorProjectsIndex::class
+    )->name('mandor.projects.index');
+
+    Route::get(
+        '/projects/{project}',
+        MandorProjectsShow::class
+    )->name('mandor.projects.show');
+
+    Route::get(
+        '/projects/{project}/work-progress',
+        MandorWorkProgressIndex::class
+    )->name('mandor.projects.work-progress.index');
+
+    Route::get(
+        '/projects/{project}/documentations',
+        MandorDocumentationsIndex::class
+    )->name('mandor.projects.documentations.index');
+
+    Route::get(
+        '/daily-reports',
         MandorDailyReportsIndex::class
     )->name('mandor.daily-reports.index');
 

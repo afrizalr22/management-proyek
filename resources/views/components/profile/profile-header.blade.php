@@ -1,5 +1,6 @@
 @props([
     'user',
+    'roleLabel' => 'Owner',
 ])
 
 <div>
@@ -8,7 +9,7 @@
     </p>
 
     <h1 class="mt-2 text-3xl font-bold text-gray-900">
-        Profil Owner
+        Profil {{ $roleLabel }}
     </h1>
 
     <p class="mt-2 max-w-2xl text-gray-500">

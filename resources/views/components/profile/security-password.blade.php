@@ -1,5 +1,6 @@
 @props([
     'passwordSuccess' => '',
+    'inputPrefix' => 'owner',
 ])
 
 <form
@@ -47,7 +48,7 @@
 
             <div>
                 <label
-                    for="owner-current-password"
+                    for="{{ $inputPrefix }}-current-password"
                     class="mb-2 block text-sm font-medium text-gray-700"
                 >
                     Password Saat Ini
@@ -57,7 +58,7 @@
 
                 <div class="relative">
                     <input
-                        id="owner-current-password"
+                        id="{{ $inputPrefix }}-current-password"
                         x-bind:type="showCurrentPassword
                             ? 'text'
                             : 'password'"
@@ -99,7 +100,8 @@
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                     <label
-                        for="owner-new-password"
+                        for="{{ $inputPrefix }}-new-password"
+
                         class="mb-2 block text-sm font-medium text-gray-700"
                     >
                         Password Baru
@@ -109,7 +111,7 @@
 
                     <div class="relative">
                         <input
-                            id="owner-new-password"
+                            id="{{ $inputPrefix }}-new-password"
                             x-bind:type="showNewPassword
                                 ? 'text'
                                 : 'password'"
@@ -150,7 +152,8 @@
 
                 <div>
                     <label
-                        for="owner-new-password-confirmation"
+                        for="{{ $inputPrefix }}-new-password-confirmation"
+
                         class="mb-2 block text-sm font-medium text-gray-700"
                     >
                         Konfirmasi Password
@@ -160,7 +163,7 @@
 
                     <div class="relative">
                         <input
-                            id="owner-new-password-confirmation"
+                            id="{{ $inputPrefix }}-new-password-confirmation"
                             x-bind:type="showConfirmation
                                 ? 'text'
                                 : 'password'"

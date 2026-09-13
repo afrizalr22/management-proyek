@@ -2,6 +2,8 @@
     'user',
     'photo' => null,
     'photoSuccess' => '',
+    'roleLabel' => 'Owner',
+    'photoInputId' => 'owner-profile-photo',
 ])
 
 @php
@@ -19,13 +21,23 @@
         )
         ->implode('');
 
-    $initials = $initials ?: 'O';
+    $initials = $initials
+    ?: strtoupper(
+        mb_substr(
+            $roleLabel,
+            0,
+            1
+        )
+    );
 
     $existingPhotoUrl = filled($user->photo)
-        ? \Illuminate\Support\Facades\Storage::url(
-            $user->photo
+    ? asset(
+        'storage/'.ltrim(
+            $user->photo,
+            '/'
         )
-        : null;
+    )
+    : null;
 
     $previewPhotoUrl = $photo
         ? $photo->temporaryUrl()
@@ -67,7 +79,7 @@
                 @endif
 
                 <label
-                    for="owner-profile-photo"
+                    for="{{ $photoInputId }}"
                     class="absolute bottom-1 right-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-blue-600 text-white shadow-md transition hover:bg-blue-700"
                     title="Pilih foto profil"
                 >
@@ -94,7 +106,7 @@
                 </label>
 
                 <input
-                    id="owner-profile-photo"
+                    id="{{ $photoInputId }}"
                     type="file"
                     wire:model="photo"
                     accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
@@ -112,7 +124,7 @@
 
             <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
                 <x-ui.badge color="blue">
-                    Owner
+                    {{ $roleLabel }}
                 </x-ui.badge>
 
                 <x-ui.badge :color="$statusColor">

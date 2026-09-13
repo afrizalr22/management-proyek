@@ -2,8 +2,11 @@
     $authenticatedUser = auth()->user();
 
     $photoUrl = filled($authenticatedUser?->photo)
-        ? \Illuminate\Support\Facades\Storage::url(
-            $authenticatedUser->photo
+        ? asset(
+            'storage/'.ltrim(
+                $authenticatedUser->photo,
+                '/'
+            )
         )
         : '';
 
@@ -23,6 +26,8 @@
 
     $profileRoute = match ($roleName) {
         'owner' => route('owner.profile'),
+        'mandor' => route('mandor.profile'),
+        'pekerja' => route('pekerja.profile.index'),
         default => null,
     };
 
@@ -79,6 +84,11 @@
         request()->routeIs('mandor.dashboard') => [
             'Utama',
             'Dashboard Mandor',
+        ],
+
+        request()->routeIs('mandor.profile') => [
+            'Akun',
+            'Profil Mandor',
         ],
 
         request()->routeIs('mandor.projects.*') => [

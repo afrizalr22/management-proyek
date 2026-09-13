@@ -1,6 +1,8 @@
 @props([
     'user',
     'profileSuccess' => '',
+    'roleLabel' => 'Owner',
+    'inputPrefix' => 'owner',
 ])
 
 <form
@@ -14,7 +16,7 @@
             </h2>
 
             <p class="mt-1 text-sm text-gray-500">
-                Informasi yang digunakan pada akun Owner.
+                Informasi yang digunakan pada akun {{ $roleLabel }}.
             </p>
         </div>
 
@@ -43,7 +45,7 @@
 
             <div>
                 <label
-                    for="owner-profile-name"
+                    for="{{ $inputPrefix }}-profile-name"
                     class="mb-2 block text-sm font-medium text-gray-700"
                 >
                     Nama Lengkap
@@ -52,7 +54,7 @@
                 </label>
 
                 <input
-                    id="owner-profile-name"
+                    id="{{ $inputPrefix }}-profile-name"
                     type="text"
                     wire:model="name"
                     autocomplete="name"
@@ -74,7 +76,7 @@
 
             <div>
                 <label
-                    for="owner-profile-email"
+                    for="{{ $inputPrefix }}-profile-email"
                     class="mb-2 block text-sm font-medium text-gray-700"
                 >
                     Alamat Email
@@ -83,7 +85,7 @@
                 </label>
 
                 <input
-                    id="owner-profile-email"
+                    id="{{ $inputPrefix }}-profile-email"
                     type="email"
                     wire:model="email"
                     autocomplete="email"
@@ -109,14 +111,14 @@
 
             <div>
                 <label
-                    for="owner-profile-phone"
+                    for="{{ $inputPrefix }}-profile-phone"
                     class="mb-2 block text-sm font-medium text-gray-700"
                 >
                     Nomor Telepon
                 </label>
 
                 <input
-                    id="owner-profile-phone"
+                    id="{{ $inputPrefix }}-profile-phone"
                     type="tel"
                     wire:model="phone"
                     autocomplete="tel"
@@ -138,16 +140,16 @@
 
             <div>
                 <label
-                    for="owner-profile-role"
+                    for="{{ $inputPrefix }}-profile-role"
                     class="mb-2 block text-sm font-medium text-gray-700"
                 >
                     Jenis Akun
                 </label>
 
                 <input
-                    id="owner-profile-role"
+                    id="{{ $inputPrefix }}-profile-role"
                     type="text"
-                    value="Owner"
+                    value="{{ $roleLabel }}"
                     disabled
                     class="w-full cursor-not-allowed rounded-xl border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-500"
                 >
