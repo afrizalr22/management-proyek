@@ -1,30 +1,45 @@
-<header
-    class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
->
-    {{-- Sapaan --}}
-    <div>
+@props([
+    'worker',
+    'activeProjects',
+])
+
+@php
+    $primaryProject = $activeProjects->first();
+@endphp
+
+<header class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0">
         <p class="text-sm font-semibold text-blue-600">
             Dashboard Pekerja
         </p>
 
-        <h1
-            class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
-        >
-            Selamat datang, {{ auth()->user()->name ?? 'Pekerja' }}
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            Selamat datang, {{ $worker->name }}
         </h1>
 
-        <p class="mt-2 text-sm text-slate-500 sm:text-base">
-            Berikut ringkasan tugas dan aktivitas pekerjaan Anda hari ini.
-        </p>
+        @if ($primaryProject)
+            <p class="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
+                Anda sedang bertugas pada
+
+                <span class="font-semibold text-slate-700">
+                    {{ $primaryProject->project_name }}
+                </span>
+
+                @if ($activeProjects->count() > 1)
+                    dan {{ $activeProjects->count() - 1 }} proyek lainnya.
+                @else
+                    .
+                @endif
+            </p>
+        @else
+            <p class="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
+                Saat ini belum ada proyek aktif yang ditugaskan kepada Anda.
+            </p>
+        @endif
     </div>
 
-    {{-- Tanggal --}}
-    <div
-        class="inline-flex w-fit items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-    >
-        <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
-        >
+    <div class="inline-flex w-fit shrink-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -47,7 +62,9 @@
             </p>
 
             <p class="text-sm font-semibold text-slate-700">
-                {{ now()->locale('id')->translatedFormat('l, d F Y') }}
+                {{ now()
+                    ->locale('id')
+                    ->translatedFormat('l, d F Y') }}
             </p>
         </div>
     </div>

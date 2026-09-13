@@ -1,21 +1,26 @@
 <div class="space-y-6">
-    {{-- Header dashboard --}}
-    <x-pekerja.dashboard-header />
+    <x-pekerja.dashboard-header
+        :worker="$worker"
+        :active-projects="$activeProjects"
+    />
 
-    {{-- Statistik --}}
-    <x-pekerja.dashboard-statistics />
+    <x-pekerja.dashboard-statistics
+        :statistics="$statistics"
+    />
 
-    {{-- Tugas dan aktivitas --}}
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
         <div class="xl:col-span-2">
-            <x-pekerja.priority-tasks />
+            <x-pekerja.priority-tasks
+                :tasks="$priorityTasks"
+            />
         </div>
 
         <div>
-            <x-pekerja.recent-activity />
+            <x-pekerja.recent-activity
+                :activities="$recentActivities"
+            />
         </div>
     </div>
 
-    {{-- Aksi cepat --}}
     <x-pekerja.quick-actions />
 </div>

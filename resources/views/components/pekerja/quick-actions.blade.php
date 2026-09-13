@@ -1,27 +1,22 @@
-<section
-    class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
->
-    {{-- Header --}}
+<section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div>
         <h2 class="text-lg font-bold text-slate-900">
             Aksi Cepat
         </h2>
 
         <p class="mt-1 text-sm text-slate-500">
-            Pilih aktivitas yang ingin Anda kerjakan.
+            Pilih aktivitas pekerjaan yang ingin dilakukan.
         </p>
     </div>
 
-    {{-- Daftar aksi --}}
     <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-        {{-- Unggah foto --}}
+        {{-- Tambah dokumentasi --}}
         <a
-            href="#"
+            href="{{ route('pekerja.documentation.create') }}"
+            wire:navigate
             class="group flex items-center gap-4 rounded-xl border border-blue-200 bg-blue-50 p-4 transition hover:border-blue-300 hover:bg-blue-100/70"
         >
-            <div
-                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm"
-            >
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -41,16 +36,22 @@
                         stroke-linejoin="round"
                         d="M14.25 10.5a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
                     />
+
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M19.5 3.75v4.5M21.75 6h-4.5"
+                    />
                 </svg>
             </div>
 
             <div class="min-w-0 flex-1">
                 <h3 class="font-semibold text-slate-900">
-                    Unggah Foto Pekerjaan
+                    Tambah Dokumentasi
                 </h3>
 
                 <p class="mt-1 text-sm leading-5 text-slate-500">
-                    Tambahkan bukti dokumentasi dari lokasi proyek.
+                    Tambahkan bukti foto dari pekerjaan lapangan.
                 </p>
             </div>
 
@@ -70,14 +71,13 @@
             </svg>
         </a>
 
-        {{-- Membuat laporan --}}
+        {{-- Buat laporan --}}
         <a
-            href="#"
+            href="{{ route('pekerja.report.create') }}"
+            wire:navigate
             class="group flex items-center gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 transition hover:border-emerald-300 hover:bg-emerald-100/70"
         >
-            <div
-                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm"
-            >
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -100,7 +100,7 @@
                 </h3>
 
                 <p class="mt-1 text-sm leading-5 text-slate-500">
-                    Laporkan hasil dan kendala pekerjaan hari ini.
+                    Laporkan progres, hasil, dan kendala pekerjaan.
                 </p>
             </div>
 

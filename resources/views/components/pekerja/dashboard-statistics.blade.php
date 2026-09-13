@@ -1,22 +1,22 @@
+@props([
+    'statistics',
+])
+
 <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    {{-- Tugas hari ini --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    {{-- Task aktif --}}
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
-                    Tugas Hari Ini
+                    Task Aktif
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    5
+                    {{ $statistics['active_tasks'] }}
                 </p>
             </div>
 
-            <div
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
-            >
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -35,28 +35,25 @@
         </div>
 
         <p class="mt-4 text-sm font-medium text-blue-600">
-            2 tugas baru
+            {{ $statistics['new_tasks'] }}
+            task baru
         </p>
     </article>
 
-    {{-- Tugas selesai --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    {{-- Task selesai --}}
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
-                    Tugas Selesai
+                    Task Selesai
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    3
+                    {{ $statistics['completed_tasks'] }}
                 </p>
             </div>
 
-            <div
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
-            >
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -75,28 +72,25 @@
         </div>
 
         <p class="mt-4 text-sm font-medium text-emerald-600">
-            60% selesai
+            {{ $statistics['completion_rate'] }}%
+            dari seluruh task
         </p>
     </article>
 
-    {{-- Foto diunggah --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    {{-- Dokumentasi --}}
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
-                    Foto Diunggah
+                    Dokumentasi
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    8
+                    {{ $statistics['documentations'] }}
                 </p>
             </div>
 
-            <div
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600"
-            >
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -121,14 +115,13 @@
         </div>
 
         <p class="mt-4 text-sm font-medium text-violet-600">
-            Diunggah hari ini
+            {{ $statistics['photos_today'] }}
+            diunggah hari ini
         </p>
     </article>
 
     {{-- Laporan terkirim --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
@@ -136,13 +129,11 @@
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    1
+                    {{ $statistics['submitted_reports'] }}
                 </p>
             </div>
 
-            <div
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"
-            >
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -161,7 +152,8 @@
         </div>
 
         <p class="mt-4 text-sm font-medium text-amber-600">
-            Sudah dilaporkan
+            {{ $statistics['reports_this_month'] }}
+            laporan bulan ini
         </p>
     </article>
 </section>
