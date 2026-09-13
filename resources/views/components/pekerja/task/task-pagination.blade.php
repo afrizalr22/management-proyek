@@ -1,84 +1,31 @@
-<nav
-    class="flex flex-col gap-4 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
-    aria-label="Navigasi halaman tugas"
->
-    {{-- Informasi data --}}
-    <p class="text-sm text-slate-500">
-        Menampilkan
-        <span class="font-semibold text-slate-700">1–5</span>
-        dari
-        <span class="font-semibold text-slate-700">12</span>
-        tugas
-    </p>
+@props([
+    'tasks',
+])
 
-    {{-- Tombol halaman --}}
-    <div class="flex items-center gap-2">
-        {{-- Sebelumnya --}}
-        <button
-            type="button"
-            disabled
-            aria-label="Halaman sebelumnya"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-300"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.8"
-                stroke="currentColor"
-                class="h-4 w-4"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m15 18-6-6 6-6"
-                />
-            </svg>
-        </button>
+@if ($tasks->hasPages())
+    <div class="border-t border-slate-200 px-5 py-4 sm:px-6">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-sm text-slate-500">
+                Menampilkan
 
-        {{-- Halaman aktif --}}
-        <button
-            type="button"
-            aria-current="page"
-            class="inline-flex h-10 min-w-10 items-center justify-center rounded-lg border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white"
-        >
-            1
-        </button>
+                <span class="font-semibold text-slate-700">
+                    {{ $tasks->firstItem() }}
+                    sampai
+                    {{ $tasks->lastItem() }}
+                </span>
 
-        <button
-            type="button"
-            class="inline-flex h-10 min-w-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
-        >
-            2
-        </button>
+                dari
 
-        <button
-            type="button"
-            class="inline-flex h-10 min-w-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
-        >
-            3
-        </button>
+                <span class="font-semibold text-slate-700">
+                    {{ $tasks->total() }}
+                </span>
 
-        {{-- Berikutnya --}}
-        <button
-            type="button"
-            aria-label="Halaman berikutnya"
-            class="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
-        >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.8"
-                stroke="currentColor"
-                class="h-4 w-4"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m9 18 6-6-6-6"
-                />
-            </svg>
-        </button>
+                task
+            </p>
+
+            <div>
+                {{ $tasks->onEachSide(1)->links() }}
+            </div>
+        </div>
     </div>
-</nav>
+@endif

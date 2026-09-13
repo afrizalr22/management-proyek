@@ -1,58 +1,191 @@
 @props([
-    'title',
-    'project',
-    'location',
-    'deadline',
-    'priority',
-    'status',
+    'task',
 ])
 
 @php
-    $priorityClass = match ($priority) {
-        'Tinggi' => 'bg-red-50 text-red-600',
-        'Sedang' => 'bg-amber-50 text-amber-600',
-        default => 'bg-emerald-50 text-emerald-600',
+    $priorityConfiguration = [
+        'urgent' => [
+            'label' => 'Mendesak',
+            'class' => 'bg-red-100 text-red-700',
+        ],
+
+        'high' => [
+            'label' => 'Tinggi',
+            'class' => 'bg-orange-100 text-orange-700',
+        ],
+
+        'medium' => [
+            'label' => 'Sedang',
+            'class' => 'bg-amber-100 text-amber-700',
+        ],
+
+        'low' => [
+            'label' => 'Rendah',
+            'class' => 'bg-emerald-100 text-emerald-700',
+        ],
+    ];
+
+    $statusConfiguration = [
+        'assigned' => [
+            'label' => 'Belum Dimulai',
+            'class' => 'bg-slate-100 text-slate-600',
+        ],
+
+        'in_progress' => [
+            'label' => 'Sedang Dikerjakan',
+            'class' => 'bg-blue-100 text-blue-700',
+        ],
+
+        'submitted' => [
+            'label' => 'Menunggu Pemeriksaan',
+            'class' => 'bg-violet-100 text-violet-700',
+        ],
+
+        'revision' => [
+            'label' => 'Perlu Revisi',
+            'class' => 'bg-amber-100 text-amber-700',
+        ],
+
+        'completed' => [
+            'label' => 'Selesai',
+            'class' => 'bg-emerald-100 text-emerald-700',
+        ],
+
+        'cancelled' => [
+            'label' => 'Dibatalkan',
+            'class' => 'bg-red-100 text-red-700',
+        ],
+    ];
+
+    $priority =
+        $priorityConfiguration[$task->priority]
+        ?? $priorityConfiguration['medium'];
+
+    $status =
+        $statusConfiguration[$task->status]
+        ?? [
+            'label' => ucfirst(
+                str_replace(
+                    '_',
+                    ' ',
+                    $task->status
+                )
+            ),
+            'class' => 'bg-slate-100 text-slate-600',
+        ];
+
+    $progress = max(
+        0,
+        min(
+            100,
+            (int) $task->progress
+        )
+    );
+
+    $isOverdue =
+        $task->due_at
+        && $task->due_at->isPast()
+        && !in_array(
+            $task->status,
+            [
+                'completed',
+                'cancelled',
+            ],
+            true
+        );
+
+    $deadlineLabel = match (true) {
+        !$task->due_at =>
+            'Belum ditentukan',
+
+        $task->status === 'completed'
+            && $task->completed_at =>
+            'Selesai '
+            .$task->completed_at
+                ->locale('id')
+                ->translatedFormat('d M Y'),
+
+        $isOverdue =>
+            'Terlambat '
+            .$task->due_at
+                ->locale('id')
+                ->diffForHumans(),
+
+        $task->due_at->isToday() =>
+            'Hari ini, '
+            .$task->due_at->format('H.i'),
+
+        $task->due_at->isTomorrow() =>
+            'Besok, '
+            .$task->due_at->format('H.i'),
+
+        default =>
+            $task->due_at
+                ->locale('id')
+                ->translatedFormat('d M Y, H.i'),
     };
 
-    $statusClass = match ($status) {
-        'Sedang Dikerjakan' => 'bg-blue-50 text-blue-600',
-        'Selesai' => 'bg-emerald-50 text-emerald-600',
-        default => 'bg-slate-100 text-slate-600',
-    };
+    $revisionReport =
+        $task->dailyReports
+            ->firstWhere(
+                'status',
+                'revision'
+            );
 
-    $actionLabel = match ($status) {
-        'Sedang Dikerjakan' => 'Selesaikan',
-        'Selesai' => 'Lihat Detail',
-        default => 'Mulai Tugas',
-    };
-
-    $actionClass = match ($status) {
-        'Sedang Dikerjakan' => 'border-blue-600 bg-blue-600 text-white hover:bg-blue-700',
-        'Selesai' => 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
-        default => 'border-blue-600 bg-white text-blue-600 hover:bg-blue-50',
-    };
+    $approvedReport =
+        $task->dailyReports
+            ->firstWhere(
+                'status',
+                'approved'
+            );
 @endphp
 
 <article
     {{ $attributes->class([
-        'grid grid-cols-1 gap-4 border-b border-slate-200 px-5 py-5 transition last:border-b-0 hover:bg-slate-50/70',
-        'lg:grid-cols-[minmax(0,2fr)_minmax(150px,1.2fr)_minmax(130px,1fr)_110px_150px_130px]',
+        'grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-slate-50/70',
+        'lg:grid-cols-[minmax(0,2fr)_minmax(140px,1fr)_minmax(145px,1fr)_115px_135px_150px]',
         'lg:items-center lg:gap-5 lg:px-6',
     ]) }}
 >
-    {{-- Detail tugas --}}
+    {{-- Detail --}}
     <div class="min-w-0">
-        <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-            Detail Tugas
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">
+            {{ $task->task_code }}
         </p>
 
-        <h3 class="font-semibold text-slate-900">
-            {{ $title }}
+        <h3 class="mt-1 font-semibold leading-6 text-slate-900">
+            {{ $task->title }}
         </h3>
 
-        <p class="mt-1 text-sm text-slate-500">
-            {{ $project }}
+        <p class="mt-1 truncate text-sm text-slate-500">
+            {{ $task->project?->project_name
+                ?? 'Proyek tidak tersedia' }}
         </p>
+
+        <div class="mt-3">
+            <div class="flex items-center justify-between gap-3">
+                <span class="text-xs text-slate-400">
+                    Progres
+                </span>
+
+                <span class="text-xs font-bold text-blue-600">
+                    {{ $progress }}%
+                </span>
+            </div>
+
+            <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                    x-data
+                    data-progress="{{ $progress }}"
+                    x-bind:style="
+                        'width: '
+                        + $el.dataset.progress
+                        + '%'
+                    "
+                    class="h-full rounded-full bg-blue-600 transition-all duration-300"
+                ></div>
+            </div>
+        </div>
     </div>
 
     {{-- Lokasi --}}
@@ -83,18 +216,28 @@
                 />
             </svg>
 
-            <span>{{ $location }}</span>
+            <span>
+                {{ $task->location
+                    ?: $task->project?->location
+                    ?: 'Belum ditentukan' }}
+            </span>
         </div>
     </div>
 
-    {{-- Tenggat waktu --}}
+    {{-- Deadline --}}
     <div>
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-            Tenggat Waktu
+            Deadline
         </p>
 
-        <p class="text-sm font-medium text-slate-700">
-            {{ $deadline }}
+        <p
+            @class([
+                'text-sm font-medium',
+                'text-red-600' => $isOverdue,
+                'text-slate-700' => !$isOverdue,
+            ])
+        >
+            {{ $deadlineLabel }}
         </p>
     </div>
 
@@ -104,10 +247,8 @@
             Prioritas
         </p>
 
-        <span
-            class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $priorityClass }}"
-        >
-            {{ $priority }}
+        <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $priority['class'] }}">
+            {{ $priority['label'] }}
         </span>
     </div>
 
@@ -117,10 +258,8 @@
             Status
         </p>
 
-        <span
-            class="inline-flex rounded-full px-3 py-1.5 text-xs font-semibold {{ $statusClass }}"
-        >
-            {{ $status }}
+        <span class="inline-flex rounded-full px-3 py-1.5 text-xs font-semibold {{ $status['class'] }}">
+            {{ $status['label'] }}
         </span>
     </div>
 
@@ -130,34 +269,84 @@
             Aksi
         </p>
 
-        <button
-            type="button"
-            class="inline-flex min-h-10 w-full items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold transition sm:w-auto lg:w-full {{ $actionClass }}"
-        >
-            @if ($status === 'Selesai')
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.8"
-                    stroke="currentColor"
-                    class="mr-2 h-4 w-4"
+        @if ($task->status === 'assigned')
+            <button
+                type="button"
+                wire:click="startTask({{ $task->id }})"
+                wire:confirm="Mulai mengerjakan task ini?"
+                wire:loading.attr="disabled"
+                wire:target="startTask({{ $task->id }})"
+                class="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <span
+                    wire:loading.remove
+                    wire:target="startTask({{ $task->id }})"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"
-                    />
+                    Mulai Task
+                </span>
 
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                    />
-                </svg>
-            @endif
-
-            {{ $actionLabel }}
-        </button>
+                <span
+                    wire:loading
+                    wire:target="startTask({{ $task->id }})"
+                >
+                    Memulai...
+                </span>
+            </button>
+        @elseif ($task->status === 'in_progress')
+            <a
+                href="{{ route(
+                    'pekerja.report.create',
+                    [
+                        'task' => $task->id,
+                    ]
+                ) }}"
+                wire:navigate
+                class="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+                Buat Laporan
+            </a>
+        @elseif ($task->status === 'revision' && $revisionReport)
+            <a
+                href="{{ route(
+                    'pekerja.report.show',
+                    [
+                        'report' => $revisionReport->id,
+                    ]
+                ) }}"
+                wire:navigate
+                class="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+            >
+                Perbaiki Laporan
+            </a>
+        @elseif ($task->status === 'completed' && $approvedReport)
+            <a
+                href="{{ route(
+                    'pekerja.report.show',
+                    [
+                        'report' => $approvedReport->id,
+                    ]
+                ) }}"
+                wire:navigate
+                class="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+                Lihat Laporan
+            </a>
+        @elseif ($task->status === 'submitted')
+            <button
+                type="button"
+                disabled
+                class="inline-flex min-h-10 w-full cursor-not-allowed items-center justify-center rounded-lg border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-600 opacity-80"
+            >
+                Menunggu Mandor
+            </button>
+        @else
+            <button
+                type="button"
+                disabled
+                class="inline-flex min-h-10 w-full cursor-not-allowed items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-400"
+            >
+                Tidak Tersedia
+            </button>
+        @endif
     </div>
 </article>

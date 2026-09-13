@@ -1,28 +1,25 @@
-<header
-    class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
->
-    {{-- Judul halaman --}}
+@props([
+    'worker',
+])
+
+<header class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
     <div>
         <p class="text-sm font-semibold text-blue-600">
             Pekerjaan Lapangan
         </p>
 
         <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            Tugas Saya
+            Task Saya
         </h1>
 
-        <p class="mt-2 text-sm text-slate-500 sm:text-base">
-            Kelola dan pantau progres pekerjaan lapangan yang diberikan kepada Anda.
+        <p class="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
+            Pantau task, deadline, dan progres pekerjaan
+            {{ $worker->name }}.
         </p>
     </div>
 
-    {{-- Tanggal --}}
-    <div
-        class="inline-flex w-fit items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
-    >
-        <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
-        >
+    <div class="inline-flex w-fit items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -45,7 +42,9 @@
             </p>
 
             <p class="text-sm font-semibold text-slate-700">
-                {{ now()->locale('id')->translatedFormat('l, d F Y') }}
+                {{ now()
+                    ->locale('id')
+                    ->translatedFormat('l, d F Y') }}
             </p>
         </div>
     </div>
