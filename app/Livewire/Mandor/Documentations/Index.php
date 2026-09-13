@@ -141,13 +141,17 @@ class Index extends Component
                     );
 
                     $documentation->setAttribute(
-                        'photo_url',
-                        $photoExists
-                            ? Storage::disk('public')->url(
-                                $documentation->photo
-                            )
-                            : null
-                    );
+                    'photo_url',
+                    $photoExists
+                        ? asset(
+                            'storage/'
+                                . ltrim(
+                                    $documentation->photo,
+                                    '/'
+                                )
+                        )
+                        : null
+                );
 
                     return $documentation;
                 }
