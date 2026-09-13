@@ -1,64 +1,31 @@
-<x-ui.info-card class="overflow-hidden">
+@props([
+    'documentations',
+])
 
-    <div
-        class="flex flex-col items-center justify-between gap-5
-               px-6 py-5 sm:flex-row"
-    >
-
-        {{-- Result Information --}}
-        <div>
-
+@if ($documentations->total() > 0)
+    <x-ui.info-card class="overflow-hidden">
+        <div class="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-sm text-gray-500">
                 Menampilkan
                 <span class="font-semibold text-gray-900">
-                    6
+                    {{ number_format($documentations->firstItem()) }}
+                </span>
+                sampai
+                <span class="font-semibold text-gray-900">
+                    {{ number_format($documentations->lastItem()) }}
                 </span>
                 dari
                 <span class="font-semibold text-gray-900">
-                    124
+                    {{ number_format($documentations->total()) }}
                 </span>
                 dokumentasi
             </p>
 
-            {{-- Loading Progress --}}
-            <div class="mt-2 h-1.5 w-48 overflow-hidden rounded-full bg-gray-100">
-
-                <div
-                    class="h-full rounded-full bg-blue-600"
-                    style="width: 5%"
-                ></div>
-
-            </div>
-
+            @if ($documentations->hasPages())
+                <div class="w-full sm:w-auto">
+                    {{ $documentations->onEachSide(1)->links() }}
+                </div>
+            @endif
         </div>
-
-        {{-- Load More Button --}}
-        <button
-            type="button"
-            class="inline-flex h-11 items-center justify-center
-                   gap-2 rounded-lg border border-gray-300
-                   bg-white px-5 text-sm font-semibold
-                   text-gray-700 transition
-                   hover:border-blue-300 hover:bg-blue-50
-                   hover:text-blue-700"
-        >
-            <svg
-                class="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 5v14M5 12h14"
-                />
-            </svg>
-
-            Muat Lebih Banyak
-        </button>
-
-    </div>
-
-</x-ui.info-card>
+    </x-ui.info-card>
+@endif

@@ -1,18 +1,37 @@
 <div class="space-y-6">
 
-    {{-- Page Header --}}
-    <x-mandor.documentations.page-header />
+    <x-mandor.documentations.page-header
+        :project="$project"
+        :total-documentations="$totalDocumentations"
+    />
 
-    {{-- Documentation Search and Filter --}}
-    <x-mandor.documentations.documentation-filter />
+    <x-mandor.documentations.documentation-filter
+        :categories="$categories"
+        :tasks="$tasks"
+        :category="$category"
+        :task-filter="$taskFilter"
+        :sort="$sort"
+        :filtered-documentations="$filteredDocumentations"
+        :total-documentations="$totalDocumentations"
+        :has-active-filters="$hasActiveFilters"
+    />
 
-    {{-- Documentation Gallery --}}
-    <x-mandor.documentations.documentation-grid />
+    <div wire:loading.class="opacity-60">
+        @if ($documentations->isNotEmpty())
+            <x-mandor.documentations.documentation-grid
+                :documentations="$documentations"
+            />
 
-    {{-- Documentation Navigation --}}
-    <x-mandor.documentations.documentation-footer />
+            <x-mandor.documentations.documentation-footer
+                :documentations="$documentations"
+            />
+        @else
+            <x-mandor.documentations.documentation-empty
+                :has-active-filters="$hasActiveFilters"
+            />
+        @endif
+    </div>
 
-    {{-- Documentation Preview Modal --}}
     <x-mandor.documentations.documentation-preview />
 
 </div>
