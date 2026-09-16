@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'name',
@@ -166,5 +167,25 @@ class User extends Authenticatable
             DeliveryOrder::class,
             'created_by'
         );
+    }
+
+        /**
+     * Detail profil tambahan milik pengguna.
+     */
+    public function profile(): HasOne
+    {
+        return $this->hasOne(
+            UserProfile::class
+        );
+    }
+
+    /**
+     * Daftar kontak darurat milik pengguna.
+     */
+    public function emergencyContacts(): HasMany
+    {
+        return $this->hasMany(
+            EmergencyContact::class
+        )->orderBy('priority');
     }
 }

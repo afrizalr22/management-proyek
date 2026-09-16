@@ -1,18 +1,13 @@
 @props([
-    'primaryName' => 'Siti Aminah',
-    'primaryRelation' => 'Istri',
-    'primaryPhone' => '0812-3456-7890',
-
-    'secondaryName' => 'Andi Santoso',
-    'secondaryRelation' => 'Saudara',
-    'secondaryPhone' => '0812-9876-5432',
+    'emergencyContactSuccess' => '',
 ])
 
 <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-    {{-- Header --}}
     <div class="border-b border-slate-200 px-5 py-5 sm:px-6">
         <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
+            <div
+                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600"
+            >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -35,102 +30,258 @@
                 </h2>
 
                 <p class="mt-1 text-sm text-slate-500">
-                    Kontak yang dapat dihubungi dalam keadaan darurat.
+                    Kelola kontak yang dapat dihubungi dalam keadaan darurat.
                 </p>
             </div>
         </div>
     </div>
 
-    {{-- Daftar kontak --}}
-    <div class="grid grid-cols-1 gap-4 px-5 py-6 sm:grid-cols-2 sm:px-6">
+    <form
+        wire:submit="updateEmergencyContacts"
+        class="space-y-6 p-5 sm:p-6"
+    >
+        @if ($emergencyContactSuccess)
+            <div
+                class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
+                role="status"
+            >
+                {{ $emergencyContactSuccess }}
+            </div>
+        @endif
+
+        @error('emergencyContacts')
+            <div
+                class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                role="alert"
+            >
+                {{ $message }}
+            </div>
+        @enderror
+
         {{-- Kontak utama --}}
-        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div class="flex items-start gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
-                    SA
+        <fieldset class="rounded-xl border border-slate-200 p-4 sm:p-5">
+            <legend
+                class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700"
+            >
+                Kontak Utama
+            </legend>
+
+            <div class="mt-2 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label
+                        for="primary-name"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Nama Lengkap
+                    </label>
+
+                    <input
+                        id="primary-name"
+                        type="text"
+                        wire:model="primaryName"
+                        maxlength="255"
+                        autocomplete="off"
+                        placeholder="Masukkan nama kontak utama"
+                        class="block min-h-11 w-full rounded-xl border-slate-300 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+
+                    @error('primaryName')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
 
-                <div class="min-w-0">
-                    <span class="inline-flex rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                        Kontak Utama
-                    </span>
+                <div>
+                    <label
+                        for="primary-relationship"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Hubungan
+                    </label>
 
-                    <p class="mt-3 text-sm font-semibold text-slate-900">
-                        {{ $primaryName }}
-                    </p>
+                    <input
+                        id="primary-relationship"
+                        type="text"
+                        wire:model="primaryRelationship"
+                        maxlength="100"
+                        autocomplete="off"
+                        placeholder="Contoh: Orang Tua"
+                        class="block min-h-11 w-full rounded-xl border-slate-300 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
 
-                    <p class="mt-1 text-xs text-slate-500">
-                        {{ $primaryRelation }}
-                    </p>
+                    @error('primaryRelationship')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label
+                        for="primary-phone"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Nomor Telepon
+                    </label>
+
+                    <input
+                        id="primary-phone"
+                        type="tel"
+                        wire:model="primaryPhone"
+                        maxlength="20"
+                        autocomplete="tel"
+                        inputmode="tel"
+                        placeholder="Contoh: 081234567890"
+                        class="block min-h-11 w-full rounded-xl border-slate-300 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+
+                    @error('primaryPhone')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
                 </div>
             </div>
+        </fieldset>
 
-            <a
-                href="tel:{{ str_replace([' ', '-'], '', $primaryPhone) }}"
-                class="mt-4 flex items-center gap-2 rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+        {{-- Kontak tambahan --}}
+        <fieldset class="rounded-xl border border-slate-200 p-4 sm:p-5">
+            <legend
+                class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+            >
+                Kontak Tambahan
+            </legend>
+
+            <p class="mt-2 text-xs text-slate-500">
+                Kontak tambahan bersifat opsional. Kosongkan seluruh kolom
+                apabila tidak digunakan.
+            </p>
+
+            <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label
+                        for="secondary-name"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Nama Lengkap
+                    </label>
+
+                    <input
+                        id="secondary-name"
+                        type="text"
+                        wire:model="secondaryName"
+                        maxlength="255"
+                        autocomplete="off"
+                        placeholder="Masukkan nama kontak tambahan"
+                        class="block min-h-11 w-full rounded-xl border-slate-300 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+
+                    @error('secondaryName')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label
+                        for="secondary-relationship"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Hubungan
+                    </label>
+
+                    <input
+                        id="secondary-relationship"
+                        type="text"
+                        wire:model="secondaryRelationship"
+                        maxlength="100"
+                        autocomplete="off"
+                        placeholder="Contoh: Saudara"
+                        class="block min-h-11 w-full rounded-xl border-slate-300 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+
+                    @error('secondaryRelationship')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label
+                        for="secondary-phone"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Nomor Telepon
+                    </label>
+
+                    <input
+                        id="secondary-phone"
+                        type="tel"
+                        wire:model="secondaryPhone"
+                        maxlength="20"
+                        autocomplete="off"
+                        inputmode="tel"
+                        placeholder="Contoh: 081298765432"
+                        class="block min-h-11 w-full rounded-xl border-slate-300 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+
+                    @error('secondaryPhone')
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="flex justify-end border-t border-slate-100 pt-5">
+            <button
+                type="submit"
+                wire:loading.attr="disabled"
+                wire:target="updateEmergencyContacts"
+                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 <svg
+                    wire:loading
+                    wire:target="updateEmergencyContacts"
+                    class="h-4 w-4 animate-spin"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    stroke-width="1.8"
-                    stroke="currentColor"
-                    class="h-4 w-4 shrink-0"
                 >
+                    <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                    ></circle>
+
                     <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 0 0-1.173.417l-.97 1.293a1.125 1.125 0 0 1-1.21.38 12.035 12.035 0 0 1-7.143-7.143 1.125 1.125 0 0 1 .38-1.21l1.293-.97c.368-.276.526-.756.417-1.173L6.963 3.102A1.125 1.125 0 0 0 5.872 2.25H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
-                    />
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4Z"
+                    ></path>
                 </svg>
 
-                {{ $primaryPhone }}
-            </a>
-        </article>
-
-        {{-- Kontak kedua --}}
-        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div class="flex items-start gap-3">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-bold text-slate-700">
-                    AS
-                </div>
-
-                <div class="min-w-0">
-                    <span class="inline-flex rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                        Kontak Tambahan
-                    </span>
-
-                    <p class="mt-3 text-sm font-semibold text-slate-900">
-                        {{ $secondaryName }}
-                    </p>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        {{ $secondaryRelation }}
-                    </p>
-                </div>
-            </div>
-
-            <a
-                href="tel:{{ str_replace([' ', '-'], '', $secondaryPhone) }}"
-                class="mt-4 flex items-center gap-2 rounded-lg bg-white px-3 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.8"
-                    stroke="currentColor"
-                    class="h-4 w-4 shrink-0"
+                <span
+                    wire:loading.remove
+                    wire:target="updateEmergencyContacts"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106a1.125 1.125 0 0 0-1.173.417l-.97 1.293a1.125 1.125 0 0 1-1.21.38 12.035 12.035 0 0 1-7.143-7.143 1.125 1.125 0 0 1 .38-1.21l1.293-.97c.368-.276.526-.756.417-1.173L6.963 3.102A1.125 1.125 0 0 0 5.872 2.25H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"
-                    />
-                </svg>
+                    Simpan Kontak
+                </span>
 
-                {{ $secondaryPhone }}
-            </a>
-        </article>
-    </div>
+                <span
+                    wire:loading
+                    wire:target="updateEmergencyContacts"
+                >
+                    Menyimpan...
+                </span>
+            </button>
+        </div>
+    </form>
 </section>

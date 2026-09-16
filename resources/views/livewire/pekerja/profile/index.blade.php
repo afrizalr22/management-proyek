@@ -1,57 +1,47 @@
 <div class="space-y-6">
-    {{-- Page header --}}
-    <div>
-        <h1 class="text-2xl font-bold text-slate-900 sm:text-3xl">
-            Profil Saya
-        </h1>
-
-        <p class="mt-1 text-sm text-slate-500">
-            Lihat dan kelola informasi profil serta akun Anda.
-        </p>
-    </div>
-
-    {{-- Identitas pekerja --}}
-    <x-pekerja.profile.profile-header
-        name="Budi Santoso"
-        worker-id="PKR-2026-001"
-        role="Pekerja Lapangan"
-        specialization="Teknisi Instalasi Listrik"
+    <x-profile.profile-header
+        :user="$user"
+        role-label="Pekerja"
     />
 
-    {{-- Ringkasan profil --}}
-    <x-pekerja.profile.profile-summary
-        worker-status="Aktif"
-        :active-projects="1"
-    />
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div>
+            <x-profile.profile-card
+                :user="$user"
+                :photo="$photo"
+                :photo-success="$photoSuccess"
+                role-label="Pekerja"
+                photo-input-id="pekerja-profile-photo"
+            />
+        </div>
 
-    {{-- Informasi pekerjaan dan kontak --}}
-    <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
-        <x-pekerja.profile.work-information
-            project-name="Pembangunan Gedung Perkantoran Sudirman"
-            project-location="Jakarta Selatan"
-            supervisor-name="Agus Hermawan"
-            joined-date="10 Januari 2026"
-            assignment-status="Sedang Bertugas"
-        />
+        <div class="space-y-6 xl:col-span-2">
+            <x-profile.personal-information
+                :user="$user"
+                :profile-success="$profileSuccess"
+                role-label="Pekerja"
+                input-prefix="pekerja"
+            />
 
-        <x-pekerja.profile.contact-information
-            email="budi.santoso@example.com"
-            phone="0812-3456-7890"
-            address="Jl. Kebagusan Raya, Pasar Minggu, Jakarta Selatan"
-        />
-    </div>
+            {{-- Form bidang pekerjaan dan alamat --}}
+            <x-pekerja.profile.worker-information
+                :worker-profile-success="$workerProfileSuccess"
+            />
 
-    {{-- Kontak darurat dan pengaturan akun --}}
-    <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
-        <x-pekerja.profile.emergency-contact
-            primary-name="Siti Aminah"
-            primary-relation="Istri"
-            primary-phone="0812-3456-7890"
-            secondary-name="Andi Santoso"
-            secondary-relation="Saudara"
-            secondary-phone="0812-9876-5432"
-        />
+            {{-- Informasi proyek aktif --}}
+            <x-pekerja.profile.work-information
+                :assignment="$primaryAssignment"
+            />
 
-        <x-pekerja.profile.account-settings />
+            {{-- Form kontak darurat --}}
+            <x-pekerja.profile.emergency-contact
+                :emergency-contact-success="$emergencyContactSuccess"
+            />
+
+            <x-profile.security-password
+                :password-success="$passwordSuccess"
+                input-prefix="pekerja"
+            />
+        </div>
     </div>
 </div>
