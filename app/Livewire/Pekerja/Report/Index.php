@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Models\User;
 
 class Index extends Component
 {
@@ -120,8 +121,22 @@ class Index extends Component
         return DailyReport::query()
             ->where(
                 'user_id',
-                Auth::id()
+                $this->authenticatedWorker()->id
             );
+    }
+
+    private function authenticatedWorker(): User
+    {
+        $worker = Auth::user();
+
+        abort_unless(
+            $worker instanceof User
+                && $worker->hasRole('pekerja')
+                && $worker->isActive(),
+            403
+        );
+
+        return $worker;
     }
 
     private function applyFilters(
