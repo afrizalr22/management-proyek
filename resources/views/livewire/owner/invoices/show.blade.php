@@ -1,6 +1,6 @@
 <div class="space-y-6">
     {{-- Header --}}
-    <x-invoice.invoice-show-header
+    <x-owner.invoice.invoice-show-header
         :invoice="$invoice"
     />
 
@@ -48,40 +48,40 @@
 
     {{-- Informasi Client dan Invoice --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <x-invoice.invoice-show-billing
+        <x-owner.invoice.invoice-show-billing
             :invoice="$invoice"
         />
 
-        <x-invoice.invoice-show-summary
+        <x-owner.invoice.invoice-show-summary
             :invoice="$invoice"
         />
     </div>
 
     {{-- Item Invoice --}}
-    <x-invoice.invoice-show-items
+    <x-owner.invoice.invoice-show-items
         :invoice="$invoice"
         :items="$invoice->items"
     />
 
     {{-- Total dan pembayaran --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <x-invoice.invoice-show-total
+        <x-owner.invoice.invoice-show-total
             :invoice="$invoice"
             :items="$invoice->items"
         />
 
-        <x-invoice.invoice-show-payment-status
+        <x-owner.invoice.invoice-show-payment-status
             :invoice="$invoice"
         />
     </div>
 
     {{-- Catatan --}}
-    <x-invoice.invoice-notes
+    <x-owner.invoice.invoice-notes
         :invoice="$invoice"
     />
 
     {{-- Dokumen terkait --}}
-    <x-invoice.invoice-related-documents
+    <x-owner.invoice.invoice-related-documents
         :invoice="$invoice"
     />
 </div>

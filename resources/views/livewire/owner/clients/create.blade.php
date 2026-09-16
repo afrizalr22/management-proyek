@@ -54,10 +54,10 @@
     @endif
 
     {{-- Form Client --}}
-    <x-client.form :status="$status" />
+    <x-owner.client.form :status="$status" />
 
     {{-- Informasi --}}
-    <x-client.information />
+    <x-owner.client.information />
 
     {{-- Tombol aksi --}}
     <div

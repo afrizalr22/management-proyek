@@ -1,6 +1,6 @@
 <div class="space-y-6">
     {{-- Header --}}
-    <x-delivery-order.delivery-order-show-header
+    <x-owner.delivery-order.delivery-order-show-header
         :delivery-order="$deliveryOrder"
     />
     {{-- Kesalahan perubahan status --}}
@@ -65,22 +65,22 @@
 
     {{-- Informasi pengiriman dan Project --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <x-delivery-order.delivery-order-show-information
+        <x-owner.delivery-order.delivery-order-show-information
             :delivery-order="$deliveryOrder"
         />
 
-        <x-delivery-order.delivery-order-show-project
+        <x-owner.delivery-order.delivery-order-show-project
             :delivery-order="$deliveryOrder"
         />
     </div>
 
     {{-- Item --}}
-    <x-delivery-order.delivery-order-show-items
+    <x-owner.delivery-order.delivery-order-show-items
         :items="$deliveryOrder->items"
     />
 
     {{-- Catatan --}}
-    <x-delivery-order.delivery-order-show-notes
+    <x-owner.delivery-order.delivery-order-show-notes
         :delivery-order="$deliveryOrder"
     />
 </div>

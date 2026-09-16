@@ -1,6 +1,6 @@
 <div class="space-y-6">
     {{-- Header --}}
-    <x-user.user-header />
+    <x-owner.user.user-header />
 
     {{-- Notifikasi --}}
     @if (session()->has('notification'))
@@ -113,12 +113,12 @@
     @endif
 
     {{-- Statistik --}}
-    <x-user.user-statistics
+    <x-owner.user.user-statistics
         :statistics="$statistics"
     />
 
     {{-- Filter --}}
-    <x-user.user-filter
+    <x-owner.user.user-filter
         :search="$search"
         :role="$role"
         :status="$status"
@@ -127,12 +127,12 @@
     />
 
     {{-- Tabel pengguna --}}
-    <x-user.user-table
+    <x-owner.user.user-table
         :users="$users"
     />
 
     {{-- Pagination --}}
-    <x-user.user-pagination
+    <x-owner.user.user-pagination
         :users="$users"
     />
 

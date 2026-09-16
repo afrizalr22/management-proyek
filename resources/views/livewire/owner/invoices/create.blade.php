@@ -53,7 +53,7 @@
     {{-- Konten --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
-            <x-invoice.invoice-create-primary
+            <x-owner.invoice.invoice-create-primary
                 :quotations="$quotations"
                 :quotation-id="$quotationId"
                 :quotation-number="$quotationNumber"
@@ -65,13 +65,13 @@
                 :project-name="$projectName"
             />
 
-            <x-invoice.invoice-create-items
+            <x-owner.invoice.invoice-create-items
                 :items="$items"
             />
         </div>
 
         <aside class="space-y-6">
-            <x-invoice.invoice-create-summary
+            <x-owner.invoice.invoice-create-summary
                 :quotation-number="$quotationNumber"
                 :client-name="$clientName"
                 :project-name="$projectName"

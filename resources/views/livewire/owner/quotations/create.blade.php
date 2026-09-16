@@ -41,25 +41,25 @@
 
             {{-- Konten utama --}}
             <div class="space-y-6 xl:col-span-2">
-                <x-quotation.quotation-general-information
+                <x-owner.quotation.quotation-general-information
                     :clients="$clients"
                     :selected-client="$selectedClient"
                     :quotation-number="$quotationNumber"
                     :quotation-date="$quotationDate"
                 />
 
-                <x-quotation.quotation-items
+                <x-owner.quotation.quotation-items
                     :items="$items"
                     :subtotal="$subtotal"
                     :total-quantity="$totalQuantity"
                 />
 
-                <x-quotation.quotation-notes />
+                <x-owner.quotation.quotation-notes />
             </div>
 
             {{-- Sidebar --}}
             <aside class="space-y-6">
-                <x-quotation.quotation-sidebar
+                <x-owner.quotation.quotation-sidebar
                     :selected-client="$selectedClient"
                     :project-name="$projectName"
                     :quotation-date="$quotationDate"
@@ -69,13 +69,13 @@
                     :grand-total="$grandTotal"
                 />
 
-                <x-quotation.quotation-summary
+                <x-owner.quotation.quotation-summary
                     :items="$items"
                     :subtotal="$subtotal"
                     :grand-total="$grandTotal"
                 />
 
-                <x-quotation.quotation-preview />
+                <x-owner.quotation.quotation-preview />
             </aside>
         </div>
 

@@ -135,13 +135,13 @@
         </div>
     </div>
 
-    <x-project.toolbar
+    <x-owner.project.toolbar
         :search="$search"
         :status="$status"
         :sort="$sort"
     />
 
-<x-project.grid
+<x-owner.project.grid
     :projects="$projects"
     :search="$search"
     :status="$status"

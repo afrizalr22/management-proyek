@@ -60,13 +60,13 @@
         </span>
     </nav>
 
-    <x-monitoring.documentation-header
+    <x-owner.monitoring.documentation-header
         :project="$project"
         :total-documentations="$totalDocumentations"
         :category-statistics="$categoryStatistics"
     />
 
-    <x-monitoring.documentation-filter
+    <x-owner.monitoring.documentation-filter
         :search="$search"
         :category="$category"
         :date="$date"
@@ -91,11 +91,11 @@
         </div>
     @enderror
 
-    <x-monitoring.documentation-gallery
+    <x-owner.monitoring.documentation-gallery
         :documentations="$documentations"
     />
 
-    <x-monitoring.documentation-pagination
+    <x-owner.monitoring.documentation-pagination
         :documentations="$documentations"
     />
 </div>

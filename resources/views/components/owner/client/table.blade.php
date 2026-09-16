@@ -39,7 +39,7 @@
 
      <tbody class="divide-y divide-gray-100 bg-white">
     @forelse ($clients as $client)
-        <x-client.table-row
+        <x-owner.client.table-row
             :client="$client"
             :no="$clients->firstItem() + $loop->index"
         />

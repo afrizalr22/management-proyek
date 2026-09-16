@@ -118,7 +118,7 @@
                 </div>
 
                 <div class="px-5 py-6 sm:px-6">
-                    <x-client.form :status="$status" />
+                    <x-owner.client.form :status="$status" />
                 </div>
 
                 {{-- Action --}}

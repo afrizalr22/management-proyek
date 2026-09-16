@@ -156,14 +156,14 @@
             <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                 <div class="overflow-x-auto">
                     <div class="min-w-[1100px]">
-                        <x-monitoring.gantt-header
+                        <x-owner.monitoring.gantt-header
                             :timeline-start="$timelineStart"
                             :timeline-end="$timelineEnd"
                             :total-days="$totalDays"
                         />
 
                         @foreach ($taskCollection as $task)
-                            <x-monitoring.gantt-row
+                            <x-owner.monitoring.gantt-row
                                 :task="$task"
                                 :timeline-start="$timelineStart"
                                 :timeline-end="$timelineEnd"

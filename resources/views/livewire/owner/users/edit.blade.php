@@ -3,7 +3,7 @@
     class="space-y-6"
     novalidate
 >
-    <x-user.user-edit-header
+    <x-owner.user.user-edit-header
         :user="$user"
     />
 
@@ -35,21 +35,21 @@
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
-            <x-user.user-identity-form />
+            <x-owner.user.user-identity-form />
 
-            <x-user.user-role-form
+            <x-owner.user.user-role-form
                 :role="$role"
                 :status="$status"
                 :is-self="$isSelf"
             />
 
-            <x-user.user-password-form
+            <x-owner.user.user-password-form
                 mode="edit"
             />
         </div>
 
         <aside class="space-y-6">
-            <x-user.user-profile-preview
+            <x-owner.user.user-profile-preview
                 :name="$name"
                 :email="$email"
                 :phone="$phone"
@@ -57,7 +57,7 @@
                 :status="$status"
             />
 
-            <x-user.user-security-action
+            <x-owner.user.user-security-action
                 :user="$user"
                 :is-self="$isSelf"
             />

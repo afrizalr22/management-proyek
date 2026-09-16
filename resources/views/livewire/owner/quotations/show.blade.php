@@ -1,7 +1,7 @@
 <div class="space-y-6">
 
     {{-- Header --}}
-    <x-quotation.quotation-show-header
+    <x-owner.quotation.quotation-show-header
         :quotation="$quotation"
         :status-text="$statusText"
         :status-color="$statusColor"
@@ -97,46 +97,46 @@
     @endif
 
     {{-- Aksi status --}}
-    <x-quotation.quotation-status-actions
+    <x-owner.quotation.quotation-status-actions
         :quotation="$quotation"
     />
 
     {{-- Informasi utama --}}
-    <x-quotation.quotation-show-information
+    <x-owner.quotation.quotation-show-information
         :quotation="$quotation"
         :status-text="$statusText"
         :status-color="$statusColor"
     />
 
     {{-- Daftar item --}}
-    <x-quotation.quotation-show-items
+    <x-owner.quotation.quotation-show-items
         :items="$quotation->items"
     />
 
     {{-- Ringkasan biaya --}}
-    <x-quotation.quotation-show-summary
+    <x-owner.quotation.quotation-show-summary
         :quotation="$quotation"
     />
 
     {{-- Catatan dan riwayat --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <x-quotation.quotation-show-notes
+        <x-owner.quotation.quotation-show-notes
             :quotation="$quotation"
         />
 
-        <x-quotation.quotation-show-history
+        <x-owner.quotation.quotation-show-history
             :quotation="$quotation"
             :status-text="$statusText"
             :status-color="$statusColor"
         />
     </div>
 
-    <x-quotation.quotation-status-confirmation-modal
+    <x-owner.quotation.quotation-status-confirmation-modal
         :action="$pendingStatusAction"
         :quotation="$quotation"
     />
 
-    <x-quotation.quotation-delete-modal
+    <x-owner.quotation.quotation-delete-modal
         :show="$showDeleteModal"
         :quotation="$quotation"
     />

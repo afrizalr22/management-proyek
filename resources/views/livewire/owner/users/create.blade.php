@@ -4,7 +4,7 @@
     novalidate
 >
     {{-- Header --}}
-    <x-user.user-create-header />
+    <x-owner.user.user-create-header />
 
     {{-- Kesalahan penyimpanan --}}
     @error('save')
@@ -37,21 +37,21 @@
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {{-- Konten utama --}}
         <div class="space-y-6 xl:col-span-2">
-            <x-user.user-identity-form />
+            <x-owner.user.user-identity-form />
 
-            <x-user.user-role-form
+            <x-owner.user.user-role-form
                 :role="$role"
                 :status="$status"
             />
 
-            <x-user.user-password-form />
+            <x-owner.user.user-password-form />
         </div>
 
         {{-- Sidebar --}}
         <aside class="space-y-6">
-            <x-user.user-security-guide />
+            <x-owner.user.user-security-guide />
 
-            <x-user.user-profile-preview
+            <x-owner.user.user-profile-preview
                 :name="$name"
                 :email="$email"
                 :phone="$phone"

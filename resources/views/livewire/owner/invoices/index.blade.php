@@ -61,12 +61,12 @@
     @endif
 
     {{-- Statistik --}}
-    <x-invoice.invoice-statistics
+    <x-owner.invoice.invoice-statistics
         :statistics="$statistics"
     />
 
     {{-- Toolbar --}}
-    <x-invoice.invoice-toolbar
+    <x-owner.invoice.invoice-toolbar
         :search="$search"
         :status="$status"
         :payment-status="$paymentStatus"
@@ -74,7 +74,7 @@
     />
 
     {{-- Tabel --}}
-    <x-invoice.invoice-table
+    <x-owner.invoice.invoice-table
         :invoices="$invoices"
     />
 

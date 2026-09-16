@@ -50,17 +50,17 @@
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
-            <x-invoice.invoice-edit-primary
+            <x-owner.invoice.invoice-edit-primary
                 :invoice="$invoice"
             />
 
-            <x-invoice.invoice-edit-items
+            <x-owner.invoice.invoice-edit-items
                 :items="$items"
             />
         </div>
 
         <aside class="space-y-6">
-            <x-invoice.invoice-edit-summary
+            <x-owner.invoice.invoice-edit-summary
                 :items="$items"
                 :subtotal="$subtotal"
                 :total-quantity="$totalQuantity"

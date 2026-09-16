@@ -1,6 +1,6 @@
 <div class="space-y-6">
     {{-- Header --}}
-    <x-user.user-show-header
+    <x-owner.user.user-show-header
         :user="$user"
         :role="$role"
     />
@@ -123,14 +123,14 @@
     {{-- Informasi dan ringkasan --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div class="xl:col-span-8">
-            <x-user.user-information-card
+            <x-owner.user.user-information-card
                 :user="$user"
                 :role="$role"
             />
         </div>
 
         <div class="xl:col-span-4">
-            <x-user.user-summary
+            <x-owner.user.user-summary
                 :user="$user"
                 :role="$role"
                 :total-projects="$totalProjects"
@@ -142,14 +142,14 @@
     {{-- Riwayat Project dan aktivitas --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div class="xl:col-span-8">
-            <x-user.user-project-history
+            <x-owner.user.user-project-history
                 :user="$user"
                 :projects="$projectHistory"
             />
         </div>
 
         <div class="xl:col-span-4">
-            <x-user.user-recent-activity
+            <x-owner.user.user-recent-activity
                 :activities="$recentActivities"
             />
         </div>

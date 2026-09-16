@@ -45,7 +45,7 @@
             wire:key="project-card-{{ $project->id }}"
             class="min-w-0 self-start"
         >
-            <x-project.project-card
+            <x-owner.project.project-card
                 :project-id="$project->id"
                 :code="$project->project_code"
                 :name="$project->project_name"

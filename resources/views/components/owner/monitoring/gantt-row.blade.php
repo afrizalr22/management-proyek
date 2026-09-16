@@ -79,7 +79,7 @@
             @endfor
         </div>
 
-        <x-monitoring.gantt-bar
+        <x-owner.monitoring.gantt-bar
             :task="$task"
             :timeline-start="$timelineStart"
             :timeline-end="$timelineEnd"

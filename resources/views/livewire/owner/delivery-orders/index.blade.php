@@ -67,17 +67,17 @@
         </div>
     @endif
 
-    <x-delivery-order.delivery-order-statistics
+    <x-owner.delivery-order.delivery-order-statistics
         :statistics="$statistics"
     />
 
-    <x-delivery-order.delivery-order-toolbar
+    <x-owner.delivery-order.delivery-order-toolbar
         :search="$search"
         :status="$status"
         :sort="$sort"
     />
 
-    <x-delivery-order.delivery-order-table
+    <x-owner.delivery-order.delivery-order-table
         :delivery-orders="$deliveryOrders"
     />
 

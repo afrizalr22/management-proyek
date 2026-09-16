@@ -144,30 +144,30 @@
         {{-- Konten utama --}}
         <main class="min-w-0 space-y-6 xl:col-span-2">
             {{-- Informasi Project --}}
-            <x-project.project-information
+            <x-owner.project.project-information
                 :project="$project"
                 :source-quotation="$sourceQuotation"
                 :status-text="$statusText"
                 :status-color="$statusColor"
             />
 
-            <x-project.project-team
+            <x-owner.project.project-team
                 :project="$project"
             />
 
             {{-- Progres Project --}}
-            <x-project.project-progress
+            <x-owner.project.project-progress
                 :project="$project"
             />
 
             {{-- Deskripsi dan ruang lingkup --}}
-            <x-project.project-description
+            <x-owner.project.project-description
                 :project="$project"
                 :source-quotation="$sourceQuotation"
             />
 
             {{-- Aktivitas terbaru --}}
-            <x-project.project-activity
+            <x-owner.project.project-activity
                 :project="$project"
                 :activities="$activities"
             />
@@ -175,7 +175,7 @@
 
         {{-- Sidebar ringkasan --}}
         <aside class="min-w-0 xl:sticky xl:top-6">
-            <x-project.project-summary
+            <x-owner.project.project-summary
                 :project="$project"
                 :source-quotation="$sourceQuotation"
                 :status-text="$statusText"

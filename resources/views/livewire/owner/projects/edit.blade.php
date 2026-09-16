@@ -63,7 +63,7 @@
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
             {{-- Konten utama --}}
             <div class="space-y-6 xl:col-span-2">
-                <x-project.project-general-information
+                <x-owner.project.project-general-information
                     mode="edit"
                     :clients="$clients"
                     :mandors="$mandors"
@@ -71,7 +71,7 @@
                     :source-quotation="$sourceQuotation"
                 />
 
-                <x-project.project-timeline-budget
+                <x-owner.project.project-timeline-budget
                     mode="edit"
                     :source-quotation="$sourceQuotation"
                 />
@@ -79,7 +79,7 @@
 
             {{-- Sidebar --}}
             <aside class="space-y-6">
-                <x-project.project-administrative-note
+                <x-owner.project.project-administrative-note
                     mode="edit"
                     :source-quotation="$sourceQuotation"
                 />

@@ -107,7 +107,7 @@
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {{-- Bagian kiri --}}
             <div class="space-y-6 lg:col-span-2">
-                <x-project.project-general-information
+                <x-owner.project.project-general-information
                     mode="create"
                     :clients="$clients"
                     :mandors="$mandors"
@@ -115,7 +115,7 @@
                     :source-quotation="$sourceQuotation"
                 />
 
-                <x-project.project-timeline-budget
+                <x-owner.project.project-timeline-budget
                     mode="create"
                     :source-quotation="$sourceQuotation"
                 />
@@ -123,7 +123,7 @@
 
             {{-- Bagian kanan --}}
             <div class="space-y-6">
-                <x-project.project-administrative-note
+                <x-owner.project.project-administrative-note
                     mode="create"
                     :source-quotation="$sourceQuotation"
                 />

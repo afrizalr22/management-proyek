@@ -88,12 +88,12 @@
     @endif
 
     {{-- Informasi Client --}}
-    <x-client.detail-information
+    <x-owner.client.detail-information
         :client="$client"
     />
 
     {{-- Project terbaru --}}
-    <x-client.recent-project
+    <x-owner.client.recent-project
         :projects="$recentProjects"
     />
 

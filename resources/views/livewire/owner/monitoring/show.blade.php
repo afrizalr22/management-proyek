@@ -20,25 +20,25 @@
     </nav>
 
     {{-- Project Header --}}
-    <x-monitoring.monitoring-detail-header
+    <x-owner.monitoring.monitoring-detail-header
         :project="$projectData"
         :is-delayed="$isDelayed"
     />
 
     {{-- Project Statistics --}}
-    <x-monitoring.monitoring-detail-statistics
+    <x-owner.monitoring.monitoring-detail-statistics
         :project="$projectData"
         :current-task="$currentTask"
     />
 
     {{-- Project Information --}}
-    <x-monitoring.monitoring-project-information
+    <x-owner.monitoring.monitoring-project-information
         :project="$projectData"
         :is-delayed="$isDelayed"
     />
 
     {{-- Construction Schedule --}}
-    <x-monitoring.construction-gantt
+    <x-owner.monitoring.construction-gantt
         :project="$projectData"
         :tasks="$projectData->tasks"
     />
@@ -46,13 +46,13 @@
     {{-- Progress & Documentation --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="xl:col-span-2">
-            <x-monitoring.latest-progress
+            <x-owner.monitoring.latest-progress
                 :project="$projectData"
             />
         </div>
 
         <div>
-            <x-monitoring.documentation-preview
+            <x-owner.monitoring.documentation-preview
                 :project="$projectData"
             />
         </div>
@@ -60,11 +60,11 @@
 
     {{-- Issues & Activity --}}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <x-monitoring.issue-list
+        <x-owner.monitoring.issue-list
             :project="$projectData"
         />
 
-        <x-monitoring.activity-log
+        <x-owner.monitoring.activity-log
             :project="$projectData"
         />
     </div>

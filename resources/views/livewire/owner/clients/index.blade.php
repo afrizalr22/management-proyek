@@ -83,14 +83,14 @@
     </div>
 @endif
 
-    <x-client.toolbar
+    <x-owner.client.toolbar
         :search="$search"
         :status="$status"
         :sort="$sort"
     />
 
-    <x-client.table :clients="$clients" />
-    <x-client.pagination :clients="$clients" />
+    <x-owner.client.table :clients="$clients" />
+    <x-owner.client.pagination :clients="$clients" />
     @if ($showDeleteModal)
     <div
         class="fixed inset-0 z-50 flex items-center justify-center p-4"

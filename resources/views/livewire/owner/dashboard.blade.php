@@ -4,25 +4,25 @@
         description="Ringkasan aktivitas dan kondisi perusahaan."
     />
 
-    <x-dashboard.statistics
+    <x-owner.dashboard.statistics
         :statistics="$statistics"
     />
 
-    <x-dashboard.attention-summary
+    <x-owner.dashboard.attention-summary
         :summary="$summary"
     />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <x-dashboard.chart
+        <x-owner.dashboard.chart
             :projects="$chartProjects"
         />
 
-        <x-dashboard.recent-activity
+        <x-owner.dashboard.recent-activity
             :activities="$recentActivities"
         />
     </div>
 
-    <x-dashboard.project-pipeline
+    <x-owner.dashboard.project-pipeline
         :projects="$pipelineProjects"
     />
 </div>

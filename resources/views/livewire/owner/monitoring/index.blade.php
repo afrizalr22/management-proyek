@@ -6,12 +6,12 @@
     />
 
     {{-- Statistik --}}
-    <x-monitoring.monitoring-statistics
+    <x-owner.monitoring.monitoring-statistics
         :statistics="$statistics"
     />
 
     {{-- Toolbar --}}
-    <x-monitoring.monitoring-toolbar
+    <x-owner.monitoring.monitoring-toolbar
         :search="$search"
         :status="$status"
         :mandor-id="$mandorId"
@@ -23,7 +23,7 @@
     @if ($projects->isNotEmpty())
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:grid-cols-3">
             @foreach ($projects as $project)
-                <x-monitoring.monitoring-card
+                <x-owner.monitoring.monitoring-card
                     :project="$project"
                     wire:key="monitoring-project-{{ $project->id }}"
                 />
@@ -76,7 +76,7 @@
     @endif
 
     {{-- Pagination --}}
-    <x-monitoring.monitoring-pagination
+    <x-owner.monitoring.monitoring-pagination
         :projects="$projects"
     />
 </div>

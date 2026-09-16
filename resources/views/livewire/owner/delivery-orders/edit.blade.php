@@ -57,12 +57,12 @@
     {{-- Konten --}}
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
-            <x-delivery-order.delivery-order-edit-primary
+            <x-owner.delivery-order.delivery-order-edit-primary
                 :delivery-order="$deliveryOrder"
             />
 
             {{-- Menggunakan form item yang sama dengan Create --}}
-            <x-delivery-order.delivery-order-create-items
+            <x-owner.delivery-order.delivery-order-create-items
                 :items="$items"
             />
 
@@ -110,7 +110,7 @@
 
         <aside class="space-y-6">
             <div class="xl:sticky xl:top-6">
-                <x-delivery-order.delivery-order-edit-summary
+                <x-owner.delivery-order.delivery-order-edit-summary
                     :delivery-order="$deliveryOrder"
                     :items="$items"
                     :total-quantity="$totalQuantity"

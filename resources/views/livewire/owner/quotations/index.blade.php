@@ -133,24 +133,24 @@
     @endif
 
     {{-- Statistik --}}
-    <x-quotation.quotation-statistics
+    <x-owner.quotation.quotation-statistics
         :statistics="$statistics"
     />
 
     {{-- Pencarian dan filter --}}
-    <x-quotation.quotation-toolbar
+    <x-owner.quotation.quotation-toolbar
         :search="$search"
         :status="$status"
         :sort="$sort"
     />
 
     {{-- Tabel --}}
-    <x-quotation.quotation-table
+    <x-owner.quotation.quotation-table
         :quotations="$quotations"
     />
 
     {{-- Pagination --}}
-    <x-quotation.quotation-pagination
+    <x-owner.quotation.quotation-pagination
         :quotations="$quotations"
     />
 </div>
