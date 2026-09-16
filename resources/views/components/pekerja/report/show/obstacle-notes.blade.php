@@ -1,7 +1,10 @@
+@props([
+    'report',
+])
+
 <section
-    class="h-full rounded-2xl border border-slate-200 bg-white shadow-sm"
+    class="h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
 >
-    {{-- Header --}}
     <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
         <div class="flex items-start gap-3">
             <div
@@ -35,9 +38,7 @@
         </div>
     </div>
 
-    {{-- Isi --}}
     <div class="space-y-5 px-5 py-5 sm:px-6">
-        {{-- Kendala pekerjaan --}}
         <div>
             <div class="flex items-center gap-2">
                 <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
@@ -48,15 +49,10 @@
             </div>
 
             <div
-                class="mt-3 rounded-xl border border-amber-100 bg-amber-50/60 p-4 text-sm leading-7 text-slate-600"
-            >
-                Pengiriman material pengikat bekisting mengalami keterlambatan.
-                Beberapa material baru tiba setelah waktu istirahat sehingga pekerjaan
-                dua kolom terakhir belum dapat diselesaikan pada hari yang sama.
-            </div>
+                class="mt-3 whitespace-pre-line rounded-xl border border-amber-100 bg-amber-50/60 p-4 text-sm leading-7 text-slate-600"
+            >{{ filled($report->obstacles) ? $report->obstacles : 'Tidak ada kendala yang dilaporkan.' }}</div>
         </div>
 
-        {{-- Catatan tambahan --}}
         <div class="border-t border-slate-200 pt-5">
             <div class="flex items-center gap-2">
                 <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
@@ -67,12 +63,8 @@
             </div>
 
             <div
-                class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-600"
-            >
-                Pekerjaan akan dilanjutkan besok pagi setelah seluruh material tersedia.
-                Bekisting yang sudah terpasang telah diamankan dan area kerja sudah
-                dibersihkan.
-            </div>
+                class="mt-3 whitespace-pre-line rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-600"
+            >{{ filled($report->notes) ? $report->notes : 'Tidak ada catatan tambahan.' }}</div>
         </div>
     </div>
 </section>

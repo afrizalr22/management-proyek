@@ -73,6 +73,7 @@ use App\Livewire\Pekerja\Documentation\Create as PekerjaDocumentationCreate;
 use App\Livewire\Pekerja\Report\Index as PekerjaReportIndex;
 use App\Livewire\Pekerja\Report\Create as PekerjaReportCreate;
 use App\Livewire\Pekerja\Report\Show as PekerjaReportShow;
+use App\Livewire\Pekerja\Report\Edit as PekerjaReportEdit;
 
 use App\Livewire\Pekerja\Profile\Index as PekerjaProfileIndex;
 
@@ -369,9 +370,29 @@ Route::middleware(['auth','role:pekerja',])->group(function () {
     Route::get('/pekerja/documentation', PekerjaDocumentationIndex::class)->name('pekerja.documentation.index');
     Route::get('/pekerja/documentation/create', PekerjaDocumentationCreate::class)->name('pekerja.documentation.create');
 
-    Route::get('/pekerja/report/index', PekerjaReportIndex::class)->name('pekerja.report.index');
-    Route::get('/pekerja/report/create', PekerjaReportCreate::class)->name('pekerja.report.create');
-    Route::get('/pekerja/report/{report}/show', PekerjaReportShow::class)->name('pekerja.report.show');
+    Route::get(
+    '/pekerja/report/index',
+    PekerjaReportIndex::class
+    )->name('pekerja.report.index');
+
+    Route::get(
+        '/pekerja/report/create',
+        PekerjaReportCreate::class
+    )->name('pekerja.report.create');
+
+    Route::get(
+        '/pekerja/report/{report}/edit',
+        PekerjaReportEdit::class
+    )
+        ->whereNumber('report')
+        ->name('pekerja.report.edit');
+
+    Route::get(
+        '/pekerja/report/{report}/show',
+        PekerjaReportShow::class
+    )
+        ->whereNumber('report')
+        ->name('pekerja.report.show');
 
     Route::get('/pekerja/profile', PekerjaProfileIndex::class)->name('pekerja.profile.index');
     

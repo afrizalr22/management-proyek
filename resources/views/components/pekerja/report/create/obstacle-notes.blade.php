@@ -1,7 +1,11 @@
+@props([
+    'obstacles' => '',
+    'notes' => '',
+])
+
 <section
     class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
 >
-    {{-- Header --}}
     <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
         <div class="flex items-start gap-3">
             <div
@@ -29,15 +33,15 @@
                 </h2>
 
                 <p class="mt-1 text-sm text-slate-500">
-                    Tambahkan kendala atau informasi lain yang perlu diketahui Mandor.
+                    Tambahkan informasi lain yang perlu diketahui Mandor.
                 </p>
             </div>
         </div>
     </div>
 
-    {{-- Input --}}
-    <div class="grid grid-cols-1 gap-5 px-5 py-5 sm:px-6 lg:grid-cols-2">
-        {{-- Kendala --}}
+    <div
+        class="grid grid-cols-1 gap-5 px-5 py-5 sm:px-6 lg:grid-cols-2"
+    >
         <div class="min-w-0">
             <label
                 for="workObstacle"
@@ -48,25 +52,36 @@
 
             <textarea
                 id="workObstacle"
-                name="workObstacle"
+                wire:model.live.debounce.300ms="obstacles"
                 rows="4"
                 maxlength="1000"
                 placeholder="Tuliskan kendala yang ditemukan selama pekerjaan..."
-                class="block w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                @class([
+                    'block w-full resize-none rounded-xl bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100',
+                    'border-red-300' => $errors->has('obstacles'),
+                    'border-slate-300' => ! $errors->has('obstacles'),
+                ])
             ></textarea>
 
-            <div class="mt-2 flex flex-col gap-1 sm:flex-row sm:justify-between">
-                <p class="text-xs text-slate-500">
-                    Kosongkan jika tidak terdapat kendala.
-                </p>
+            <div class="mt-2 flex items-start justify-between gap-4">
+                <div>
+                    @error('obstacles')
+                        <p class="text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @else
+                        <p class="text-xs text-slate-500">
+                            Kosongkan jika tidak terdapat kendala.
+                        </p>
+                    @enderror
+                </div>
 
                 <p class="shrink-0 text-xs text-slate-400">
-                    Maksimal 1.000 karakter
+                    {{ mb_strlen($obstacles) }}/1.000
                 </p>
             </div>
         </div>
 
-        {{-- Catatan --}}
         <div class="min-w-0">
             <label
                 for="additionalNotes"
@@ -77,20 +92,32 @@
 
             <textarea
                 id="additionalNotes"
-                name="additionalNotes"
+                wire:model.live.debounce.300ms="notes"
                 rows="4"
                 maxlength="1000"
                 placeholder="Tambahkan informasi penting lainnya..."
-                class="block w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                @class([
+                    'block w-full resize-none rounded-xl bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100',
+                    'border-red-300' => $errors->has('notes'),
+                    'border-slate-300' => ! $errors->has('notes'),
+                ])
             ></textarea>
 
-            <div class="mt-2 flex flex-col gap-1 sm:flex-row sm:justify-between">
-                <p class="text-xs text-slate-500">
-                    Bagian ini bersifat opsional.
-                </p>
+            <div class="mt-2 flex items-start justify-between gap-4">
+                <div>
+                    @error('notes')
+                        <p class="text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @else
+                        <p class="text-xs text-slate-500">
+                            Bagian ini bersifat opsional.
+                        </p>
+                    @enderror
+                </div>
 
                 <p class="shrink-0 text-xs text-slate-400">
-                    Maksimal 1.000 karakter
+                    {{ mb_strlen($notes) }}/1.000
                 </p>
             </div>
         </div>

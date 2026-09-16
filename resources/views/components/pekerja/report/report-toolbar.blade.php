@@ -1,106 +1,353 @@
-<section
-    class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"
->
-    <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        {{-- Pencarian --}}
-        <div class="relative w-full xl:max-w-xl">
-            <label for="searchReport" class="sr-only">
-                Cari laporan
-            </label>
+@props([
+    'search' => '',
+    'status' => '',
+    'period' => '',
+    'sort' => 'newest',
+])
 
-            <div
-                class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.8"
-                    stroke="currentColor"
-                    class="h-5 w-5"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z"
-                    />
-                </svg>
-            </div>
+@php
+    $statusOptions = [
+        '' => 'Semua Status',
+        'submitted' => 'Menunggu Pemeriksaan',
+        'approved' => 'Diterima',
+        'revision' => 'Perlu Revisi',
+        'draft' => 'Draft',
+    ];
 
-            <input
-                id="searchReport"
-                type="search"
-                placeholder="Cari nomor laporan, tugas, proyek, atau lokasi..."
-                class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-            >
+    $statusColors = [
+        '' => 'bg-gray-300',
+        'submitted' => 'bg-amber-500',
+        'approved' => 'bg-emerald-500',
+        'revision' => 'bg-red-500',
+        'draft' => 'bg-slate-400',
+    ];
+
+    $periodOptions = [
+        '' => 'Semua Periode',
+        'current_month' => 'Bulan Ini',
+        'last_month' => 'Bulan Lalu',
+        'last_three_months' => '3 Bulan Terakhir',
+    ];
+
+    $sortOptions = [
+        'newest' => 'Laporan Terbaru',
+        'oldest' => 'Laporan Terlama',
+    ];
+
+    $selectedStatus = array_key_exists(
+        $status,
+        $statusOptions
+    )
+        ? $status
+        : '';
+
+    $selectedPeriod = array_key_exists(
+        $period,
+        $periodOptions
+    )
+        ? $period
+        : '';
+
+    $selectedSort = array_key_exists(
+        $sort,
+        $sortOptions
+    )
+        ? $sort
+        : 'newest';
+
+    $statusLabel =
+        $statusOptions[$selectedStatus];
+
+    $periodLabel =
+        $periodOptions[$selectedPeriod];
+
+    $sortLabel =
+        $sortOptions[$selectedSort];
+@endphp
+
+<x-ui.toolbar>
+    <x-slot:left>
+        <div class="w-full">
+            <x-ui.search
+                wire:model.live.debounce.300ms="search"
+                placeholder="Cari nomor laporan, Task, proyek, atau lokasi..."
+            />
         </div>
+    </x-slot:left>
 
-        {{-- Filter --}}
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:flex">
+    <x-slot:right>
+        <div
+            class="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap xl:w-auto xl:justify-end 2xl:flex-nowrap"
+        >
             {{-- Status --}}
-            <div>
-                <label for="reportStatus" class="sr-only">
-                    Filter status
-                </label>
-
-                <select
-                    id="reportStatus"
-                    class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 xl:min-w-48"
+            <div
+                x-data="{ open: false }"
+                class="relative w-full sm:w-56"
+            >
+                <button
+                    type="button"
+                    x-on:click="open = ! open"
+                    x-on:keydown.escape.window="open = false"
+                    class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
                 >
-                    <option value="">Semua Status</option>
-                    <option value="waiting">
-                        Menunggu Pemeriksaan
-                    </option>
-                    <option value="accepted">
-                        Diterima
-                    </option>
-                    <option value="revision">
-                        Perlu Revisi
-                    </option>
-                </select>
+                    <span class="flex min-w-0 items-center gap-2.5">
+                        <span
+                            class="h-2.5 w-2.5 shrink-0 rounded-full {{ $statusColors[$selectedStatus] }}"
+                        ></span>
+
+                        <span class="truncate">
+                            {{ $statusLabel }}
+                        </span>
+                    </span>
+
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        class="h-4 w-4 shrink-0 text-gray-500 transition"
+                        x-bind:class="{
+                            'rotate-180': open
+                        }"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                        />
+                    </svg>
+                </button>
+
+                <div
+                    x-cloak
+                    x-show="open"
+                    x-transition.origin.top
+                    x-on:click.outside="open = false"
+                    class="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                >
+                    @foreach ($statusOptions as $value => $label)
+                        <button
+                            type="button"
+                            wire:click="$set('status', '{{ $value }}')"
+                            x-on:click="open = false"
+                            @class([
+                                'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-gray-100',
+                                'bg-blue-50 font-semibold text-blue-700' =>
+                                    $selectedStatus === $value,
+                                'text-gray-700' =>
+                                    $selectedStatus !== $value,
+                            ])
+                        >
+                            <span
+                                class="h-2.5 w-2.5 shrink-0 rounded-full {{ $statusColors[$value] }}"
+                            ></span>
+
+                            <span class="min-w-0 flex-1">
+                                {{ $label }}
+                            </span>
+
+                            @if ($selectedStatus === $value)
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="2"
+                                    stroke="currentColor"
+                                    class="ml-auto h-4 w-4 shrink-0 text-blue-600"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m4.5 12.75 6 6 9-13.5"
+                                    />
+                                </svg>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
             </div>
 
             {{-- Periode --}}
-            <div>
-                <label for="reportPeriod" class="sr-only">
-                    Filter periode
-                </label>
-
-                <select
-                    id="reportPeriod"
-                    class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 xl:min-w-44"
+            <div
+                x-data="{ open: false }"
+                class="relative w-full sm:w-48"
+            >
+                <button
+                    type="button"
+                    x-on:click="open = ! open"
+                    x-on:keydown.escape.window="open = false"
+                    class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
                 >
-                    <option value="">Semua Periode</option>
-                    <option value="current-month">
-                        Bulan Ini
-                    </option>
-                    <option value="last-month">
-                        Bulan Lalu
-                    </option>
-                    <option value="last-three-months">
-                        3 Bulan Terakhir
-                    </option>
-                </select>
+                    <span class="truncate">
+                        {{ $periodLabel }}
+                    </span>
+
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        class="h-4 w-4 shrink-0 text-gray-500 transition"
+                        x-bind:class="{
+                            'rotate-180': open
+                        }"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                        />
+                    </svg>
+                </button>
+
+                <div
+                    x-cloak
+                    x-show="open"
+                    x-transition.origin.top
+                    x-on:click.outside="open = false"
+                    class="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                >
+                    @foreach ($periodOptions as $value => $label)
+                        <button
+                            type="button"
+                            wire:click="$set('period', '{{ $value }}')"
+                            x-on:click="open = false"
+                            @class([
+                                'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-gray-100',
+                                'bg-blue-50 font-semibold text-blue-700' =>
+                                    $selectedPeriod === $value,
+                                'text-gray-700' =>
+                                    $selectedPeriod !== $value,
+                            ])
+                        >
+                            <span class="min-w-0 flex-1">
+                                {{ $label }}
+                            </span>
+
+                            @if ($selectedPeriod === $value)
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="2"
+                                    stroke="currentColor"
+                                    class="ml-auto h-4 w-4 shrink-0 text-blue-600"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m4.5 12.75 6 6 9-13.5"
+                                    />
+                                </svg>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
             </div>
 
             {{-- Pengurutan --}}
-            <div>
-                <label for="reportSort" class="sr-only">
-                    Urutkan laporan
-                </label>
-
-                <select
-                    id="reportSort"
-                    class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 xl:min-w-40"
+            <div
+                x-data="{ open: false }"
+                class="relative w-full sm:w-48"
+            >
+                <button
+                    type="button"
+                    x-on:click="open = ! open"
+                    x-on:keydown.escape.window="open = false"
+                    class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
                 >
-                    <option value="newest">
-                        Terbaru
-                    </option>
-                    <option value="oldest">
-                        Terlama
-                    </option>
-                </select>
+                    <span class="truncate">
+                        {{ $sortLabel }}
+                    </span>
+
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        class="h-4 w-4 shrink-0 text-gray-500 transition"
+                        x-bind:class="{
+                            'rotate-180': open
+                        }"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                        />
+                    </svg>
+                </button>
+
+                <div
+                    x-cloak
+                    x-show="open"
+                    x-transition.origin.top
+                    x-on:click.outside="open = false"
+                    class="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                >
+                    @foreach ($sortOptions as $value => $label)
+                        <button
+                            type="button"
+                            wire:click="$set('sort', '{{ $value }}')"
+                            x-on:click="open = false"
+                            @class([
+                                'flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-gray-100',
+                                'bg-blue-50 font-semibold text-blue-700' =>
+                                    $selectedSort === $value,
+                                'text-gray-700' =>
+                                    $selectedSort !== $value,
+                            ])
+                        >
+                            <span class="min-w-0 flex-1">
+                                {{ $label }}
+                            </span>
+
+                            @if ($selectedSort === $value)
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="2"
+                                    stroke="currentColor"
+                                    class="ml-auto h-4 w-4 shrink-0 text-blue-600"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m4.5 12.75 6 6 9-13.5"
+                                    />
+                                </svg>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
             </div>
+
+            {{-- Reset --}}
+            <button
+                type="button"
+                wire:click="resetFilters"
+                wire:loading.attr="disabled"
+                wire:target="resetFilters"
+                class="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-400 hover:bg-gray-50 hover:text-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+                <span
+                    wire:loading.remove
+                    wire:target="resetFilters"
+                >
+                    Reset
+                </span>
+
+                <span
+                    wire:loading
+                    wire:target="resetFilters"
+                >
+                    Mereset...
+                </span>
+            </button>
         </div>
-    </div>
-</section>
+    </x-slot:right>
+</x-ui.toolbar>

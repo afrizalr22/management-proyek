@@ -1,64 +1,93 @@
 @props([
-    'reportId',
-    'reportNumber',
-    'task',
-    'project',
-    'location',
-    'date',
-    'status',
+    'report',
 ])
 
 @php
-    $statusClass = match ($status) {
-        'Diterima' => 'bg-emerald-50 text-emerald-600',
-        'Perlu Revisi' => 'bg-red-50 text-red-600',
+    $statusLabel = match ($report->status) {
+        'approved' => 'Diterima',
+        'revision' => 'Perlu Revisi',
+        'draft' => 'Draft',
+        default => 'Menunggu Pemeriksaan',
+    };
+
+    $statusClass = match ($report->status) {
+        'approved' => 'bg-emerald-50 text-emerald-600',
+        'revision' => 'bg-red-50 text-red-600',
+        'draft' => 'bg-slate-100 text-slate-600',
         default => 'bg-amber-50 text-amber-600',
     };
 
-    $statusDot = match ($status) {
-        'Diterima' => 'bg-emerald-500',
-        'Perlu Revisi' => 'bg-red-500',
+    $statusDot = match ($report->status) {
+        'approved' => 'bg-emerald-500',
+        'revision' => 'bg-red-500',
+        'draft' => 'bg-slate-400',
         default => 'bg-amber-500',
     };
+
+    $taskName = $report->task
+        ? $report->task->task_code . ' — ' . $report->task->title
+        : 'Task tidak tersedia';
+
+    $projectName = $report->project?->project_name
+        ?? 'Proyek tidak tersedia';
+
+    $location = $report->task?->location
+        ?: (
+            $report->project?->location
+            ?: 'Lokasi belum tersedia'
+        );
+
+    $reportDate = $report->report_date
+        ? $report->report_date
+            ->locale('id')
+            ->translatedFormat('d F Y')
+        : '-';
 @endphp
 
 <article
     {{ $attributes->class([
         'grid grid-cols-1 gap-4 border-b border-slate-200 px-5 py-5 transition last:border-b-0 hover:bg-slate-50/70',
-        'lg:grid-cols-[140px_minmax(180px,1.5fr)_minmax(190px,1.5fr)_150px_160px_100px]',
+        'lg:grid-cols-[150px_minmax(180px,1.5fr)_minmax(190px,1.5fr)_150px_170px_100px]',
         'lg:items-center lg:gap-5 lg:px-6',
     ]) }}
 >
-    {{-- Nomor laporan --}}
     <div>
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
             Nomor Laporan
         </p>
 
         <p class="text-sm font-bold text-slate-900">
-            {{ $reportNumber }}
+            {{ $report->report_number ?? 'Belum tersedia' }}
         </p>
     </div>
 
-    {{-- Tugas --}}
     <div class="min-w-0">
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-            Tugas
+            Task
         </p>
 
-        <p class="text-sm font-semibold text-slate-900">
-            {{ $task }}
+        <p
+            class="truncate text-sm font-semibold text-slate-900"
+            title="{{ $taskName }}"
+        >
+            {{ $taskName }}
+        </p>
+
+        <p class="mt-1 text-xs font-medium text-blue-600">
+            Progres dilaporkan: {{ $report->reported_progress }}%
         </p>
     </div>
 
-    {{-- Proyek dan lokasi --}}
     <div class="min-w-0">
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
             Proyek dan Lokasi
         </p>
 
-        <p class="text-sm font-medium text-slate-700">
-            {{ $project }}
+        <p
+            class="truncate text-sm font-medium text-slate-700"
+            title="{{ $projectName }}"
+        >
+            {{ $projectName }}
         </p>
 
         <div class="mt-1 flex items-start gap-1.5 text-xs text-slate-500">
@@ -87,18 +116,16 @@
         </div>
     </div>
 
-    {{-- Tanggal --}}
     <div>
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
             Tanggal
         </p>
 
         <p class="text-sm text-slate-700">
-            {{ $date }}
+            {{ $reportDate }}
         </p>
     </div>
 
-    {{-- Status --}}
     <div>
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
             Status
@@ -109,18 +136,17 @@
         >
             <span class="h-2 w-2 rounded-full {{ $statusDot }}"></span>
 
-            {{ $status }}
+            {{ $statusLabel }}
         </span>
     </div>
 
-    {{-- Aksi --}}
     <div>
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
             Aksi
         </p>
 
-       <a
-            href="{{ route('pekerja.report.show', ['report' => $reportId]) }}"
+        <a
+            href="{{ route('pekerja.report.show', ['report' => $report->id]) }}"
             wire:navigate
             class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
         >
@@ -140,6 +166,6 @@
                     d="m9 18 6-6-6-6"
                 />
             </svg>
-        </a>                
+        </a>
     </div>
 </article>

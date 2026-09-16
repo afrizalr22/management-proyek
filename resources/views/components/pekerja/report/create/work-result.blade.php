@@ -1,7 +1,23 @@
+@props([
+    'activities' => '',
+    'workStatus' => 'in_progress',
+    'reportedProgress' => 0,
+    'currentTaskProgress' => 0,
+])
+
+@php
+    $progressValue = max(
+        0,
+        min(
+            100,
+            (int) $reportedProgress
+        )
+    );
+@endphp
+
 <section
     class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
 >
-    {{-- Header --}}
     <div class="border-b border-slate-200 px-5 py-4 sm:px-6">
         <div class="flex items-start gap-3">
             <div
@@ -29,15 +45,15 @@
                 </h2>
 
                 <p class="mt-1 text-sm text-slate-500">
-                    Jelaskan hasil dan perkembangan tugas yang telah dikerjakan.
+                    Jelaskan hasil dan perkembangan Task yang telah dikerjakan.
                 </p>
             </div>
         </div>
     </div>
 
-    {{-- Form --}}
-    <div class="grid grid-cols-1 gap-5 px-5 py-5 sm:px-6 lg:grid-cols-3">
-        {{-- Hasil pekerjaan --}}
+    <div
+        class="grid grid-cols-1 gap-5 px-5 py-5 sm:px-6 lg:grid-cols-3"
+    >
         <div class="min-w-0 lg:col-span-2">
             <label
                 for="workResult"
@@ -49,25 +65,36 @@
 
             <textarea
                 id="workResult"
-                name="workResult"
-                rows="4"
+                wire:model.live.debounce.300ms="activities"
+                rows="5"
                 maxlength="2000"
                 placeholder="Jelaskan pekerjaan yang telah dilakukan dan hasil yang dicapai..."
-                class="block w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                @class([
+                    'block w-full resize-none rounded-xl bg-white px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100',
+                    'border-red-300' => $errors->has('activities'),
+                    'border-slate-300' => ! $errors->has('activities'),
+                ])
             ></textarea>
 
-            <div class="mt-2 flex flex-col gap-1 sm:flex-row sm:justify-between">
-                <p class="text-xs text-slate-500">
-                    Tuliskan hasil pekerjaan secara ringkas dan jelas.
-                </p>
+            <div class="mt-2 flex items-start justify-between gap-4">
+                <div>
+                    @error('activities')
+                        <p class="text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @else
+                        <p class="text-xs text-slate-500">
+                            Tuliskan hasil pekerjaan secara ringkas dan jelas.
+                        </p>
+                    @enderror
+                </div>
 
                 <p class="shrink-0 text-xs text-slate-400">
-                    Maksimal 2.000 karakter
+                    {{ mb_strlen($activities) }}/2.000
                 </p>
             </div>
         </div>
 
-        {{-- Status dan progres --}}
         <div class="space-y-5">
             <div>
                 <label
@@ -80,13 +107,13 @@
 
                 <select
                     id="workStatus"
-                    name="workStatus"
-                    class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                    wire:model.live="workStatus"
+                    @class([
+                        'block min-h-11 w-full rounded-xl bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100',
+                        'border-red-300' => $errors->has('workStatus'),
+                        'border-slate-300' => ! $errors->has('workStatus'),
+                    ])
                 >
-                    <option value="">
-                        Pilih status
-                    </option>
-
                     <option value="in_progress">
                         Sedang Dikerjakan
                     </option>
@@ -94,11 +121,13 @@
                     <option value="completed">
                         Selesai
                     </option>
-
-                    <option value="delayed">
-                        Tertunda
-                    </option>
                 </select>
+
+                @error('workStatus')
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ $message }}
+                    </p>
+                @enderror
             </div>
 
             <div>
@@ -113,12 +142,15 @@
                 <div class="relative">
                     <input
                         id="workProgress"
-                        name="workProgress"
+                        wire:model.live.debounce.300ms="reportedProgress"
                         type="number"
-                        min="0"
+                        min="{{ $currentTaskProgress }}"
                         max="100"
-                        value="75"
-                        class="block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 pr-12 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        @class([
+                            'block min-h-11 w-full rounded-xl bg-white px-4 py-2.5 pr-12 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100',
+                            'border-red-300' => $errors->has('reportedProgress'),
+                            'border-slate-300' => ! $errors->has('reportedProgress'),
+                        ])
                     >
 
                     <span
@@ -128,16 +160,26 @@
                     </span>
                 </div>
 
-                <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div
+                    class="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"
+                >
                     <div
-                        class="h-full rounded-full bg-blue-600"
-                        style="width: 75%;"
+                        x-data
+                        data-progress="{{ $progressValue }}"
+                        x-bind:style="'width: ' + $el.dataset.progress + '%'"
+                        class="h-full rounded-full bg-blue-600 transition-all duration-300"
                     ></div>
                 </div>
 
-                <p class="mt-2 text-xs text-slate-500">
-                    Nilai progres antara 0 sampai 100%.
-                </p>
+                @error('reportedProgress')
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ $message }}
+                    </p>
+                @else
+                    <p class="mt-2 text-xs leading-5 text-slate-500">
+                        Progres Task saat ini {{ $currentTaskProgress }}%. Nilai laporan tidak boleh lebih rendah.
+                    </p>
+                @enderror
             </div>
         </div>
     </div>

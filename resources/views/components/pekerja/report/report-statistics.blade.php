@@ -1,8 +1,16 @@
+@props([
+    'statistics' => [],
+])
+
+@php
+    $total = (int) ($statistics['total'] ?? 0);
+    $currentMonth = (int) ($statistics['current_month'] ?? 0);
+    $approved = (int) ($statistics['approved'] ?? 0);
+    $submitted = (int) ($statistics['submitted'] ?? 0);
+@endphp
+
 <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-    {{-- Total laporan --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
@@ -10,7 +18,7 @@
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    12
+                    {{ $total }}
                 </p>
             </div>
 
@@ -35,14 +43,11 @@
         </div>
 
         <p class="mt-4 text-sm text-slate-500">
-            Seluruh laporan terkait pekerjaan Anda.
+            Seluruh laporan pekerjaan Anda.
         </p>
     </article>
 
-    {{-- Laporan bulan ini --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
@@ -50,7 +55,7 @@
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    4
+                    {{ $currentMonth }}
                 </p>
             </div>
 
@@ -75,14 +80,11 @@
         </div>
 
         <p class="mt-4 text-sm text-slate-500">
-            Laporan pekerjaan pada bulan berjalan.
+            Laporan pada bulan berjalan.
         </p>
     </article>
 
-    {{-- Laporan diterima --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
@@ -90,7 +92,7 @@
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    9
+                    {{ $approved }}
                 </p>
             </div>
 
@@ -119,10 +121,7 @@
         </p>
     </article>
 
-    {{-- Menunggu pemeriksaan --}}
-    <article
-        class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-    >
+    <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="flex items-start justify-between gap-4">
             <div>
                 <p class="text-sm font-medium text-slate-500">
@@ -130,7 +129,7 @@
                 </p>
 
                 <p class="mt-2 text-3xl font-bold text-slate-900">
-                    3
+                    {{ $submitted }}
                 </p>
             </div>
 
@@ -155,7 +154,7 @@
         </div>
 
         <p class="mt-4 text-sm text-amber-600">
-            Belum selesai diperiksa.
+            Sedang menunggu pemeriksaan Mandor.
         </p>
     </article>
 </section>

@@ -1,39 +1,10 @@
-@php
-    $reports = [
-        [
-            'id' => 1,
-            'reportNumber' => 'RPT-2026-08-001',
-            'task' => 'Pemasangan panel listrik lantai 12',
-            'project' => 'Pembangunan Menara Danamon',
-            'location' => 'Lantai 12, Sektor B',
-            'date' => '24 Agustus 2026',
-            'status' => 'Menunggu Pemeriksaan',
-        ],
-        [
-            'id' => 2,
-            'reportNumber' => 'RPT-2026-08-002',
-            'task' => 'Penarikan kabel jalur utama',
-            'project' => 'Pembangunan Menara Danamon',
-            'location' => 'Lantai 12, Sektor A',
-            'date' => '23 Agustus 2026',
-            'status' => 'Diterima',
-        ],
-        [
-            'id' => 3,
-            'reportNumber' => 'RPT-2026-08-003',
-            'task' => 'Pengecekan resistansi isolasi kabel',
-            'project' => 'Pembangunan Menara Danamon',
-            'location' => 'Lantai 12, Seluruh Sektor',
-            'date' => '22 Agustus 2026',
-            'status' => 'Perlu Revisi',
-        ],
-    ];
-@endphp
+@props([
+    'reports',
+])
 
 <section
     class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
 >
-    {{-- Header daftar --}}
     <div
         class="flex flex-col gap-3 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
     >
@@ -43,7 +14,7 @@
             </h2>
 
             <p class="mt-1 text-sm text-slate-500">
-                Laporan pekerjaan yang berkaitan dengan tugas Anda.
+                Laporan pekerjaan yang berkaitan dengan Task Anda.
             </p>
         </div>
 
@@ -65,29 +36,21 @@
         </div>
     </div>
 
-    {{-- Judul kolom desktop --}}
     <div
-        class="hidden grid-cols-[140px_minmax(180px,1.5fr)_minmax(190px,1.5fr)_150px_160px_100px] items-center gap-5 bg-slate-50 px-6 py-4 text-sm font-semibold text-slate-600 lg:grid"
+        class="hidden grid-cols-[150px_minmax(180px,1.5fr)_minmax(190px,1.5fr)_150px_170px_100px] items-center gap-5 bg-slate-50 px-6 py-4 text-sm font-semibold text-slate-600 lg:grid"
     >
         <span>Nomor Laporan</span>
-        <span>Tugas</span>
+        <span>Task</span>
         <span>Proyek dan Lokasi</span>
         <span>Tanggal</span>
         <span>Status</span>
         <span class="text-center">Aksi</span>
     </div>
 
-    {{-- Data laporan --}}
-    <div>
-        @forelse ($reports as $index => $report)
+    <div wire:loading.class="opacity-60">
+        @forelse ($reports as $report)
             <x-pekerja.report.report-row
-                :report-id="$report['id']"
-                :report-number="$report['reportNumber']"
-                :task="$report['task']"
-                :project="$report['project']"
-                :location="$report['location']"
-                :date="$report['date']"
-                :status="$report['status']"
+                :report="$report"
             />
         @empty
             <div class="px-6 py-14 text-center">
@@ -111,15 +74,17 @@
                 </div>
 
                 <h3 class="mt-4 font-semibold text-slate-900">
-                    Belum Ada Laporan
+                    Laporan Tidak Ditemukan
                 </h3>
 
                 <p class="mx-auto mt-2 max-w-md text-sm text-slate-500">
-                    Laporan pekerjaan yang berkaitan dengan tugas Anda akan tampil di sini.
+                    Belum ada laporan atau tidak ada laporan yang sesuai dengan pencarian dan filter.
                 </p>
             </div>
         @endforelse
     </div>
-    {{-- Pagination --}}
-    <x-pekerja.report.report-pagination />
+
+    <x-pekerja.report.report-pagination
+        :reports="$reports"
+    />
 </section>

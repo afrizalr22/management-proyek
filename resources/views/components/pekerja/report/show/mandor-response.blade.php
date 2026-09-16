@@ -1,10 +1,44 @@
 @props([
-    'status' => 'Menunggu Pemeriksaan',
+    'report',
 ])
 
-<section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+@php
+    $reviewedAt = $report->reviewed_at
+        ? $report->reviewed_at
+            ->copy()
+            ->timezone('Asia/Jakarta')
+            ->locale('id')
+            ->translatedFormat('d F Y, H.i')
+            . ' WIB'
+        : null;
+
+    $reviewerName = $report->reviewer?->name
+        ?? $report->project?->mandor?->name
+        ?? 'Mandor';
+
+    $initials = collect(
+        preg_split(
+            '/\s+/',
+            trim($reviewerName)
+        )
+    )
+        ->filter()
+        ->take(2)
+        ->map(
+            fn ($word) => mb_strtoupper(
+                mb_substr($word, 0, 1)
+            )
+        )
+        ->implode('');
+@endphp
+
+<section
+    class="h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+>
     <div class="flex items-start gap-3">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+        <div
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600"
+        >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -33,16 +67,18 @@
     </div>
 
     <div class="mt-5">
-        @if ($status === 'Diterima')
+        @if ($report->status === 'approved')
             <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white">
-                        AH
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-sm font-semibold text-white"
+                    >
+                        {{ $initials ?: 'M' }}
                     </div>
 
                     <div>
                         <p class="text-sm font-semibold text-slate-900">
-                            Agus Hermawan
+                            {{ $reviewerName }}
                         </p>
 
                         <p class="text-xs text-slate-500">
@@ -51,25 +87,26 @@
                     </div>
                 </div>
 
-                <p class="mt-4 text-sm leading-6 text-slate-700">
-                    Laporan sudah sesuai dengan kondisi pekerjaan di lapangan.
-                    Dokumentasi dan uraian pekerjaan telah diperiksa.
-                </p>
+                <p class="mt-4 whitespace-pre-line text-sm leading-6 text-slate-700">{{ filled($report->review_notes) ? $report->review_notes : 'Laporan telah diperiksa dan diterima oleh Mandor.' }}</p>
 
-                <p class="mt-3 text-xs font-medium text-emerald-700">
-                    Diterima pada 24 Agustus 2026, 17:30 WIB
-                </p>
+                @if ($reviewedAt)
+                    <p class="mt-3 text-xs font-medium text-emerald-700">
+                        Diterima pada {{ $reviewedAt }}
+                    </p>
+                @endif
             </div>
-        @elseif ($status === 'Perlu Revisi')
+        @elseif ($report->status === 'revision')
             <div class="rounded-xl border border-red-200 bg-red-50 p-4">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-sm font-semibold text-white">
-                        AH
+                    <div
+                        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-sm font-semibold text-white"
+                    >
+                        {{ $initials ?: 'M' }}
                     </div>
 
                     <div>
                         <p class="text-sm font-semibold text-slate-900">
-                            Agus Hermawan
+                            {{ $reviewerName }}
                         </p>
 
                         <p class="text-xs text-slate-500">
@@ -78,13 +115,22 @@
                     </div>
                 </div>
 
-                <p class="mt-4 text-sm leading-6 text-slate-700">
-                    Mohon perjelas uraian pekerjaan dan tambahkan dokumentasi
-                    hasil akhir pekerjaan sebelum laporan dikirim kembali.
+                <p class="mt-4 whitespace-pre-line text-sm leading-6 text-slate-700">{{ $report->review_notes ?? 'Laporan perlu diperbaiki sebelum dikirim kembali.' }}</p>
+
+                @if ($reviewedAt)
+                    <p class="mt-3 text-xs font-medium text-red-700">
+                        Revisi diminta pada {{ $reviewedAt }}
+                    </p>
+                @endif
+            </div>
+        @elseif ($report->status === 'draft')
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-sm font-semibold text-slate-800">
+                    Laporan masih berupa draft
                 </p>
 
-                <p class="mt-3 text-xs font-medium text-red-700">
-                    Revisi diminta pada 24 Agustus 2026, 17:30 WIB
+                <p class="mt-1 text-sm leading-6 text-slate-600">
+                    Kirim laporan terlebih dahulu agar dapat diperiksa oleh Mandor.
                 </p>
             </div>
         @else
@@ -111,8 +157,7 @@
                         </p>
 
                         <p class="mt-1 text-sm leading-6 text-amber-800">
-                            Laporan telah dikirim dan sedang menunggu pemeriksaan
-                            dari Mandor.
+                            Laporan telah dikirim dan sedang menunggu pemeriksaan dari Mandor.
                         </p>
                     </div>
                 </div>
