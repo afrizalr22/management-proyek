@@ -24,6 +24,8 @@ class Edit extends Component
 
     public string $address = '';
 
+    public string $notes = '';
+
     public string $status = 'active';
 
     public function mount(Client $client): void
@@ -43,6 +45,7 @@ class Edit extends Component
         $this->phone = $this->formatPhoneForForm($client->phone);
         $this->city = $client->city ?? '';
         $this->address = $client->address ?? '';
+        $this->notes = $client->notes ?? '';
         $this->status = $client->status ?? 'active';
     }
 
@@ -81,14 +84,19 @@ class Edit extends Component
                 'max:100',
             ],
             'address' => [
-                'required',
+                'nullable',
                 'string',
-                'min:10',
                 'max:500',
             ],
             'status' => [
                 'required',
-                Rule::in(['active', 'inactive']),
+                Rule::in(['active', 'lead', 'inactive' ]),
+            ],
+
+            'notes' => [
+                'nullable',
+                'string',
+                'max:2000',
             ],
         ];
     }
@@ -115,12 +123,13 @@ class Edit extends Component
             'city.required' => 'Kota wajib diisi.',
             'city.max' => 'Nama kota maksimal 100 karakter.',
 
-            'address.required' => 'Alamat lengkap wajib diisi.',
-            'address.min' => 'Alamat lengkap minimal 10 karakter.',
             'address.max' => 'Alamat lengkap maksimal 500 karakter.',
 
             'status.required' => 'Status client wajib dipilih.',
             'status.in' => 'Status client yang dipilih tidak valid.',
+
+            'notes.string' => 'Catatan Client tidak valid.',
+            'notes.max' => 'Catatan Client maksimal 2.000 karakter.',
         ];
     }
 
@@ -161,12 +170,18 @@ class Edit extends Component
                 trim($validated['city']),
 
             'address' =>
-                trim($validated['address']),
+                filled($validated['address'] ?? null)
+                    ? trim($validated['address'])
+                    : null,
+
+            'notes' =>
+                filled($validated['notes'] ?? null)
+                    ? trim($validated['notes'])
+                    : null,
 
             'status' =>
                 $validated['status'],
         ]);
-
         /*
         * Jangan menjalankan query UPDATE apabila
         * tidak ada nilai yang berubah.

@@ -190,7 +190,12 @@
                             'Pangkal Pinang',
                             'Bengkulu',
                             'Bandar Lampung',
-                            'Jakarta',
+                            'Jakarta Pusat',
+                            'Jakarta Utara',
+                            'Jakarta Barat',
+                            'Jakarta Selatan',
+                            'Jakarta Timur',
+                            'Kepulauan Seribu',
                             'Bogor',
                             'Depok',
                             'Tangerang',
@@ -517,6 +522,43 @@
                         {{ $message }}
                     </p>
                 @enderror
+            </div>
+
+            {{-- Catatan --}}
+            <div class="mt-6">
+                <label
+                    for="clientNotes"
+                    class="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                    Catatan
+                </label>
+
+                <textarea
+                    id="clientNotes"
+                    wire:model.blur="notes"
+                    rows="4"
+                    maxlength="2000"
+                    placeholder="Tambahkan informasi khusus mengenai Client jika diperlukan."
+                    @class([
+                        'w-full resize-y rounded-xl px-4 py-3 outline-none transition focus:ring-2',
+                        'border-red-400 focus:border-red-500 focus:ring-red-100' =>
+                            $errors->has('notes'),
+                        'border-gray-300 focus:border-blue-500 focus:ring-blue-100' =>
+                            ! $errors->has('notes'),
+                    ])
+                ></textarea>
+
+                <div class="mt-2 flex items-start justify-between gap-4">
+                    @error('notes')
+                        <p class="text-sm text-red-600">
+                            {{ $message }}
+                        </p>
+                    @else
+                        <p class="text-xs text-gray-500">
+                            Opsional, maksimal 2.000 karakter.
+                        </p>
+                    @enderror
+                </div>
             </div>
         </div>
     </div>

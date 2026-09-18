@@ -27,6 +27,8 @@ class Create extends Component
 
     public string $address = '';
 
+    public string $notes = '';
+
     public string $status = 'active';
 
     public function mount(): void
@@ -86,6 +88,12 @@ class Create extends Component
                 'string',
                 'max:2000',
             ],
+
+            'notes' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
         ];
     }
 
@@ -115,55 +123,91 @@ class Create extends Component
             'status.in' => 'Status Client tidak valid.',
 
             'address.max' => 'Alamat maksimal 2.000 karakter.',
+
+            'notes.string' =>
+                'Catatan Client tidak valid.',
+
+            'notes.max' =>
+                'Catatan Client maksimal 2.000 karakter.',
         ];
     }
 
-   public function save(): void
-{
-    $user = Auth::user();
+      public function save(): void
+    {
+        $user = Auth::user();
 
-    abort_unless(
-        $user instanceof User && $user->can('create clients'),
-        403
-    );
+        abort_unless(
+            $user instanceof User
+                && $user->can('create clients'),
+            403
+        );
 
-    $validated = $this->validate();
+        $validated = $this->validate();
 
-    Client::create([
-        'company_name' => trim($validated['company']),
-        'contact_person' => trim($validated['name']),
-        'phone' => $this->normalizePhone($validated['phone']),
-        'email' => strtolower(trim($validated['email'])),
-        'city' => trim($validated['city']),
-        'status' => $validated['status'],
-        'address' => trim($validated['address']),
-    ]);
+        Client::query()->create([
+            'company_name' =>
+                trim($validated['company']),
 
-    session()->flash('notification', [
-        'type' => 'create',
-        'message' => 'Client berhasil ditambahkan.',
-    ]);
+            'contact_person' =>
+                trim($validated['name']),
 
-    $this->redirectRoute(
-        'owner.clients.index',
-        navigate: true
-    );
-}
+            'phone' =>
+                $this->normalizePhone(
+                    $validated['phone']
+                ),
 
-private function normalizePhone(string $phone): string
-{
-    $phone = preg_replace('/[^0-9]/', '', trim($phone)) ?? '';
+            'email' =>
+                strtolower(
+                    trim($validated['email'])
+                ),
 
-    if (str_starts_with($phone, '62')) {
-        $phone = substr($phone, 2);
+            'city' =>
+                trim($validated['city']),
+
+            'address' =>
+                filled($validated['address'] ?? null)
+                    ? trim($validated['address'])
+                    : null,
+
+            'notes' =>
+                filled($validated['notes'] ?? null)
+                    ? trim($validated['notes'])
+                    : null,
+
+            'status' =>
+                $validated['status'],
+        ]);
+
+        session()->flash('notification', [
+            'type' => 'create',
+            'message' => 'Client berhasil ditambahkan.',
+        ]);
+
+        $this->redirectRoute(
+            'owner.clients.index',
+            navigate: true
+        );
     }
 
-    if (str_starts_with($phone, '0')) {
-        $phone = substr($phone, 1);
-    }
+    private function normalizePhone(
+        string $phone
+    ): string {
+        $phone = preg_replace(
+            '/[^0-9]/',
+            '',
+            trim($phone)
+        ) ?? '';
 
-    return '+62' . $phone;
-}
+        if (str_starts_with($phone, '62')) {
+            $phone = substr($phone, 2);
+        }
+
+        if (str_starts_with($phone, '0')) {
+            $phone = substr($phone, 1);
+        }
+
+        return '+62'.$phone;
+    }
 
     public function render()
     {
