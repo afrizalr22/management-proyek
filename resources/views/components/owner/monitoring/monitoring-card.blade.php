@@ -31,9 +31,7 @@
                 'yellow',
             ],
 
-            'in_progress',
-            'on_progress',
-            'ongoing' => [
+            'on_progress' => [
                 'Berjalan',
                 'blue',
             ],
@@ -41,11 +39,6 @@
             'completed' => [
                 'Selesai',
                 'green',
-            ],
-
-            'on_hold' => [
-                'Ditunda',
-                'gray',
             ],
 
             'cancelled' => [

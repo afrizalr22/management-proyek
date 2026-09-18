@@ -16,17 +16,13 @@
             'label' => 'Perencanaan',
             'dot' => 'bg-amber-500',
         ],
-        'in_progress' => [
+        'on_progress' => [
             'label' => 'Berjalan',
             'dot' => 'bg-blue-500',
         ],
         'completed' => [
             'label' => 'Selesai',
             'dot' => 'bg-green-500',
-        ],
-        'on_hold' => [
-            'label' => 'Ditunda',
-            'dot' => 'bg-gray-500',
         ],
         'cancelled' => [
             'label' => 'Dibatalkan',

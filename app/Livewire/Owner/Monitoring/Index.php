@@ -77,9 +77,8 @@ class Index extends Component
         $validStatuses = [
             '',
             'planning',
-            'in_progress',
+            'on_progress',
             'completed',
-            'on_hold',
             'cancelled',
             'delayed',
         ];
@@ -323,12 +322,9 @@ class Index extends Component
 
             'in_progress' =>
                 (clone $baseQuery)
-                    ->whereIn(
+                    ->where(
                         'status',
-                        [
-                            'in_progress',
-                            'ongoing',
-                        ]
+                        'on_progress'
                     )
                     ->count(),
 
