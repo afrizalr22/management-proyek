@@ -44,9 +44,8 @@ class Show extends Component
          * Quotation yang project_id-nya menunjuk
          * kepada Project ini menjadi quotation sumber.
          */
-        $sourceQuotation = $this->project
-            ->quotations
-            ->first();
+        $sourceQuotation =
+            $this->project->quotation;
             $activities = collect();
 
 /*
@@ -322,15 +321,14 @@ private function loadProjectData(): void
             ])
             ->latest('id'),
 
-        'quotations' => fn ($query) => $query
+        'quotation' => fn ($query) => $query
             ->with([
                 'creator:id,name,email',
 
                 'items' => fn ($query) => $query
                     ->orderBy('sort_order')
                     ->orderBy('id'),
-            ])
-            ->latest('id'),
+            ]),
     ]);
 
     $this->project->loadCount([

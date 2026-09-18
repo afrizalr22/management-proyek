@@ -116,7 +116,7 @@ class Delete extends Component
                  * Quotation tidak dihapus. Hubungannya dilepas agar
                  * quotation dapat digunakan kembali untuk membuat Project.
                  */
-                $project->quotations()->update([
+                $project->quotation()->update([
                     'project_id' => null,
                 ]);
 

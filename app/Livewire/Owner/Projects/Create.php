@@ -82,11 +82,24 @@ class Create extends Component
             'Hanya quotation berstatus Disetujui yang dapat dibuat menjadi Project.'
         );
 
-        abort_if(
-            $quotation->project_id !== null,
-            409,
-            'Quotation ini sudah terhubung dengan Project.'
+        if ($quotation->project_id !== null) {
+        session()->flash('notification', [
+            'type' => 'warning',
+            'message' =>
+                'Quotation ini sudah terhubung dengan Project.',
+        ]);
+
+        $this->redirectRoute(
+            'owner.projects.show',
+            [
+                'project' =>
+                    $quotation->project_id,
+            ],
+            navigate: true
         );
+
+        return;
+    }
 
         $quotation->load([
             'client',

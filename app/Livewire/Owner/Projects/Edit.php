@@ -66,19 +66,20 @@ class Edit extends Component
         $project->load([
             'client',
             'mandor',
-            'quotations' => fn ($query) => $query
+            'quotation' => fn ($query) => $query
                 ->with([
+                    'creator:id,name,email',
+
                     'items' => fn ($query) => $query
                         ->orderBy('sort_order')
                         ->orderBy('id'),
-                ])
-                ->latest('id'),
+                ]),
         ]);
 
         $this->project = $project;
 
         $this->sourceQuotation =
-            $project->quotations->first();
+            $project->quotation;
 
         $this->clientId = $project->client_id;
         $this->mandorId = $project->mandor_id;
