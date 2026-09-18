@@ -127,7 +127,7 @@
 
     <style>
         @page {
-            margin: 32px 36px 48px;
+            margin: 26px 32px 42px;
         }
 
         * {
@@ -168,7 +168,7 @@
         .header-table {
             width: 100%;
             border-bottom: 3px solid #1d4ed8;
-            padding-bottom: 14px;
+            padding-bottom: 10px;
         }
 
         .header-logo-cell {
@@ -213,7 +213,7 @@
         }
 
         .document-heading {
-            margin-top: 20px;
+            margin-top: 14px;
         }
 
         .document-heading-table {
@@ -279,7 +279,7 @@
         }
 
         .information-section {
-            margin-top: 18px;
+            margin-top: 14px;
         }
 
         .information-table {
@@ -300,15 +300,15 @@
         }
 
         .information-card {
-            min-height: 138px;
+            min-height: 124px;
             border: 1px solid #dbe3ef;
             border-radius: 8px;
             background: #f8fafc;
-            padding: 12px;
+            padding: 10px;
         }
 
         .section-label {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #1d4ed8;
             font-size: 8px;
             font-weight: bold;
@@ -321,7 +321,7 @@
         }
 
         .detail-table td {
-            padding: 2px 0;
+            padding: 1px 0;
             vertical-align: top;
         }
 
@@ -341,7 +341,7 @@
         }
 
         .items-section {
-            margin-top: 20px;
+            margin-top: 14px;
         }
 
         .section-heading-table {
@@ -376,7 +376,7 @@
         .items-table th {
             border: 1px solid #bfdbfe;
             background: #1d4ed8;
-            padding: 8px 6px;
+            padding: 6px;
             color: #ffffff;
             font-size: 8px;
             font-weight: bold;
@@ -385,7 +385,7 @@
 
         .items-table td {
             border: 1px solid #dbe3ef;
-            padding: 8px 6px;
+            padding: 6px;
             vertical-align: top;
         }
 
@@ -438,7 +438,7 @@
 
         .summary-wrapper {
             width: 100%;
-            margin-top: 12px;
+            margin-top: 8px;
         }
 
         .summary-spacer {
@@ -454,7 +454,7 @@
         }
 
         .summary-table td {
-            padding: 5px 8px;
+            padding: 4px 8px;
         }
 
         .summary-label {
@@ -470,26 +470,26 @@
         .grand-total-row td {
             border-top: 2px solid #1d4ed8;
             background: #eff6ff;
-            padding-top: 9px;
-            padding-bottom: 9px;
+            padding-top: 7px;
+            padding-bottom: 7px;
             color: #1d4ed8;
             font-size: 12px;
             font-weight: bold;
         }
 
         .notes-section {
-            margin-top: 18px;
+            margin-top: 12px;
             page-break-inside: avoid;
         }
 
         .notes-box {
             border-left: 4px solid #1d4ed8;
             background: #eff6ff;
-            padding: 10px 12px;
+            padding: 8px 10px;
         }
 
         .notes-title {
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             color: #1e40af;
             font-size: 9px;
             font-weight: bold;
@@ -497,16 +497,17 @@
 
         .notes-content {
             color: #374151;
+            line-height: 1.4;
             white-space: pre-line;
         }
 
         .terms-section {
-            margin-top: 18px;
+            margin-top: 12px;
             page-break-inside: avoid;
         }
 
         .terms-title {
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             color: #111827;
             font-size: 10px;
             font-weight: bold;
@@ -519,11 +520,11 @@
         }
 
         .terms-list li {
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .signature-section {
-            margin-top: 26px;
+            margin-top: 14px;
             page-break-inside: avoid;
         }
 
@@ -547,20 +548,20 @@
         }
 
         .signature-space {
-            height: 58px;
+            height: 42px;
         }
 
         .signature-name {
             display: inline-block;
-            min-width: 150px;
+            min-width: 140px;
             border-bottom: 1px solid #374151;
-            padding-bottom: 3px;
+            padding-bottom: 2px;
             color: #111827;
             font-weight: bold;
         }
 
         .signature-description {
-            margin-top: 4px;
+            margin-top: 3px;
             color: #6b7280;
             font-size: 8px;
         }
