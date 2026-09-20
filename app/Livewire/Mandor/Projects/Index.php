@@ -81,38 +81,32 @@ class Index extends Component
         );
 
         return [
-            'total' =>
-                (clone $query)->count(),
+            'total' => (clone $query)->count(),
 
-            'active' =>
-                (clone $query)
-                    ->whereIn(
-                        'status',
-                        [
-                            'planning',
-                            'on_progress',
-                            'in_progress',
-                            'ongoing',
-                        ]
-                    )
-                    ->count(),
+            'active' => (clone $query)
+                ->whereIn(
+                    'status',
+                    [
+                        'planning',
+                        'on_progress',
+                    ]
+                )
+                ->count(),
 
-            'completed' =>
-                (clone $query)
-                    ->where(
-                        'status',
-                        'completed'
-                    )
-                    ->count(),
+            'completed' => (clone $query)
+                ->where(
+                    'status',
+                    'completed'
+                )
+                ->count(),
 
-            'average_progress' =>
-                (int) round(
-                    (float) (
-                        (clone $query)
-                            ->avg('progress')
-                        ?? 0
-                    )
-                ),
+            'average_progress' => (int) round(
+                (float) (
+                    (clone $query)
+                        ->avg('progress')
+                    ?? 0
+                )
+            ),
         ];
     }
 
@@ -121,11 +115,9 @@ class Index extends Component
         $mandor = $this->mandor();
 
         $allowedStatuses = [
+            'draft',
             'planning',
             'on_progress',
-            'in_progress',
-            'ongoing',
-            'on_hold',
             'completed',
             'cancelled',
         ];
@@ -181,20 +173,18 @@ class Index extends Component
             ->with([
                 'client:id,company_name',
 
-                'tasks' => fn ($query) =>
-                    $query
-                        ->latest('updated_at')
-                        ->latest('id'),
+                'tasks' => fn ($query) => $query
+                    ->latest('updated_at')
+                    ->latest('id'),
             ])
             ->withCount([
                 'tasks',
 
-                'workerAssignments as active_workers_count' =>
-                    fn ($query) => $query
-                        ->where(
-                            'status',
-                            'active'
-                        ),
+                'workerAssignments as active_workers_count' => fn ($query) => $query
+                    ->where(
+                        'status',
+                        'active'
+                    ),
             ])
             ->when(
                 $search !== '',
@@ -247,11 +237,10 @@ class Index extends Component
                     $allowedStatuses,
                     true
                 ),
-                fn (Builder $query) =>
-                    $query->where(
-                        'status',
-                        $this->status
-                    )
+                fn (Builder $query) => $query->where(
+                    'status',
+                    $this->status
+                )
             )
             ->orderBy(
                 $selectedSort['column'],
@@ -262,13 +251,11 @@ class Index extends Component
         return view(
             'livewire.mandor.projects.index',
             [
-                'projects' =>
-                    $projects,
+                'projects' => $projects,
 
-                'statistics' =>
-                    $this->statistics(
-                        $mandor->id
-                    ),
+                'statistics' => $this->statistics(
+                    $mandor->id
+                ),
             ]
         );
     }

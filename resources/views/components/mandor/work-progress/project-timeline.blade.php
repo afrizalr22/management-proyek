@@ -4,6 +4,15 @@
 ])
 
 @php
+    $canCreateTasks = in_array(
+        $project->status,
+        [
+            'planning',
+            'on_progress',
+        ],
+        true
+    );
+
     $statusConfigurations = [
         'assigned' => [
             'label' => 'Belum Dimulai',
@@ -103,31 +112,37 @@
             </h3>
 
             <p class="mt-2 max-w-sm text-sm leading-6 text-gray-500">
-                Buat Task dan pilih pekerja aktif untuk mulai mencatat
-                progress pekerjaan proyek.
+                @if ($canCreateTasks)
+                    Buat Task dan pilih pekerja aktif untuk mulai mencatat
+                    progress pekerjaan proyek.
+                @else
+                    Project ini tidak dapat menerima Task baru.
+                @endif
             </p>
 
-            <button
-                type="button"
-                wire:click="openTaskForm"
-                class="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-                <svg
-                    class="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
+            @if ($canCreateTasks)
+                <button
+                    type="button"
+                    wire:click="openTaskForm"
+                    class="mt-5 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 5v14M5 12h14"
-                    />
-                </svg>
+                    <svg
+                        class="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 5v14M5 12h14"
+                        />
+                    </svg>
 
-                Buat Task
-            </button>
+                    Buat Task
+                </button>
+            @endif
         </div>
     @else
         <div class="max-h-[34rem] space-y-5 overflow-y-auto p-6">

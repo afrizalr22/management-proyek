@@ -3,6 +3,17 @@
     'activeWorkerCount' => 0,
 ])
 
+@php
+    $canCreateTasks = in_array(
+        $project->status,
+        [
+            'planning',
+            'on_progress',
+        ],
+        true
+    );
+@endphp
+
 <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
 
     <div>
@@ -84,15 +95,15 @@
             type="button"
             wire:click="openTaskForm"
             wire:loading.attr="disabled"
-            @disabled($activeWorkerCount === 0)
+            @disabled($activeWorkerCount === 0 || ! $canCreateTasks)
             @class([
                 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold transition',
 
                 'bg-blue-600 text-white shadow-sm shadow-blue-200 hover:bg-blue-700' =>
-                    $activeWorkerCount > 0,
+                    $activeWorkerCount > 0 && $canCreateTasks,
 
                 'cursor-not-allowed bg-gray-200 text-gray-400' =>
-                    $activeWorkerCount === 0,
+                    $activeWorkerCount === 0 || ! $canCreateTasks,
             ])
         >
             <svg
@@ -112,7 +123,11 @@
             Buat Task
         </button>
 
-        @if ($activeWorkerCount === 0)
+        @if (! $canCreateTasks)
+            <p class="text-xs text-amber-600">
+                Project ini tidak dapat menerima Task baru.
+            </p>
+        @elseif ($activeWorkerCount === 0)
             <p class="text-xs text-amber-600">
                 Belum ada pekerja aktif pada proyek ini.
             </p>

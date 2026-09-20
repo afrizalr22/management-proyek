@@ -17,8 +17,6 @@ class Dashboard extends Component
     private const ACTIVE_PROJECT_STATUSES = [
         'planning',
         'on_progress',
-        'in_progress',
-        'ongoing',
     ];
 
     private const COMPLETED_TASK_STATUSES = [
@@ -100,26 +98,19 @@ class Dashboard extends Component
             ->count();
 
         return [
-            'active_projects' =>
-                $activeProjectIds->count(),
+            'active_projects' => $activeProjectIds->count(),
 
-            'active_workers' =>
-                $activeWorkers,
+            'active_workers' => $activeWorkers,
 
-            'today_tasks' =>
-                $todayTasks,
+            'today_tasks' => $todayTasks,
 
-            'completed_today_tasks' =>
-                $completedTodayTasks,
+            'completed_today_tasks' => $completedTodayTasks,
 
-            'today_task_progress' =>
-                $todayTaskProgress,
+            'today_task_progress' => $todayTaskProgress,
 
-            'today_reports' =>
-                $todayReports,
+            'today_reports' => $todayReports,
 
-            'reports_awaiting_review' =>
-                $reportsAwaitingReview,
+            'reports_awaiting_review' => $reportsAwaitingReview,
         ];
     }
 
@@ -178,16 +169,14 @@ class Dashboard extends Component
                     'title' => $completed
                         ? 'Task diselesaikan'
                         : 'Task diperbarui',
-                    'description' =>
-                        $task->title.' — '
+                    'description' => $task->title.' — '
                         .($task->project?->project_name
                             ?? 'Project tidak ditemukan'),
                     'occurred_at' => $task->updated_at,
                     'href' => route(
                         'mandor.projects.show',
                         [
-                            'project' =>
-                                $task->project_id,
+                            'project' => $task->project_id,
                         ]
                     ),
                 ];
@@ -211,13 +200,11 @@ class Dashboard extends Component
                     'title' => $report->status === 'approved'
                         ? 'Laporan disetujui'
                         : 'Laporan diterima',
-                    'description' =>
-                        ($report->user?->name ?? 'Pekerja')
+                    'description' => ($report->user?->name ?? 'Pekerja')
                         .' — '
                         .($report->project?->project_name
                             ?? 'Project tidak ditemukan'),
-                    'occurred_at' =>
-                        $report->updated_at,
+                    'occurred_at' => $report->updated_at,
                     'href' => route(
                         'mandor.daily-reports.show',
                         [
@@ -244,18 +231,14 @@ class Dashboard extends Component
                     Documentation $documentation
                 ): array {
                     return [
-                        'key' =>
-                            'documentation-'
+                        'key' => 'documentation-'
                             .$documentation->id,
 
-                        'type' =>
-                            'documentation',
+                        'type' => 'documentation',
 
-                        'title' =>
-                            'Dokumentasi ditambahkan',
+                        'title' => 'Dokumentasi ditambahkan',
 
-                        'description' =>
-                            ($documentation->title
+                        'description' => ($documentation->title
                                 ?: 'Dokumentasi pekerjaan')
                             .' — '
                             .($documentation
@@ -263,15 +246,13 @@ class Dashboard extends Component
                                 ?->project_name
                                 ?? 'Project tidak ditemukan'),
 
-                        'occurred_at' =>
-                            $documentation->created_at,
+                        'occurred_at' => $documentation->created_at,
 
                         'href' => route(
                             'mandor.projects.documentations.index',
                             [
-                                'project' =>
-                                    $documentation
-                                        ->project_id,
+                                'project' => $documentation
+                                    ->project_id,
                             ]
                         ),
                     ];
@@ -282,8 +263,7 @@ class Dashboard extends Component
             ->concat($reportActivities)
             ->concat($documentationActivities)
             ->filter(
-                fn (array $activity): bool =>
-                    $activity['occurred_at']
+                fn (array $activity): bool => $activity['occurred_at']
                     !== null
             )
             ->sortByDesc('occurred_at')
@@ -328,29 +308,24 @@ class Dashboard extends Component
         return view(
             'livewire.mandor.dashboard',
             [
-                'mandor' =>
-                    $mandor,
+                'mandor' => $mandor,
 
-                'statistics' =>
-                    $this->statistics(
-                        $mandor->id,
-                        $projectIds
-                    ),
+                'statistics' => $this->statistics(
+                    $mandor->id,
+                    $projectIds
+                ),
 
-                'todayTasks' =>
-                    $this->todayTasks(
-                        $projectIds
-                    ),
+                'todayTasks' => $this->todayTasks(
+                    $projectIds
+                ),
 
-                'recentActivities' =>
-                    $this->recentActivities(
-                        $projectIds
-                    ),
+                'recentActivities' => $this->recentActivities(
+                    $projectIds
+                ),
 
-                'latestDocumentations' =>
-                    $this->latestDocumentations(
-                        $projectIds
-                    ),
+                'latestDocumentations' => $this->latestDocumentations(
+                    $projectIds
+                ),
             ]
         );
     }

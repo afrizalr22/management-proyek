@@ -31,24 +31,22 @@
                 'red',
             ]
             : match ($project->status) {
+                'draft' => [
+                    'Draft',
+                    'gray',
+                    'gray',
+                ],
+
                 'planning' => [
                     'Perencanaan',
                     'yellow',
                     'yellow',
                 ],
 
-                'on_progress',
-                'in_progress',
-                'ongoing' => [
+                'on_progress' => [
                     'Sedang Berjalan',
                     'blue',
                     'blue',
-                ],
-
-                'on_hold' => [
-                    'Ditunda',
-                    'gray',
-                    'gray',
                 ],
 
                 'completed' => [

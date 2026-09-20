@@ -48,7 +48,22 @@ class Index extends Component
 
     public function openTaskForm(): void
     {
+        $this->project->refresh();
+
+        $this->authorizeProject(
+            $this->project
+        );
+
         $this->resetValidation();
+
+        if (! $this->projectCanReceiveTasks()) {
+            $this->addError(
+                'task',
+                'Task hanya dapat dibuat pada Project tahap perencanaan atau berjalan.'
+            );
+
+            return;
+        }
 
         $this->resetTaskForm();
 
@@ -66,86 +81,167 @@ class Index extends Component
 
     public function createTask(): void
     {
-        $validated = $this->validate();
+        $this->project->refresh();
 
-        $workerIsAvailable = $this->project
-            ->workerAssignments()
-            ->where('worker_id', $validated['workerId'])
-            ->where('status', 'active')
-            ->whereHas(
-                'worker',
-                fn ($query) => $query
-                    ->where('status', 'active')
-            )
-            ->exists();
+        $this->authorizeProject(
+            $this->project
+        );
 
-        if (! $workerIsAvailable) {
+        if (! $this->projectCanReceiveTasks()) {
             $this->addError(
-                'workerId',
-                'Pekerja tidak aktif atau tidak terdaftar pada proyek ini.'
+                'task',
+                'Task hanya dapat dibuat pada Project tahap perencanaan atau berjalan.'
             );
 
             return;
         }
-        $totalExistingWeight = (float) $this->project
-    ->tasks()
-    ->where(
-        'status',
-        '!=',
-        'cancelled'
-    )
-    ->sum('weight');
 
-    $newTotalWeight = $totalExistingWeight
-        + (float) $validated['weight'];
+        $validated = $this->validate();
 
-    if ($newTotalWeight > 100) {
-        $remainingWeight = max(
-            0,
-            100 - $totalExistingWeight
+        $result = DB::transaction(
+            function () use ($validated): array {
+                $project = Project::query()
+                    ->whereKey(
+                        $this->project->id
+                    )
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $this->authorizeProject(
+                    $project
+                );
+
+                if (
+                    ! in_array(
+                        $project->status,
+                        [
+                            'planning',
+                            'on_progress',
+                        ],
+                        true
+                    )
+                ) {
+                    return [
+                        'field' => 'task',
+                        'message' => 'Task hanya dapat dibuat pada Project tahap perencanaan atau berjalan.',
+                    ];
+                }
+
+                $workerIsAvailable =
+                    $project
+                        ->workerAssignments()
+                        ->where(
+                            'worker_id',
+                            $validated['workerId']
+                        )
+                        ->where(
+                            'status',
+                            'active'
+                        )
+                        ->whereHas(
+                            'worker',
+                            fn ($query) => $query
+                                ->where(
+                                    'status',
+                                    'active'
+                                )
+                        )
+                        ->exists();
+
+                if (! $workerIsAvailable) {
+                    return [
+                        'field' => 'workerId',
+                        'message' => 'Pekerja tidak aktif atau tidak terdaftar pada proyek ini.',
+                    ];
+                }
+
+                $totalExistingWeight = (float) (
+                    $project
+                        ->tasks()
+                        ->where(
+                            'status',
+                            '!=',
+                            'cancelled'
+                        )
+                        ->lockForUpdate()
+                        ->get([
+                            'id',
+                            'weight',
+                        ])
+                        ->sum('weight')
+                );
+
+                $newTotalWeight =
+                    $totalExistingWeight
+                    + (float) $validated['weight'];
+
+                if ($newTotalWeight > 100) {
+                    $remainingWeight = max(
+                        0,
+                        100 - $totalExistingWeight
+                    );
+
+                    return [
+                        'field' => 'weight',
+                        'message' => 'Total bobot Task aktif tidak boleh melebihi 100. '
+                            .'Sisa bobot proyek saat ini '
+                            .number_format(
+                                $remainingWeight,
+                                2,
+                                ',',
+                                '.'
+                            )
+                            .'.',
+                    ];
+                }
+
+                Task::query()->create([
+                    'project_id' => $project->id,
+                    'mandor_id' => $project->mandor_id,
+                    'worker_id' => $validated['workerId'],
+                    'task_code' => $this->generateTaskCode(),
+                    'title' => trim($validated['title']),
+                    'description' => filled(
+                        $validated['description']
+                    )
+                            ? trim(
+                                $validated['description']
+                            )
+                            : null,
+                    'location' => filled(
+                        $validated['location']
+                    )
+                            ? trim(
+                                $validated['location']
+                            )
+                            : null,
+                    'priority' => $validated['priority'],
+                    'status' => 'assigned',
+                    'start_at' => $validated['startAt'],
+                    'due_at' => $validated['dueAt'],
+                    'progress' => 0,
+                    'weight' => $validated['weight'],
+                    'mandor_notes' => filled(
+                        $validated['mandorNotes']
+                    )
+                            ? trim(
+                                $validated['mandorNotes']
+                            )
+                            : null,
+                ]);
+
+                return [];
+            }
         );
 
-        $this->addError(
-            'weight',
-            'Total bobot Task aktif tidak boleh melebihi 100. '
-                . 'Sisa bobot proyek saat ini '
-                . number_format(
-                    $remainingWeight,
-                    2,
-                    ',',
-                    '.'
-                )
-                . '.'
-        );
+        if ($result !== []) {
+            $this->addError(
+                $result['field'],
+                $result['message']
+            );
 
-        return;
-    }
-
-        DB::transaction(function () use ($validated): void {
-            Task::query()->create([
-                'project_id' => $this->project->id,
-                'mandor_id' => Auth::id(),
-                'worker_id' => $validated['workerId'],
-                'task_code' => $this->generateTaskCode(),
-                'title' => trim($validated['title']),
-                'description' => filled($validated['description'])
-                    ? trim($validated['description'])
-                    : null,
-                'location' => filled($validated['location'])
-                    ? trim($validated['location'])
-                    : null,
-                'priority' => $validated['priority'],
-                'status' => 'assigned',
-                'start_at' => $validated['startAt'],
-                'due_at' => $validated['dueAt'],
-                'progress' => 0,
-                'weight' => $validated['weight'],
-                'mandor_notes' => filled($validated['mandorNotes'])
-                    ? trim($validated['mandorNotes'])
-                    : null,
-            ]);
-        });
-
+            return;
+        }
         $this->showTaskForm = false;
 
         $this->resetTaskForm();
@@ -335,63 +431,56 @@ class Index extends Component
     protected function messages(): array
     {
         return [
-            'workerId.required' =>
-                'Pekerja wajib dipilih.',
+            'workerId.required' => 'Pekerja wajib dipilih.',
 
-            'workerId.exists' =>
-                'Pekerja tidak aktif atau tidak terdaftar pada proyek ini.',
+            'workerId.exists' => 'Pekerja tidak aktif atau tidak terdaftar pada proyek ini.',
 
-            'title.required' =>
-                'Judul Task wajib diisi.',
+            'title.required' => 'Judul Task wajib diisi.',
 
-            'title.min' =>
-                'Judul Task minimal 3 karakter.',
+            'title.min' => 'Judul Task minimal 3 karakter.',
 
-            'title.max' =>
-                'Judul Task maksimal 255 karakter.',
+            'title.max' => 'Judul Task maksimal 255 karakter.',
 
-            'description.max' =>
-                'Deskripsi maksimal 5.000 karakter.',
+            'description.max' => 'Deskripsi maksimal 5.000 karakter.',
 
-            'location.max' =>
-                'Lokasi maksimal 255 karakter.',
+            'location.max' => 'Lokasi maksimal 255 karakter.',
 
-            'priority.required' =>
-                'Prioritas wajib dipilih.',
+            'priority.required' => 'Prioritas wajib dipilih.',
 
-            'priority.in' =>
-                'Prioritas Task tidak valid.',
+            'priority.in' => 'Prioritas Task tidak valid.',
 
-            'startAt.required' =>
-                'Waktu mulai wajib diisi.',
+            'startAt.required' => 'Waktu mulai wajib diisi.',
 
-            'startAt.date' =>
-                'Waktu mulai tidak valid.',
+            'startAt.date' => 'Waktu mulai tidak valid.',
 
-            'dueAt.required' =>
-                'Tenggat waktu wajib diisi.',
+            'dueAt.required' => 'Tenggat waktu wajib diisi.',
 
-            'dueAt.date' =>
-                'Tenggat waktu tidak valid.',
+            'dueAt.date' => 'Tenggat waktu tidak valid.',
 
-            'dueAt.after_or_equal' =>
-                'Tenggat waktu tidak boleh sebelum waktu mulai.',
+            'dueAt.after_or_equal' => 'Tenggat waktu tidak boleh sebelum waktu mulai.',
 
-            'weight.required' =>
-                'Bobot Task wajib diisi.',
+            'weight.required' => 'Bobot Task wajib diisi.',
 
-            'weight.numeric' =>
-                'Bobot Task harus berupa angka.',
+            'weight.numeric' => 'Bobot Task harus berupa angka.',
 
-            'weight.min' =>
-                'Bobot Task minimal 0,01.',
+            'weight.min' => 'Bobot Task minimal 0,01.',
 
-            'weight.max' =>
-                'Bobot Task maksimal 100.',
+            'weight.max' => 'Bobot Task maksimal 100.',
 
-            'mandorNotes.max' =>
-                'Catatan Mandor maksimal 2.000 karakter.',
+            'mandorNotes.max' => 'Catatan Mandor maksimal 2.000 karakter.',
         ];
+    }
+
+    private function projectCanReceiveTasks(): bool
+    {
+        return in_array(
+            $this->project->status,
+            [
+                'planning',
+                'on_progress',
+            ],
+            true
+        );
     }
 
     private function authorizeProject(
@@ -409,8 +498,7 @@ class Index extends Component
         return $this->project
             ->workerAssignments
             ->filter(
-                fn ($assignment) =>
-                    $assignment->worker !== null
+                fn ($assignment) => $assignment->worker !== null
                     && $assignment->worker->status === 'active'
             )
             ->pluck('worker')
@@ -444,14 +532,13 @@ class Index extends Component
         }
 
         $weightedProgress = $tasks->sum(
-            fn (Task $task) =>
-                max(
-                    0,
-                    min(
-                        100,
-                        (int) $task->progress
-                    )
+            fn (Task $task) => max(
+                0,
+                min(
+                    100,
+                    (int) $task->progress
                 )
+            )
                 * max(
                     0.01,
                     (float) $task->weight

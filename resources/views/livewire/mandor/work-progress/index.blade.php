@@ -52,6 +52,15 @@
         </div>
     @endif
 
+    @error('task')
+        <div
+            class="rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700"
+            role="alert"
+        >
+            {{ $message }}
+        </div>
+    @enderror
+
     <x-mandor.work-progress.page-header
         :project="$project"
         :active-worker-count="$activeWorkers->count()"

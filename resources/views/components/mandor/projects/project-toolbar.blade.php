@@ -6,11 +6,9 @@
 
 @php
     $statusLabel = match ($status) {
+        'draft' => 'Draft',
         'planning' => 'Perencanaan',
-        'on_progress',
-        'in_progress',
-        'ongoing' => 'Sedang Berjalan',
-        'on_hold' => 'Ditunda',
+        'on_progress' => 'Sedang Berjalan',
         'completed' => 'Selesai',
         'cancelled' => 'Dibatalkan',
         default => 'Semua Status',
@@ -91,6 +89,16 @@
 
                     <button
                         type="button"
+                        wire:click="$set('status', 'draft')"
+                        x-on:click="open = false"
+                        class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
+                    >
+                        <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-gray-400"></span>
+                        Draft
+                    </button>
+
+                    <button
+                        type="button"
                         wire:click="$set('status', 'planning')"
                         x-on:click="open = false"
                         class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
@@ -107,16 +115,6 @@
                     >
                         <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-500"></span>
                         Sedang Berjalan
-                    </button>
-
-                    <button
-                        type="button"
-                        wire:click="$set('status', 'on_hold')"
-                        x-on:click="open = false"
-                        class="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
-                    >
-                        <span class="h-2.5 w-2.5 shrink-0 rounded-full bg-gray-400"></span>
-                        Ditunda
                     </button>
 
                     <button
