@@ -18,9 +18,7 @@
 
         @if (filled($invoice->notes))
             <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-                <p class="whitespace-pre-line text-sm leading-7 text-gray-700">
-                    {{ $invoice->notes }}
-                </p>
+                <p class="whitespace-pre-line break-words text-sm leading-7 text-gray-700">{{ trim($invoice->notes) }}</p>
             </div>
         @else
             <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-8 text-center">

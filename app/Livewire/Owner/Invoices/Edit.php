@@ -5,7 +5,9 @@ namespace App\Livewire\Owner\Invoices;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
+use RuntimeException;
 use Throwable;
 
 class Edit extends Component
@@ -18,6 +20,7 @@ class Edit extends Component
 
     public string $notes = '';
 
+    #[Locked]
     public array $items = [];
 
     public function mount(Invoice $invoice): void
@@ -27,18 +30,20 @@ class Edit extends Component
         abort_unless(
             $invoice->status === 'draft',
             403,
-            'Hanya invoice berstatus draft yang dapat diedit.'
+            'Hanya Invoice berstatus Draft yang dapat diedit.'
         );
 
         $invoice->load([
             'project:id,project_code,project_name',
             'quotation:id,quotation_number,project_name',
+
             'items' => fn ($query) => $query
                 ->orderBy('sort_order')
                 ->orderBy('id'),
         ]);
 
         $this->invoice = $invoice;
+
         $this->invoiceDate = $invoice->invoice_date
             ?->format('Y-m-d') ?? '';
 
@@ -47,20 +52,21 @@ class Edit extends Component
 
         $this->notes = $invoice->notes ?? '';
 
+        /*
+         * Item merupakan snapshot Quotation dan hanya
+         * digunakan untuk ditampilkan pada form Edit.
+         */
         $this->items = $invoice->items
-            ->map(fn ($item) => [
+            ->map(fn ($item): array => [
                 'item_name' => $item->item_name,
-                'description' => $item->description ?? '',
-                'qty' => (string) $item->qty,
+                'description' => $item->description,
+                'qty' => (float) $item->qty,
                 'unit' => $item->unit,
-                'price' => (string) $item->price,
+                'price' => (float) $item->price,
+                'total' => (float) $item->total,
             ])
             ->values()
             ->all();
-
-        if ($this->items === []) {
-            $this->addItem();
-        }
     }
 
     protected function rules(): array
@@ -72,7 +78,7 @@ class Edit extends Component
             ],
 
             'dueDate' => [
-                'nullable',
+                'required',
                 'date',
                 'after_or_equal:invoiceDate',
             ],
@@ -80,46 +86,7 @@ class Edit extends Component
             'notes' => [
                 'nullable',
                 'string',
-                'max:5000',
-            ],
-
-            'items' => [
-                'required',
-                'array',
-                'min:1',
-                'max:100',
-            ],
-
-            'items.*.item_name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-
-            'items.*.description' => [
-                'nullable',
-                'string',
                 'max:2000',
-            ],
-
-            'items.*.qty' => [
-                'required',
-                'numeric',
-                'gt:0',
-                'max:99999999.99',
-            ],
-
-            'items.*.unit' => [
-                'required',
-                'string',
-                'max:50',
-            ],
-
-            'items.*.price' => [
-                'required',
-                'numeric',
-                'min:0',
-                'max:9999999999999.99',
             ],
         ];
     }
@@ -128,122 +95,23 @@ class Edit extends Component
     {
         return [
             'invoiceDate.required' =>
-                'Tanggal invoice wajib diisi.',
+                'Tanggal Invoice wajib diisi.',
 
             'invoiceDate.date' =>
-                'Tanggal invoice tidak valid.',
+                'Tanggal Invoice tidak valid.',
+
+            'dueDate.required' =>
+                'Tanggal jatuh tempo wajib diisi.',
 
             'dueDate.date' =>
                 'Tanggal jatuh tempo tidak valid.',
 
             'dueDate.after_or_equal' =>
-                'Tanggal jatuh tempo tidak boleh sebelum tanggal invoice.',
+                'Tanggal jatuh tempo tidak boleh sebelum tanggal Invoice.',
 
             'notes.max' =>
-                'Catatan maksimal 5000 karakter.',
-
-            'items.required' =>
-                'Invoice harus memiliki item.',
-
-            'items.min' =>
-                'Invoice minimal memiliki satu item.',
-
-            'items.max' =>
-                'Invoice maksimal memiliki 100 item.',
-
-            'items.*.item_name.required' =>
-                'Nama item wajib diisi.',
-
-            'items.*.item_name.max' =>
-                'Nama item maksimal 255 karakter.',
-
-            'items.*.description.max' =>
-                'Deskripsi item maksimal 2000 karakter.',
-
-            'items.*.qty.required' =>
-                'Kuantitas wajib diisi.',
-
-            'items.*.qty.numeric' =>
-                'Kuantitas harus berupa angka.',
-
-            'items.*.qty.gt' =>
-                'Kuantitas harus lebih dari 0.',
-
-            'items.*.unit.required' =>
-                'Satuan wajib diisi.',
-
-            'items.*.unit.max' =>
-                'Satuan maksimal 50 karakter.',
-
-            'items.*.price.required' =>
-                'Harga satuan wajib diisi.',
-
-            'items.*.price.numeric' =>
-                'Harga satuan harus berupa angka.',
-
-            'items.*.price.min' =>
-                'Harga satuan tidak boleh kurang dari 0.',
+                'Catatan maksimal 2.000 karakter.',
         ];
-    }
-
-    public function addItem(): void
-    {
-        $this->items[] = [
-            'item_name' => '',
-            'description' => '',
-            'qty' => '1',
-            'unit' => '',
-            'price' => '0',
-        ];
-    }
-
-    public function removeItem(int $index): void
-    {
-        if (! array_key_exists($index, $this->items)) {
-            return;
-        }
-
-        if (count($this->items) <= 1) {
-            $this->addError(
-                'items',
-                'Invoice minimal memiliki satu item.'
-            );
-
-            return;
-        }
-
-        unset($this->items[$index]);
-
-        $this->items = array_values($this->items);
-
-        $this->resetValidation('items');
-    }
-
-    public function getSubtotalProperty(): float
-    {
-        return collect($this->items)
-            ->sum(function (array $item): float {
-                $qty = is_numeric($item['qty'] ?? null)
-                    ? (float) $item['qty']
-                    : 0;
-
-                $price = is_numeric($item['price'] ?? null)
-                    ? (float) $item['price']
-                    : 0;
-
-                return round($qty * $price, 2);
-            });
-    }
-
-    public function getTotalQuantityProperty(): float
-    {
-        return collect($this->items)
-            ->sum(
-                fn (array $item): float =>
-                    is_numeric($item['qty'] ?? null)
-                        ? (float) $item['qty']
-                        : 0
-            );
     }
 
     public function updateInvoice(): void
@@ -253,66 +121,37 @@ class Edit extends Component
         $validated = $this->validate();
 
         try {
-            DB::transaction(function () use ($validated): void {
+            DB::transaction(function () use (
+                $validated
+            ): void {
                 $invoice = Invoice::query()
                     ->whereKey($this->invoice->id)
                     ->lockForUpdate()
-                    ->firstOrFail();
+                    ->first();
 
-                if ($invoice->status !== 'draft') {
-                    throw new \RuntimeException(
-                        'Invoice sudah tidak berstatus draft.'
+                if (! $invoice) {
+                    throw new RuntimeException(
+                        'invoice_not_found'
                     );
                 }
 
-                $normalizedItems = collect($validated['items'])
-                    ->values()
-                    ->map(function (
-                        array $item,
-                        int $index
-                    ): array {
-                        $qty = round((float) $item['qty'], 2);
-                        $price = round((float) $item['price'], 2);
+                if ($invoice->status !== 'draft') {
+                    throw new RuntimeException(
+                        'invoice_not_draft'
+                    );
+                }
 
-                        return [
-                            'item_name' => trim(
-                                $item['item_name']
-                            ),
-                            'description' => filled(
-                                $item['description'] ?? null
-                            )
-                                ? trim($item['description'])
-                                : null,
-                            'qty' => $qty,
-                            'unit' => trim($item['unit']),
-                            'price' => $price,
-                            'total' => round(
-                                $qty * $price,
-                                2
-                            ),
-                            'sort_order' => $index + 1,
-                        ];
-                    });
-
-                $subtotal = round(
-                    (float) $normalizedItems->sum('total'),
-                    2
-                );
-
+                /*
+                 * Project, Quotation, data Client,
+                 * item, dan nilai Invoice tidak diubah.
+                 */
                 $invoice->update([
                     'invoice_date' =>
                         $validated['invoiceDate'],
 
-                    'due_date' => filled(
-                        $validated['dueDate'] ?? null
-                    )
-                        ? $validated['dueDate']
-                        : null,
+                    'due_date' =>
+                        $validated['dueDate'],
 
-                    'subtotal' => $subtotal,
-                    'tax_amount' => 0,
-                    'discount_amount' => 0,
-                    'grand_total' => $subtotal,
                     'notes' => filled(
                         $validated['notes'] ?? null
                     )
@@ -320,17 +159,15 @@ class Edit extends Component
                         : null,
                 ]);
 
-                $invoice->items()->delete();
-
-                $invoice->items()->createMany(
-                    $normalizedItems->all()
-                );
+                $this->invoice = $invoice->fresh();
             });
 
             session()->flash('notification', [
-                'type' => 'success',
-                'message' =>
-                    'Invoice berhasil diperbarui.',
+                'type' => 'update',
+                'message' => sprintf(
+                    'Invoice %s berhasil diperbarui.',
+                    $this->invoice->invoice_number
+                ),
             ]);
 
             $this->redirectRoute(
@@ -340,23 +177,45 @@ class Edit extends Component
                 ],
                 navigate: true
             );
+        } catch (RuntimeException $exception) {
+            $message = match ($exception->getMessage()) {
+                'invoice_not_found' =>
+                    'Invoice tidak ditemukan.',
+
+                'invoice_not_draft' =>
+                    'Invoice tidak dapat diubah karena sudah tidak berstatus Draft.',
+
+                default =>
+                    'Invoice gagal diperbarui.',
+            };
+
+            $this->addError('save', $message);
         } catch (Throwable $exception) {
             report($exception);
 
             $this->addError(
                 'save',
-                $exception instanceof \RuntimeException
-                    ? $exception->getMessage()
-                    : 'Invoice gagal diperbarui. Silakan coba kembali.'
+                'Invoice gagal diperbarui. Silakan coba kembali.'
             );
         }
     }
 
     public function render()
     {
-        return view('livewire.owner.invoices.edit', [
-            'subtotal' => $this->subtotal,
-            'totalQuantity' => $this->totalQuantity,
-        ]);
+        $subtotal = (float) $this->invoice
+            ->items
+            ->sum('total');
+
+        $totalQuantity = (float) $this->invoice
+            ->items
+            ->sum('qty');
+
+        return view(
+            'livewire.owner.invoices.edit',
+            [
+                'subtotal' => $subtotal,
+                'totalQuantity' => $totalQuantity,
+            ]
+        );
     }
 }

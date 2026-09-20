@@ -175,10 +175,6 @@
                             {{ $message }}
                         </p>
                     @enderror
-
-                    <p class="mt-2 text-xs text-gray-400">
-                        Kosongkan jika tidak memiliki jatuh tempo.
-                    </p>
                 </div>
             </div>
 

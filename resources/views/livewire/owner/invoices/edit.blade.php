@@ -48,29 +48,26 @@
         </div>
     @enderror
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div class="space-y-6 xl:col-span-2">
-            <x-owner.invoice.invoice-edit-primary
-                :invoice="$invoice"
-            />
+    {{-- Informasi utama --}}
+<x-owner.invoice.invoice-edit-primary
+    :invoice="$invoice"
+/>
 
-            <x-owner.invoice.invoice-edit-items
-                :items="$items"
-            />
-        </div>
+{{-- Item Invoice --}}
+<x-owner.invoice.invoice-create-items
+    :items="$items"
+/>
 
-        <aside class="space-y-6">
-            <x-owner.invoice.invoice-edit-summary
-                :items="$items"
-                :subtotal="$subtotal"
-                :total-quantity="$totalQuantity"
-            />
-        </aside>
-    </div>
+{{-- Ringkasan keuangan --}}
+<x-owner.invoice.invoice-edit-summary
+    :items="$items"
+    :subtotal="$subtotal"
+    :total-quantity="$totalQuantity"
+/>
 
     <div class="flex flex-col-reverse gap-3 rounded-2xl border border-gray-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <p class="text-sm text-gray-500">
-            Pastikan tanggal, item, dan nilai invoice sudah benar.
+            Item dan nilai Invoice mengikuti Quotation sumber dan tidak dapat diubah.
         </p>
 
         <div class="flex flex-col-reverse gap-3 sm:flex-row">
