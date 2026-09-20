@@ -41,12 +41,15 @@
                     class="w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                     <option value="">
-                        Pilih Quotation yang disetujui
+                        Pilih Quotation yang sudah memiliki Project
                     </option>
 
                     @foreach ($quotations as $quotation)
                         <option value="{{ $quotation->id }}">
                             {{ $quotation->quotation_number }}
+                            —
+                            {{ $quotation->project?->project_name
+                                ?? $quotation->project_name }}
                             —
                             {{ $quotation->client_name }}
                             —
@@ -68,11 +71,11 @@
 
                 @if ($quotations->isEmpty())
                     <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                        Tidak ada Quotation approved yang belum mempunyai Invoice.
+                        Tidak ada Quotation dengan Project aktif yang dapat dibuatkan Invoice.
                     </div>
                 @else
                     <p class="mt-2 text-xs text-gray-500">
-                        Hanya Quotation approved yang belum memiliki Invoice yang ditampilkan.
+                        Hanya Quotation approved yang sudah memiliki Project aktif dan belum mempunyai Invoice yang ditampilkan.
                     </p>
                 @endif
             </div>

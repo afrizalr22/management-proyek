@@ -50,27 +50,31 @@
         </div>
     @enderror
 
-    {{-- Konten --}}
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div class="space-y-6 xl:col-span-2">
-            <x-owner.invoice.invoice-create-primary
-                :quotations="$quotations"
-                :quotation-id="$quotationId"
-                :quotation-number="$quotationNumber"
-                :client-name="$clientName"
-                :client-contact-person="$clientContactPerson"
-                :client-phone="$clientPhone"
-                :client-email="$clientEmail"
-                :client-address="$clientAddress"
-                :project-name="$projectName"
-            />
+    {{-- Informasi utama --}}
+    <div class="w-full">
+        <x-owner.invoice.invoice-create-primary
+            :quotations="$quotations"
+            :quotation-id="$quotationId"
+            :quotation-number="$quotationNumber"
+            :client-name="$clientName"
+            :client-contact-person="$clientContactPerson"
+            :client-phone="$clientPhone"
+            :client-email="$clientEmail"
+            :client-address="$clientAddress"
+            :project-name="$projectName"
+        />
+    </div>
 
-            <x-owner.invoice.invoice-create-items
-                :items="$items"
-            />
-        </div>
+    {{-- Item Invoice --}}
+    <div class="w-full">
+        <x-owner.invoice.invoice-create-items
+            :items="$items"
+        />
+    </div>
 
-        <aside class="space-y-6">
+    {{-- Ringkasan Invoice --}}
+    @if ($quotationId && $quotationNumber !== '')
+        <div class="w-full">
             <x-owner.invoice.invoice-create-summary
                 :quotation-number="$quotationNumber"
                 :client-name="$clientName"
@@ -78,8 +82,8 @@
                 :subtotal="$subtotal"
                 :grand-total="$grandTotal"
             />
-        </aside>
-    </div>
+        </div>
+    @endif
 
     {{-- Tombol tindakan --}}
     <div class="flex flex-col-reverse gap-4 rounded-2xl border border-gray-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">

@@ -7,6 +7,8 @@ use App\Models\Quotation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\Project;
 use Livewire\Component;
 use RuntimeException;
 use Throwable;
@@ -135,13 +137,23 @@ class Create extends Component
 
         $quotation = Quotation::query()
             ->with([
-                'project:id,project_name',
+                'project:id,project_name,status',
                 'items' => fn ($query) => $query
                     ->orderBy('sort_order')
                     ->orderBy('id'),
             ])
             ->whereKey($this->quotationId)
             ->where('status', 'approved')
+            ->whereNotNull('project_id')
+            ->whereHas(
+                'project',
+                fn (Builder $query): Builder =>
+                    $query->whereIn('status', [
+                        'planning',
+                        'on_progress',
+                        'completed',
+                    ])
+            )
             ->whereDoesntHave('invoice')
             ->first();
 
@@ -150,7 +162,7 @@ class Create extends Component
 
             $this->addError(
                 'quotationId',
-                'Quotation tidak tersedia atau sudah mempunyai Invoice.'
+                'Quotation tidak tersedia, belum mempunyai Project, Project dibatalkan, atau sudah mempunyai Invoice.'
             );
 
             return;
@@ -175,9 +187,7 @@ class Create extends Component
             $quotation->client_address ?? '';
 
         $this->projectName =
-            $quotation->project?->project_name
-            ?? $quotation->project_name
-            ?? 'Belum dibuat';
+            $quotation->project->project_name;
 
         $this->items = $quotation->items
             ->map(fn ($item): array => [
@@ -241,6 +251,28 @@ class Create extends Component
                         );
                     }
 
+                    if ($quotation->project_id === null) {
+                        throw new RuntimeException(
+                            'quotation_has_no_project'
+                        );
+                    }
+
+                    $project = Project::query()
+                        ->lockForUpdate()
+                        ->find($quotation->project_id);
+
+                    if (!$project) {
+                        throw new RuntimeException(
+                            'project_not_found'
+                        );
+                    }
+
+                    if ($project->status === 'cancelled') {
+                        throw new RuntimeException(
+                            'project_cancelled'
+                        );
+                    }
+
                     $invoiceExists = Invoice::query()
                         ->where(
                             'quotation_id',
@@ -274,7 +306,7 @@ class Create extends Component
 
                     $invoice = Invoice::create([
                         'project_id' =>
-                            $quotation->project_id,
+                            $project->id,
 
                         'quotation_id' =>
                             $quotation->id,
@@ -394,6 +426,15 @@ class Create extends Component
                 'quotation_has_no_items' =>
                     'Quotation tidak mempunyai item pekerjaan.',
 
+                'quotation_has_no_project' =>
+                    'Quotation belum terhubung dengan Project.',
+
+                'project_not_found' =>
+                    'Project yang terhubung dengan Quotation tidak ditemukan.',
+
+                'project_cancelled' =>
+                    'Invoice tidak dapat dibuat karena Project telah dibatalkan.',
+
                 default =>
                     'Invoice gagal dibuat.',
             };
@@ -452,13 +493,27 @@ class Create extends Component
     {
         $quotations = Quotation::query()
             ->where('status', 'approved')
+            ->whereNotNull('project_id')
+            ->whereHas(
+                'project',
+                fn (Builder $query): Builder =>
+                    $query->whereIn('status', [
+                        'planning',
+                        'on_progress',
+                        'completed',
+                    ])
+            )
             ->whereDoesntHave('invoice')
             ->whereHas('items')
+            ->with([
+                'project:id,project_name,status',
+            ])
             ->withCount('items')
             ->orderByDesc('approved_at')
             ->orderByDesc('id')
             ->get([
                 'id',
+                'project_id',
                 'quotation_number',
                 'client_name',
                 'project_name',

@@ -20,94 +20,115 @@
     <div class="p-5 sm:p-6">
         <div>
             <h2 class="text-xl font-bold text-gray-800">
-                Ringkasan
+                Ringkasan Invoice
             </h2>
 
             <p class="mt-2 text-sm text-gray-500">
-                Ringkasan Invoice yang akan dibuat.
+                Periksa kembali Project, nilai Invoice, dan catatan sebelum disimpan.
             </p>
         </div>
 
         <hr class="my-6 border-gray-200">
 
-        <div class="space-y-4">
-            <div class="flex items-start justify-between gap-4">
-                <span class="text-sm text-gray-500">
-                    Quotation
-                </span>
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {{-- Informasi sumber --}}
+            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                <h3 class="font-semibold text-gray-900">
+                    Informasi Sumber
+                </h3>
 
-                <span class="text-right text-sm font-semibold text-gray-800">
-                    {{ $quotationNumber ?: '-' }}
-                </span>
+                <dl class="mt-5 space-y-4">
+                    <div class="flex items-start justify-between gap-4">
+                        <dt class="text-sm text-gray-500">
+                            Quotation
+                        </dt>
+
+                        <dd class="text-right text-sm font-semibold text-gray-800">
+                            {{ $quotationNumber ?: '-' }}
+                        </dd>
+                    </div>
+
+                    <div class="flex items-start justify-between gap-4">
+                        <dt class="text-sm text-gray-500">
+                            Client
+                        </dt>
+
+                        <dd class="break-words text-right text-sm font-semibold text-gray-800">
+                            {{ $clientName ?: '-' }}
+                        </dd>
+                    </div>
+
+                    <div class="flex items-start justify-between gap-4">
+                        <dt class="text-sm text-gray-500">
+                            Project
+                        </dt>
+
+                        <dd class="break-words text-right text-sm font-semibold text-gray-800">
+                            {{ $projectName ?: '-' }}
+                        </dd>
+                    </div>
+                </dl>
             </div>
 
-            <div class="flex items-start justify-between gap-4">
-                <span class="text-sm text-gray-500">
-                    Client
-                </span>
+            {{-- Nilai Invoice --}}
+            <div class="rounded-2xl border border-blue-200 bg-blue-50 p-5">
+                <h3 class="font-semibold text-blue-900">
+                    Nilai Invoice
+                </h3>
 
-                <span class="break-words text-right text-sm font-semibold text-gray-800">
-                    {{ $clientName ?: '-' }}
-                </span>
+                <div class="mt-5 flex items-center justify-between gap-4">
+                    <span class="text-sm text-blue-700">
+                        Subtotal
+                    </span>
+
+                    <span class="font-semibold text-blue-900">
+                        {{ $rupiah($subtotal) }}
+                    </span>
+                </div>
+
+                <div class="mt-5 border-t border-blue-200 pt-5">
+                    <p class="text-sm font-medium text-blue-700">
+                        Grand Total
+                    </p>
+
+                    <p class="mt-2 break-words text-3xl font-bold text-blue-900">
+                        {{ $rupiah($grandTotal) }}
+                    </p>
+
+                    <p class="mt-2 text-xs text-blue-600">
+                        Pajak dan diskon belum diterapkan.
+                    </p>
+                </div>
             </div>
 
-            <div class="flex items-start justify-between gap-4">
-                <span class="text-sm text-gray-500">
-                    Project
-                </span>
+            {{-- Catatan --}}
+            <div>
+                <label
+                    for="invoice-notes"
+                    class="mb-2 block text-sm font-semibold text-gray-700"
+                >
+                    Catatan
+                </label>
 
-                <span class="break-words text-right text-sm font-semibold text-gray-800">
-                    {{ $projectName ?: '-' }}
-                </span>
+                <textarea
+                    id="invoice-notes"
+                    wire:model="notes"
+                    rows="7"
+                    maxlength="2000"
+                    placeholder="Tambahkan catatan Invoice jika diperlukan..."
+                    class="w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+                ></textarea>
+
+                @error('notes')
+                    <p class="mt-2 text-sm text-red-600">
+                        {{ $message }}
+                    </p>
+                @else
+                    <p class="mt-2 text-xs text-gray-500">
+                        Catatan bersifat opsional dan maksimal 2.000 karakter.
+                    </p>
+                @enderror
             </div>
-
-            <div class="flex items-center justify-between gap-4 border-t border-gray-100 pt-4">
-                <span class="text-sm text-gray-500">
-                    Subtotal
-                </span>
-
-                <span class="font-semibold text-gray-800">
-                    {{ $rupiah($subtotal) }}
-                </span>
-            </div>
-        </div>
-
-        <div class="mt-6 rounded-2xl bg-blue-50 p-5">
-            <p class="text-sm font-medium text-blue-700">
-                Grand Total
-            </p>
-
-            <p class="mt-2 break-words text-3xl font-bold text-blue-900">
-                {{ $rupiah($grandTotal) }}
-            </p>
-
-            <p class="mt-2 text-xs text-blue-600">
-                Pajak dan diskon belum diterapkan.
-            </p>
-        </div>
-
-        <div class="mt-6">
-            <label
-                for="invoice-notes"
-                class="mb-2 block text-sm font-medium text-gray-700"
-            >
-                Catatan
-            </label>
-
-            <textarea
-                id="invoice-notes"
-                wire:model="notes"
-                rows="5"
-                maxlength="2000"
-                placeholder="Tambahkan catatan Invoice jika diperlukan..."
-                class="w-full rounded-xl border-gray-300 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500"
-            ></textarea>
-
-            @error('notes')
-                <p class="mt-2 text-sm text-red-600">
-                    {{ $message }}
-                </p>
-            @enderror
         </div>
     </div>
 </x-ui.info-card>
