@@ -117,8 +117,6 @@ class RolePermissionSeeder extends Seeder
             'upload documentations',
             'delete documentations',
 
-            'view delivery orders',
-
             'view profile',
             'update profile',
         ]);
