@@ -33,7 +33,7 @@
             </h1>
 
             <p class="mt-1 text-sm text-gray-500">
-                Buat Surat Jalan berdasarkan Project yang sedang berjalan.
+                Buat Surat Jalan untuk Project tahap perencanaan atau berjalan.
             </p>
         </div>
     </div>

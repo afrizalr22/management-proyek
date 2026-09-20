@@ -128,10 +128,10 @@
 
                     <p class="mt-1 font-semibold text-gray-900">
                         {{ match ($project?->status) {
+                            'draft' => 'Draft',
                             'planning' => 'Perencanaan',
-                            'ongoing', 'in_progress' => 'Berjalan',
+                            'on_progress' => 'Berjalan',
                             'completed' => 'Selesai',
-                            'on_hold' => 'Ditunda',
                             'cancelled' => 'Dibatalkan',
                             default => 'Tidak Diketahui',
                         } }}

@@ -56,11 +56,11 @@ class Create extends Component
                 'required',
                 'integer',
                 Rule::exists('projects', 'id')
-                    ->whereNotIn(
+                    ->whereIn(
                         'status',
                         [
-                            'completed',
-                            'cancelled',
+                            'planning',
+                            'on_progress',
                         ]
                     ),
             ],
@@ -98,6 +98,7 @@ class Create extends Component
                 'required',
                 'array',
                 'min:1',
+                'max:100',
             ],
 
             'items.*.item_name' => [
@@ -180,6 +181,9 @@ class Create extends Component
 
             'items.min' =>
                 'Tambahkan minimal satu item pengiriman.',
+
+            'items.max' =>
+                'Surat Jalan maksimal memiliki 100 item.',
 
             'items.*.item_name.required' =>
                 'Nama item wajib diisi.',
@@ -274,11 +278,11 @@ class Create extends Component
                 'mandor:id,name,phone',
             ])
             ->whereKey($this->projectId)
-            ->whereNotIn(
+            ->whereIn(
                 'status',
                 [
-                    'completed',
-                    'cancelled',
+                    'planning',
+                    'on_progress',
                 ]
             )
             ->first([
@@ -339,6 +343,15 @@ class Create extends Component
 
     public function addItem(): void
     {
+        if (count($this->items) >= 100) {
+            $this->addError(
+                'items',
+                'Surat Jalan maksimal memiliki 100 item.'
+            );
+
+            return;
+        }
+
         $this->items[] = [
             'item_name' => '',
             'description' => '',
@@ -391,11 +404,11 @@ class Create extends Component
                 function () use ($validated): DeliveryOrder {
                     $project = Project::query()
                         ->whereKey($validated['projectId'])
-                        ->whereNotIn(
+                        ->whereIn(
                             'status',
                             [
-                                'completed',
-                                'cancelled',
+                                'planning',
+                                'on_progress',
                             ]
                         )
                         ->lockForUpdate()
@@ -577,11 +590,11 @@ class Create extends Component
     public function render()
     {
         $projects = Project::query()
-            ->whereNotIn(
+            ->whereIn(
                 'status',
                 [
-                    'completed',
-                    'cancelled',
+                    'planning',
+                    'on_progress',
                 ]
             )
             ->with([
