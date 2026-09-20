@@ -48,11 +48,11 @@ class ManageWorkers extends Component
         $project = Project::query()
             ->find($this->projectId);
 
-        if (!$project) {
+        if (! $project) {
             return;
         }
 
-        if (!$this->projectCanManageWorkers($project)) {
+        if (! $this->projectCanManageWorkers($project)) {
             $this->addError(
                 'workers',
                 'Pekerja tidak dapat dikelola pada Project yang selesai atau dibatalkan.'
@@ -109,17 +109,13 @@ class ManageWorkers extends Component
                 'exists:users,id',
             ],
         ], [
-            'selectedWorkerIds.array' =>
-                'Pilihan pekerja tidak valid.',
+            'selectedWorkerIds.array' => 'Pilihan pekerja tidak valid.',
 
-            'selectedWorkerIds.*.integer' =>
-                'Pilihan pekerja tidak valid.',
+            'selectedWorkerIds.*.integer' => 'Pilihan pekerja tidak valid.',
 
-            'selectedWorkerIds.*.distinct' =>
-                'Terdapat pekerja yang dipilih lebih dari satu kali.',
+            'selectedWorkerIds.*.distinct' => 'Terdapat pekerja yang dipilih lebih dari satu kali.',
 
-            'selectedWorkerIds.*.exists' =>
-                'Salah satu pekerja tidak ditemukan.',
+            'selectedWorkerIds.*.exists' => 'Salah satu pekerja tidak ditemukan.',
         ]);
 
         $selectedWorkerIds = collect(
@@ -144,8 +140,7 @@ class ManageWorkers extends Component
             )
             ->pluck('id')
             ->map(
-                fn ($workerId): int =>
-                    (int) $workerId
+                fn ($workerId): int => (int) $workerId
             )
             ->sort()
             ->values();
@@ -173,8 +168,7 @@ class ManageWorkers extends Component
             $this->originalWorkerIds
         )
             ->map(
-                fn ($workerId): int =>
-                    (int) $workerId
+                fn ($workerId): int => (int) $workerId
             )
             ->unique()
             ->values();
@@ -192,8 +186,7 @@ class ManageWorkers extends Component
             )
             ->pluck('id')
             ->map(
-                fn ($workerId): int =>
-                    (int) $workerId
+                fn ($workerId): int => (int) $workerId
             )
             ->sort()
             ->values();
@@ -219,13 +212,13 @@ class ManageWorkers extends Component
                         ->lockForUpdate()
                         ->find($this->projectId);
 
-                    if (!$project) {
+                    if (! $project) {
                         throw new RuntimeException(
                             'project_not_found'
                         );
                     }
 
-                    if (!$this->projectCanManageWorkers($project)) {
+                    if (! $this->projectCanManageWorkers($project)) {
                         throw new RuntimeException(
                             'project_locked'
                         );
@@ -244,8 +237,7 @@ class ManageWorkers extends Component
                             ->lockForUpdate()
                             ->pluck('worker_id')
                             ->map(
-                                fn ($workerId): int =>
-                                    (int) $workerId
+                                fn ($workerId): int => (int) $workerId
                             );
 
                     $workerIdsToActivate =
@@ -339,8 +331,7 @@ class ManageWorkers extends Component
                     $deactivatedCount = 0;
 
                     foreach (
-                        $workerIdsToActivate
-                        as $workerId
+                        $workerIdsToActivate as $workerId
                     ) {
                         $assignment =
                             ProjectWorker::query()
@@ -357,37 +348,27 @@ class ManageWorkers extends Component
 
                         if ($assignment) {
                             $assignment->update([
-                                'assigned_by' =>
-                                    Auth::id(),
+                                'assigned_by' => Auth::id(),
 
-                                'status' =>
-                                    'active',
+                                'status' => 'active',
 
-                                'joined_at' =>
-                                    now(),
+                                'joined_at' => now(),
 
-                                'ended_at' =>
-                                    null,
+                                'ended_at' => null,
                             ]);
                         } else {
                             ProjectWorker::create([
-                                'project_id' =>
-                                    $project->id,
+                                'project_id' => $project->id,
 
-                                'worker_id' =>
-                                    $workerId,
+                                'worker_id' => $workerId,
 
-                                'assigned_by' =>
-                                    Auth::id(),
+                                'assigned_by' => Auth::id(),
 
-                                'status' =>
-                                    'active',
+                                'status' => 'active',
 
-                                'joined_at' =>
-                                    now(),
+                                'joined_at' => now(),
 
-                                'ended_at' =>
-                                    null,
+                                'ended_at' => null,
                             ]);
                         }
 
@@ -413,20 +394,16 @@ class ManageWorkers extends Component
                                     'active'
                                 )
                                 ->update([
-                                    'status' =>
-                                        'inactive',
+                                    'status' => 'inactive',
 
-                                    'ended_at' =>
-                                        now(),
+                                    'ended_at' => now(),
                                 ]);
                     }
 
                     return [
-                        'activated' =>
-                            $activatedCount,
+                        'activated' => $activatedCount,
 
-                        'deactivated' =>
-                            $deactivatedCount,
+                        'deactivated' => $deactivatedCount,
                     ];
                 }
             );
@@ -461,13 +438,12 @@ class ManageWorkers extends Component
 
             session()->flash('notification', [
                 'type' => 'success',
-                'message' =>
-                    ucfirst(
-                        implode(
-                            ' dan ',
-                            $messageParts
-                        )
-                    ).' dari Project.',
+                'message' => ucfirst(
+                    implode(
+                        ' dan ',
+                        $messageParts
+                    )
+                ).' dari Project.',
             ]);
 
             $this->showModal = false;
@@ -517,18 +493,15 @@ class ManageWorkers extends Component
 
         $message = match (true) {
             $exceptionMessage ===
-                'project_not_found' =>
-                'Project tidak ditemukan.',
+                'project_not_found' => 'Project tidak ditemukan.',
 
             $exceptionMessage ===
-                'project_locked' =>
-                'Pekerja tidak dapat dikelola pada Project yang selesai atau dibatalkan.',
+                'project_locked' => 'Pekerja tidak dapat dikelola pada Project yang selesai atau dibatalkan.',
 
             str_starts_with(
                 $exceptionMessage,
                 'worker_on_other_project:'
-            ) =>
-                'Pekerja yang dipilih masih aktif pada '
+            ) => 'Pekerja yang dipilih masih aktif pada '
                 .str_replace(
                     'worker_on_other_project:',
                     '',
@@ -538,16 +511,14 @@ class ManageWorkers extends Component
             str_starts_with(
                 $exceptionMessage,
                 'worker_has_active_tasks:'
-            ) =>
-                str_replace(
-                    'worker_has_active_tasks:',
-                    '',
-                    $exceptionMessage
-                )
+            ) => str_replace(
+                'worker_has_active_tasks:',
+                '',
+                $exceptionMessage
+            )
                 .' tidak dapat dinonaktifkan karena masih memiliki tugas aktif.',
 
-            default =>
-                'Perubahan pekerja gagal disimpan.',
+            default => 'Perubahan pekerja gagal disimpan.',
         };
 
         $this->addError(
@@ -563,7 +534,7 @@ class ManageWorkers extends Component
         abort_unless(
             $user instanceof User
                 && $user->can(
-                    'update projects'
+                    'assign workers'
                 ),
             403
         );
@@ -626,8 +597,8 @@ class ManageWorkers extends Component
                 ->keyBy('worker_id');
 
         $workers = User::query()
-        ->role('pekerja')
-        ->where('status', 'active')
+            ->role('pekerja')
+            ->where('status', 'active')
             ->when(
                 trim($this->search) !== '',
                 function ($query): void {
@@ -667,8 +638,7 @@ class ManageWorkers extends Component
             $this->selectedWorkerIds
         )
             ->map(
-                fn ($workerId): int =>
-                    (int) $workerId
+                fn ($workerId): int => (int) $workerId
             )
             ->sort()
             ->values()
@@ -678,8 +648,7 @@ class ManageWorkers extends Component
             $this->originalWorkerIds
         )
             ->map(
-                fn ($workerId): int =>
-                    (int) $workerId
+                fn ($workerId): int => (int) $workerId
             )
             ->sort()
             ->values()
@@ -692,20 +661,15 @@ class ManageWorkers extends Component
         return view(
             'livewire.owner.projects.manage-workers',
             [
-                'workers' =>
-                    $workers,
+                'workers' => $workers,
 
-                'assignments' =>
-                    $assignments,
+                'assignments' => $assignments,
 
-                'activeTaskCounts' =>
-                    $activeTaskCounts,
+                'activeTaskCounts' => $activeTaskCounts,
 
-                'otherProjectAssignments' =>
-                    $otherProjectAssignments,
+                'otherProjectAssignments' => $otherProjectAssignments,
 
-                'hasChanges' =>
-                    $hasChanges,
+                'hasChanges' => $hasChanges,
             ]
         );
     }
