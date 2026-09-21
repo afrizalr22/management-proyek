@@ -6,6 +6,7 @@ use App\Livewire\Mandor\DailyReports\Edit as MandorReportValidation;
 use App\Livewire\Owner\Monitoring\Index as OwnerMonitoring;
 use App\Livewire\Owner\Monitoring\Show as OwnerMonitoringShow;
 use App\Livewire\Pekerja\Report\Create as WorkerReportCreate;
+use App\Livewire\Pekerja\Report\Edit as WorkerReportEdit;
 use App\Models\Client;
 use App\Models\DailyReport;
 use App\Models\Project;
@@ -646,6 +647,378 @@ class ProjectWorkflowTest extends TestCase
                         && $project->progress === 100
                         && $project->approved_reports_count === 1;
                 }
+            );
+    }
+
+    public function test_report_revision_can_be_resubmitted_and_approved_end_to_end(): void
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Pekerja mengirim laporan awal 60%
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->worker)
+            ->test(WorkerReportCreate::class)
+            ->set(
+                'taskId',
+                (string) $this->task->id
+            )
+            ->set(
+                'reportDate',
+                '2026-09-18'
+            )
+            ->set(
+                'activities',
+                'Pekerjaan tahap awal telah mencapai enam puluh persen.'
+            )
+            ->set(
+                'workStatus',
+                'in_progress'
+            )
+            ->set(
+                'reportedProgress',
+                60
+            )
+            ->set(
+                'obstacles',
+                ''
+            )
+            ->set(
+                'notes',
+                'Laporan awal pekerjaan.'
+            )
+            ->call('submitReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('pekerja.report.index')
+            );
+
+        $report = DailyReport::query()
+            ->where(
+                'task_id',
+                $this->task->id
+            )
+            ->where(
+                'user_id',
+                $this->worker->id
+            )
+            ->sole();
+
+        $this->assertSame(
+            'submitted',
+            $report->status
+        );
+
+        $this->assertSame(
+            'submitted',
+            $this->task->fresh()->status
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mandor meminta revisi
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                MandorReportValidation::class,
+                [
+                    'report' => $report,
+                ]
+            )
+            ->set(
+                'reviewNotes',
+                'Mohon lengkapi hasil pekerjaan dan perbarui progress laporan.'
+            )
+            ->call('requestRevision')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'mandor.daily-reports.show',
+                    $report->id
+                )
+            );
+
+        $report->refresh();
+        $this->task->refresh();
+
+        $this->assertSame(
+            'revision',
+            $report->status
+        );
+
+        $this->assertSame(
+            'revision',
+            $this->task->status
+        );
+
+        $this->assertSame(
+            $this->mandor->id,
+            $report->reviewed_by
+        );
+
+        $this->assertNotNull(
+            $report->reviewed_at
+        );
+
+        $this->assertSame(
+            'Mohon lengkapi hasil pekerjaan dan perbarui progress laporan.',
+            $report->review_notes
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Revisi belum boleh menghasilkan histori progress Project
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertDatabaseCount(
+            'project_progress',
+            0
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pekerja memperbaiki laporan menjadi 80%
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->worker)
+            ->test(
+                WorkerReportEdit::class,
+                [
+                    'report' => $report->id,
+                ]
+            )
+            ->assertSet(
+                'reportedProgress',
+                60
+            )
+            ->assertSet(
+                'reviewNotes',
+                'Mohon lengkapi hasil pekerjaan dan perbarui progress laporan.'
+            )
+            ->set(
+                'activities',
+                'Pekerjaan telah diperbaiki dan progress terbaru mencapai delapan puluh persen.'
+            )
+            ->set(
+                'workStatus',
+                'in_progress'
+            )
+            ->set(
+                'reportedProgress',
+                80
+            )
+            ->set(
+                'obstacles',
+                ''
+            )
+            ->set(
+                'notes',
+                'Perbaikan laporan telah dilakukan sesuai arahan Mandor.'
+            )
+            ->call('resubmitReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('pekerja.report.index')
+            );
+
+        $report->refresh();
+        $this->task->refresh();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Setelah resubmit laporan kembali menunggu Mandor
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertSame(
+            'submitted',
+            $report->status
+        );
+
+        $this->assertSame(
+            80,
+            $report->reported_progress
+        );
+
+        $this->assertSame(
+            'in_progress',
+            $report->work_status
+        );
+
+        $this->assertSame(
+            'submitted',
+            $this->task->status
+        );
+
+        /*
+         * Progress Task belum berubah sebelum
+         * laporan revisi disetujui Mandor.
+         */
+        $this->assertSame(
+            20,
+            $this->task->progress
+        );
+
+        /*
+         * Metadata review lama harus dibersihkan
+         * ketika laporan dikirim ulang.
+         */
+        $this->assertNull(
+            $report->reviewed_by
+        );
+
+        $this->assertNull(
+            $report->reviewed_at
+        );
+
+        $this->assertNull(
+            $report->review_notes
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mandor menyetujui laporan hasil revisi
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                MandorReportValidation::class,
+                [
+                    'report' => $report,
+                ]
+            )
+            ->set(
+                'reviewNotes',
+                'Perbaikan laporan sudah sesuai dan disetujui.'
+            )
+            ->call('approveReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'mandor.daily-reports.show',
+                    $report->id
+                )
+            );
+
+        $report->refresh();
+        $this->task->refresh();
+        $this->project->refresh();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hasil akhir setelah approval
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertSame(
+            'approved',
+            $report->status
+        );
+
+        $this->assertSame(
+            $this->mandor->id,
+            $report->reviewed_by
+        );
+
+        $this->assertSame(
+            'Perbaikan laporan sudah sesuai dan disetujui.',
+            $report->review_notes
+        );
+
+        $this->assertSame(
+            'in_progress',
+            $this->task->status
+        );
+
+        $this->assertSame(
+            80,
+            $this->task->progress
+        );
+
+        $this->assertSame(
+            'on_progress',
+            $this->project->status
+        );
+
+        $this->assertSame(
+            80,
+            $this->project->progress
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Approval hasil revisi menghasilkan histori ProjectProgress
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertDatabaseHas(
+            'project_progress',
+            [
+                'project_id' => $this->project->id,
+                'user_id' => $this->mandor->id,
+                'progress_percentage' => 80,
+            ]
+        );
+
+        $this->assertSame(
+            1,
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $this->project->id
+                )
+                ->count()
+        );
+
+        $progressHistory = ProjectProgress::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull(
+            $progressHistory
+        );
+
+        $this->assertSame(
+            80,
+            $progressHistory->progress_percentage
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Owner Monitoring membaca hasil akhir revisi
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                OwnerMonitoringShow::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertViewHas(
+                'projectData',
+                function (Project $project): bool {
+                    return $project->status === 'on_progress'
+                        && $project->progress === 80
+                        && $project->approved_reports_count === 1;
+                }
+            )
+            ->assertViewHas(
+                'currentTask',
+                fn (?Task $task): bool => $task?->id === $this->task->id
+                    && $task->status === 'in_progress'
+                    && $task->progress === 80
             );
     }
 }
