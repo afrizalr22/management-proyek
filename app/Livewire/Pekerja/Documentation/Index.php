@@ -69,7 +69,6 @@ class Index extends Component
     public function resetFilters(): void
     {
 
-
         $this->sort = 'newest';
 
         $this->resetPage();
@@ -209,54 +208,48 @@ class Index extends Component
             )
             ->when(
                 $selectedTaskId,
-                fn (Builder $query) =>
-                    $query->where(
-                        'task_id',
-                        $selectedTaskId
-                    )
+                fn (Builder $query) => $query->where(
+                    'task_id',
+                    $selectedTaskId
+                )
             )
             ->when(
                 $selectedCategory,
-                fn (Builder $query) =>
-                    $query->where(
-                        'category',
-                        $selectedCategory
-                    )
+                fn (Builder $query) => $query->where(
+                    'category',
+                    $selectedCategory
+                )
             )
             ->when(
                 $selectedSort === 'oldest',
-                fn (Builder $query) =>
-                    $query
-                        ->oldest('documentation_date')
-                        ->oldest('taken_at')
-                        ->oldest('id')
+                fn (Builder $query) => $query
+                    ->oldest('documentation_date')
+                    ->oldest('taken_at')
+                    ->oldest('id')
             )
             ->when(
                 $selectedSort === 'title',
-                fn (Builder $query) =>
-                    $query
-                        ->orderBy('title')
-                        ->latest('documentation_date')
-                        ->latest('id')
+                fn (Builder $query) => $query
+                    ->orderBy('title')
+                    ->latest('documentation_date')
+                    ->latest('id')
             )
             ->when(
                 $selectedSort === 'task',
-                fn (Builder $query) =>
-                    $query
-                        ->orderByRaw(
-                            'CASE WHEN task_id IS NULL THEN 1 ELSE 0 END'
-                        )
-                        ->orderBy('task_id')
-                        ->latest('documentation_date')
-                        ->latest('id')
+                fn (Builder $query) => $query
+                    ->orderByRaw(
+                        'CASE WHEN task_id IS NULL THEN 1 ELSE 0 END'
+                    )
+                    ->orderBy('task_id')
+                    ->latest('documentation_date')
+                    ->latest('id')
             )
             ->when(
                 $selectedSort === 'newest',
-                fn (Builder $query) =>
-                    $query
-                        ->latest('documentation_date')
-                        ->latest('taken_at')
-                        ->latest('id')
+                fn (Builder $query) => $query
+                    ->latest('documentation_date')
+                    ->latest('taken_at')
+                    ->latest('id')
             )
             ->paginate(9);
 
@@ -273,19 +266,6 @@ class Index extends Component
             ->sortBy('title')
             ->values();
 
-                $taskOptions = $this
-            ->documentationQuery()
-            ->whereNotNull('task_id')
-            ->with('task:id,task_code,title')
-            ->select('task_id')
-            ->distinct()
-            ->get()
-            ->pluck('task')
-            ->filter()
-            ->unique('id')
-            ->sortBy('title')
-            ->values();
-
         $categoryCounts = $this
             ->documentationQuery()
             ->selectRaw(
@@ -300,51 +280,15 @@ class Index extends Component
         return view(
             'livewire.pekerja.documentation.index',
             [
-                'worker' =>
-                    $worker,
+                'worker' => $worker,
 
-                'documentations' =>
-                    $documentations,
+                'documentations' => $documentations,
 
-                'taskOptions' =>
-                    $taskOptions,
+                'taskOptions' => $taskOptions,
 
-                'categoryCounts' =>
-                    $categoryCounts,
+                'categoryCounts' => $categoryCounts,
 
-                'totalDocumentations' =>
-                    $categoryCounts->sum(),
-            ]
-        );
-
-        $categoryCounts = $this
-            ->documentationQuery()
-            ->selectRaw(
-                'category, COUNT(*) as total'
-            )
-            ->groupBy('category')
-            ->pluck(
-                'total',
-                'category'
-            );
-
-        return view(
-            'livewire.pekerja.documentation.index',
-            [
-                'worker' =>
-                    $worker,
-
-                'documentations' =>
-                    $documentations,
-
-                'taskOptions' =>
-                    $taskOptions,
-
-                'categoryCounts' =>
-                    $categoryCounts,
-
-                'totalDocumentations' =>
-                    $categoryCounts->sum(),
+                'totalDocumentations' => $categoryCounts->sum(),
             ]
         );
     }

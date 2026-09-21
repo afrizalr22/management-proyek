@@ -3,19 +3,24 @@
 namespace Tests\Feature\Integration;
 
 use App\Livewire\Mandor\DailyReports\Edit as MandorReportValidation;
+use App\Livewire\Mandor\DailyReports\Show as MandorReportShow;
+use App\Livewire\Owner\Monitoring\Documentation as OwnerMonitoringDocumentation;
 use App\Livewire\Owner\Monitoring\Index as OwnerMonitoring;
 use App\Livewire\Owner\Monitoring\Show as OwnerMonitoringShow;
 use App\Livewire\Pekerja\Report\Create as WorkerReportCreate;
 use App\Livewire\Pekerja\Report\Edit as WorkerReportEdit;
 use App\Models\Client;
 use App\Models\DailyReport;
+use App\Models\Documentation;
 use App\Models\Project;
 use App\Models\ProjectProgress;
 use App\Models\ProjectWorker;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -1370,6 +1375,256 @@ class ProjectWorkflowTest extends TestCase
                 fn (?Task $task): bool => $task?->id === $this->task->id
                     && $task->status === 'in_progress'
                     && $task->progress === 70
+            );
+    }
+
+    public function test_report_documentation_flows_from_worker_to_mandor_and_owner(): void
+    {
+        Storage::fake('public');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pekerja mengirim laporan + foto dokumentasi
+        |--------------------------------------------------------------------------
+        */
+
+        $photo = UploadedFile::fake()->image(
+            'progress-integration.jpg',
+            800,
+            600
+        )->size(500);
+
+        Livewire::actingAs($this->worker)
+            ->test(WorkerReportCreate::class)
+            ->set(
+                'taskId',
+                (string) $this->task->id
+            )
+            ->set(
+                'reportDate',
+                '2026-09-18'
+            )
+            ->set(
+                'activities',
+                'Pekerjaan lapangan dan dokumentasi telah mencapai enam puluh persen.'
+            )
+            ->set(
+                'workStatus',
+                'in_progress'
+            )
+            ->set(
+                'reportedProgress',
+                60
+            )
+            ->set(
+                'obstacles',
+                ''
+            )
+            ->set(
+                'notes',
+                'Dokumentasi pekerjaan dilampirkan.'
+            )
+            ->set(
+                'photos',
+                [
+                    $photo,
+                ]
+            )
+            ->call('submitReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('pekerja.report.index')
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Daily Report harus terbentuk
+        |--------------------------------------------------------------------------
+        */
+
+        $report = DailyReport::query()
+            ->where(
+                'task_id',
+                $this->task->id
+            )
+            ->where(
+                'user_id',
+                $this->worker->id
+            )
+            ->sole();
+
+        $this->assertSame(
+            'submitted',
+            $report->status
+        );
+
+        $this->assertSame(
+            60,
+            $report->reported_progress
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Documentation harus terhubung penuh
+        |--------------------------------------------------------------------------
+        */
+
+        $documentation = Documentation::query()
+            ->where(
+                'daily_report_id',
+                $report->id
+            )
+            ->sole();
+
+        $this->assertSame(
+            $this->project->id,
+            $documentation->project_id
+        );
+
+        $this->assertSame(
+            $this->task->id,
+            $documentation->task_id
+        );
+
+        $this->assertSame(
+            $report->id,
+            $documentation->daily_report_id
+        );
+
+        $this->assertSame(
+            $this->worker->id,
+            $documentation->user_id
+        );
+
+        $this->assertSame(
+            'progress',
+            $documentation->category
+        );
+
+        $this->assertSame(
+            'progress-integration.jpg',
+            $documentation->original_name
+        );
+
+        $this->assertSame(
+            '2026-09-18',
+            $documentation->documentation_date
+                ->toDateString()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | File harus benar-benar tersimpan
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertTrue(
+            Storage::disk('public')->exists(
+                $documentation->photo
+            )
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mandor melihat dokumentasi pada Daily Report
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                MandorReportShow::class,
+                [
+                    'report' => $report,
+                ]
+            )
+            ->assertViewHas(
+                'report',
+                function (DailyReport $reportData) use (
+                    $documentation,
+                    $report
+                ): bool {
+                    $reportDocumentation =
+                        $reportData
+                            ->documentations
+                            ->firstWhere(
+                                'id',
+                                $documentation->id
+                            );
+
+                    return $reportData->id
+                            === $report->id
+                        && $reportDocumentation !== null
+                        && $reportDocumentation
+                            ->project_id
+                            === $this->project->id
+                        && $reportDocumentation
+                            ->task_id
+                            === $this->task->id
+                        && $reportDocumentation
+                            ->user_id
+                            === $this->worker->id
+                        && $reportDocumentation
+                            ->getAttribute(
+                                'photo_exists'
+                            ) === true
+                        && filled(
+                            $reportDocumentation
+                                ->getAttribute(
+                                    'photo_url'
+                                )
+                        );
+                }
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Owner melihat dokumentasi Project
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                OwnerMonitoringDocumentation::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertSee(
+                $documentation->title
+            )
+            ->assertViewHas(
+                'totalDocumentations',
+                1
+            )
+            ->assertViewHas(
+                'categoryStatistics',
+                fn ($statistics): bool => (int) $statistics->get(
+                    'progress'
+                ) === 1
+            )
+            ->assertViewHas(
+                'documentations',
+                function ($documentations) use (
+                    $documentation,
+                    $report
+                ): bool {
+                    $item = $documentations
+                        ->getCollection()
+                        ->firstWhere(
+                            'id',
+                            $documentation->id
+                        );
+
+                    return $item !== null
+                        && $item->project_id
+                            === $this->project->id
+                        && $item->task_id
+                            === $this->task->id
+                        && $item->daily_report_id
+                            === $report->id
+                        && $item->user_id
+                            === $this->worker->id;
+                }
             );
     }
 }
