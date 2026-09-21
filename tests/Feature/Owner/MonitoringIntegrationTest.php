@@ -8,6 +8,7 @@ use App\Livewire\Owner\Monitoring\Show;
 use App\Models\Client;
 use App\Models\Documentation;
 use App\Models\Project;
+use App\Models\ProjectProgress;
 use App\Models\ProjectWorker;
 use App\Models\Task;
 use App\Models\User;
@@ -157,8 +158,7 @@ class MonitoringIntegrationTest extends TestCase
             'start_at' => '2026-09-01 08:00:00',
             'started_at' => '2026-09-01 08:00:00',
             'due_at' => '2026-09-30 17:00:00',
-            'completed_at' =>
-                $status === 'completed'
+            'completed_at' => $status === 'completed'
                     ? '2026-09-20 16:00:00'
                     : null,
             'progress' => $progress,
@@ -239,8 +239,7 @@ class MonitoringIntegrationTest extends TestCase
                     route(
                         'owner.monitoring.show',
                         [
-                            'project' =>
-                                $this->project->id,
+                            'project' => $this->project->id,
                         ]
                     )
                 )
@@ -251,8 +250,7 @@ class MonitoringIntegrationTest extends TestCase
                     route(
                         'owner.monitoring.documentation',
                         [
-                            'project' =>
-                                $this->project->id,
+                            'project' => $this->project->id,
                         ]
                     )
                 )
@@ -418,8 +416,7 @@ class MonitoringIntegrationTest extends TestCase
             )
             ->assertViewHas(
                 'currentTask',
-                fn (?Task $task): bool =>
-                    $task?->task_code
+                fn (?Task $task): bool => $task?->task_code
                     === 'TSK-MONITORING-002'
             );
     }
@@ -477,10 +474,9 @@ class MonitoringIntegrationTest extends TestCase
             )
             ->assertViewHas(
                 'categoryStatistics',
-                fn ($statistics): bool =>
-                    (int) $statistics->get(
-                        'progress'
-                    ) === 1
+                fn ($statistics): bool => (int) $statistics->get(
+                    'progress'
+                ) === 1
             );
     }
 
@@ -550,10 +546,241 @@ class MonitoringIntegrationTest extends TestCase
             )
             ->assertViewHas(
                 'projectData',
-                fn (Project $project): bool =>
-                    $project->progress === 85
+                fn (Project $project): bool => $project->progress === 85
                     && $project->status
                         === 'on_progress'
             );
+    }
+
+    public function test_project_progress_history_is_isolated_between_projects(): void
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Project utama memiliki histori 30% → 60%
+        |--------------------------------------------------------------------------
+        */
+
+        $this->project->update([
+            'progress' => 60,
+            'status' => 'on_progress',
+        ]);
+
+        ProjectProgress::query()->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->mandor->id,
+            'progress_percentage' => 30,
+            'description' => 'Progress Project utama mencapai 30%.',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Project kedua memiliki histori 25% → 75%
+        |--------------------------------------------------------------------------
+        */
+
+        $otherProject = $this->createProject(
+            'PRJ-PROGRESS-OTHER-001',
+            'Proyek Progress Lain',
+            $this->mandor,
+            'on_progress',
+            75
+        );
+
+        ProjectProgress::query()->create([
+            'project_id' => $otherProject->id,
+            'user_id' => $this->mandor->id,
+            'progress_percentage' => 25,
+            'description' => 'Progress Project lain mencapai 25%.',
+        ]);
+
+        ProjectProgress::query()->create([
+            'project_id' => $this->project->id,
+            'user_id' => $this->mandor->id,
+            'progress_percentage' => 60,
+            'description' => 'Progress Project utama mencapai 60%.',
+        ]);
+
+        ProjectProgress::query()->create([
+            'project_id' => $otherProject->id,
+            'user_id' => $this->mandor->id,
+            'progress_percentage' => 75,
+            'description' => 'Progress Project lain mencapai 75%.',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Database harus menyimpan histori masing-masing Project
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertSame(
+            2,
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $this->project->id
+                )
+                ->count()
+        );
+
+        $this->assertSame(
+            2,
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $otherProject->id
+                )
+                ->count()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Monitoring Project utama hanya membaca histori miliknya
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                Show::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertViewHas(
+                'projectData',
+                function (Project $project) use (
+                    $otherProject
+                ): bool {
+                    $progressValues = $project
+                        ->progresses
+                        ->pluck(
+                            'progress_percentage'
+                        )
+                        ->all();
+
+                    return $project->id
+                            === $this->project->id
+                        && $project->progress === 60
+                        && $project->progresses_count === 2
+                        && $progressValues === [
+                            60,
+                            30,
+                        ]
+                        && $project->progresses
+                            ->every(
+                                fn (
+                                    ProjectProgress $progress
+                                ): bool => $progress->project_id
+                                    === $this->project->id
+                            )
+                        && ! $project->progresses
+                            ->contains(
+                                'project_id',
+                                $otherProject->id
+                            );
+                }
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Monitoring Project kedua hanya membaca histori miliknya
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                Show::class,
+                [
+                    'project' => $otherProject,
+                ]
+            )
+            ->assertViewHas(
+                'projectData',
+                function (Project $project): bool {
+                    $progressValues = $project
+                        ->progresses
+                        ->pluck(
+                            'progress_percentage'
+                        )
+                        ->all();
+
+                    return $project->progress === 75
+                        && $project->progresses_count === 2
+                        && $progressValues === [
+                            75,
+                            25,
+                        ]
+                        && $project->progresses
+                            ->every(
+                                fn (
+                                    ProjectProgress $progress
+                                ): bool => $progress->project_id
+                                    === $project->id
+                            )
+                        && ! $project->progresses
+                            ->contains(
+                                'project_id',
+                                $this->project->id
+                            );
+                }
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest history masing-masing Project tetap terpisah
+        |--------------------------------------------------------------------------
+        */
+
+        $latestMainProjectProgress =
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $this->project->id
+                )
+                ->latest('created_at')
+                ->latest('id')
+                ->first();
+
+        $latestOtherProjectProgress =
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $otherProject->id
+                )
+                ->latest('created_at')
+                ->latest('id')
+                ->first();
+
+        $this->assertNotNull(
+            $latestMainProjectProgress
+        );
+
+        $this->assertNotNull(
+            $latestOtherProjectProgress
+        );
+
+        $this->assertSame(
+            60,
+            $latestMainProjectProgress
+                ->progress_percentage
+        );
+
+        $this->assertSame(
+            $this->project->id,
+            $latestMainProjectProgress
+                ->project_id
+        );
+
+        $this->assertSame(
+            75,
+            $latestOtherProjectProgress
+                ->progress_percentage
+        );
+
+        $this->assertSame(
+            $otherProject->id,
+            $latestOtherProjectProgress
+                ->project_id
+        );
     }
 }
