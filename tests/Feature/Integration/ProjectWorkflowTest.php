@@ -1021,4 +1021,355 @@ class ProjectWorkflowTest extends TestCase
                     && $task->progress === 80
             );
     }
+
+    public function test_project_progress_history_appends_multiple_approved_reports(): void
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Laporan pertama: 40%
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->worker)
+            ->test(WorkerReportCreate::class)
+            ->set(
+                'taskId',
+                (string) $this->task->id
+            )
+            ->set(
+                'reportDate',
+                '2026-09-17'
+            )
+            ->set(
+                'activities',
+                'Pekerjaan tahap pertama telah mencapai empat puluh persen.'
+            )
+            ->set(
+                'workStatus',
+                'in_progress'
+            )
+            ->set(
+                'reportedProgress',
+                40
+            )
+            ->set(
+                'obstacles',
+                ''
+            )
+            ->set(
+                'notes',
+                'Progress tahap pertama.'
+            )
+            ->call('submitReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('pekerja.report.index')
+            );
+
+        $firstReport = DailyReport::query()
+            ->where(
+                'task_id',
+                $this->task->id
+            )
+            ->whereDate(
+                'report_date',
+                '2026-09-17'
+            )
+            ->sole();
+
+        $this->assertSame(
+            'submitted',
+            $firstReport->status
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mandor approve laporan pertama
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                MandorReportValidation::class,
+                [
+                    'report' => $firstReport,
+                ]
+            )
+            ->set(
+                'reviewNotes',
+                'Progress empat puluh persen disetujui.'
+            )
+            ->call('approveReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'mandor.daily-reports.show',
+                    $firstReport->id
+                )
+            );
+
+        $firstReport->refresh();
+        $this->task->refresh();
+        $this->project->refresh();
+
+        $this->assertSame(
+            'approved',
+            $firstReport->status
+        );
+
+        $this->assertSame(
+            40,
+            $this->task->progress
+        );
+
+        $this->assertSame(
+            40,
+            $this->project->progress
+        );
+
+        $this->assertSame(
+            1,
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $this->project->id
+                )
+                ->count()
+        );
+
+        $firstHistory = ProjectProgress::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->orderBy('id')
+            ->first();
+
+        $this->assertNotNull(
+            $firstHistory
+        );
+
+        $this->assertSame(
+            40,
+            $firstHistory->progress_percentage
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Laporan kedua: 70%
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->worker)
+            ->test(WorkerReportCreate::class)
+            ->set(
+                'taskId',
+                (string) $this->task->id
+            )
+            ->set(
+                'reportDate',
+                '2026-09-18'
+            )
+            ->set(
+                'activities',
+                'Pekerjaan tahap berikutnya telah mencapai tujuh puluh persen.'
+            )
+            ->set(
+                'workStatus',
+                'in_progress'
+            )
+            ->set(
+                'reportedProgress',
+                70
+            )
+            ->set(
+                'obstacles',
+                ''
+            )
+            ->set(
+                'notes',
+                'Progress tahap berikutnya.'
+            )
+            ->call('submitReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('pekerja.report.index')
+            );
+
+        $secondReport = DailyReport::query()
+            ->where(
+                'task_id',
+                $this->task->id
+            )
+            ->whereDate(
+                'report_date',
+                '2026-09-18'
+            )
+            ->sole();
+
+        $this->assertSame(
+            'submitted',
+            $secondReport->status
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mandor approve laporan kedua
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                MandorReportValidation::class,
+                [
+                    'report' => $secondReport,
+                ]
+            )
+            ->set(
+                'reviewNotes',
+                'Progress tujuh puluh persen disetujui.'
+            )
+            ->call('approveReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'mandor.daily-reports.show',
+                    $secondReport->id
+                )
+            );
+
+        $secondReport->refresh();
+        $this->task->refresh();
+        $this->project->refresh();
+
+        $this->assertSame(
+            'approved',
+            $secondReport->status
+        );
+
+        $this->assertSame(
+            70,
+            $this->task->progress
+        );
+
+        $this->assertSame(
+            70,
+            $this->project->progress
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | History harus bertambah, bukan overwrite
+        |--------------------------------------------------------------------------
+        */
+
+        $histories = ProjectProgress::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->orderBy('id')
+            ->get();
+
+        $this->assertCount(
+            2,
+            $histories
+        );
+
+        $this->assertSame(
+            40,
+            $histories[0]->progress_percentage
+        );
+
+        $this->assertSame(
+            70,
+            $histories[1]->progress_percentage
+        );
+
+        $this->assertSame(
+            $this->mandor->id,
+            $histories[0]->user_id
+        );
+
+        $this->assertSame(
+            $this->mandor->id,
+            $histories[1]->user_id
+        );
+
+        $this->assertStringContainsString(
+            '40%',
+            $histories[0]->description
+        );
+
+        $this->assertStringContainsString(
+            '70%',
+            $histories[1]->description
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Record pertama harus tetap tersimpan
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertDatabaseHas(
+            'project_progress',
+            [
+                'id' => $firstHistory->id,
+                'project_id' => $this->project->id,
+                'progress_percentage' => 40,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest history harus 70%
+        |--------------------------------------------------------------------------
+        */
+
+        $latestHistory = ProjectProgress::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull(
+            $latestHistory
+        );
+
+        $this->assertSame(
+            70,
+            $latestHistory->progress_percentage
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Owner Monitoring harus membaca progress terbaru
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                OwnerMonitoringShow::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertViewHas(
+                'projectData',
+                function (Project $project): bool {
+                    return $project->status === 'on_progress'
+                        && $project->progress === 70
+                        && $project->approved_reports_count === 2;
+                }
+            )
+            ->assertViewHas(
+                'currentTask',
+                fn (?Task $task): bool => $task?->id === $this->task->id
+                    && $task->status === 'in_progress'
+                    && $task->progress === 70
+            );
+    }
 }
