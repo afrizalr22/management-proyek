@@ -465,6 +465,68 @@ class ProjectTaskWorkflowTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_work_progress_calculates_actual_planned_and_variance_correctly(): void
+    {
+        Task::query()->create([
+            'project_id' => $this->project->id,
+            'mandor_id' => $this->mandor->id,
+            'worker_id' => $this->worker->id,
+            'task_code' => 'TSK-PROGRESS-001',
+            'title' => 'Task Progress Pertama',
+            'priority' => 'medium',
+            'status' => 'in_progress',
+            'start_at' => '2026-09-20 08:00:00',
+            'due_at' => '2026-09-30 17:00:00',
+            'started_at' => '2026-09-20 08:00:00',
+            'progress' => 50,
+            'weight' => 60,
+        ]);
+
+        Task::query()->create([
+            'project_id' => $this->project->id,
+            'mandor_id' => $this->mandor->id,
+            'worker_id' => $this->worker->id,
+            'task_code' => 'TSK-PROGRESS-002',
+            'title' => 'Task Progress Kedua',
+            'priority' => 'medium',
+            'status' => 'completed',
+            'start_at' => '2026-09-20 08:00:00',
+            'due_at' => '2026-09-30 17:00:00',
+            'started_at' => '2026-09-20 08:00:00',
+            'completed_at' => '2026-09-20 07:30:00',
+            'progress' => 100,
+            'weight' => 40,
+        ]);
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                Index::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertViewHas(
+                'actualProgress',
+                70
+            )
+            ->assertViewHas(
+                'plannedProgress',
+                1
+            )
+            ->assertViewHas(
+                'progressVariance',
+                69
+            )
+            ->assertViewHas(
+                'taskStatistics',
+                function (array $statistics): bool {
+                    return $statistics['total'] === 2
+                        && $statistics['active'] === 1
+                        && $statistics['completed'] === 1;
+                }
+            );
+    }
+
     private function taskForm(
         User $worker,
         ?Project $project = null,
