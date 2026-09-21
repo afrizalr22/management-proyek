@@ -6,6 +6,7 @@ use App\Livewire\Mandor\DailyReports\Edit;
 use App\Models\Client;
 use App\Models\DailyReport;
 use App\Models\Project;
+use App\Models\ProjectProgress;
 use App\Models\ProjectWorker;
 use App\Models\Task;
 use App\Models\User;
@@ -120,8 +121,7 @@ class DailyReportValidationTest extends TestCase
             'report_date' => '2026-09-16',
             'reported_progress' => $progress,
             'work_status' => $workStatus,
-            'activities' =>
-                'Aktivitas pengujian validasi laporan.',
+            'activities' => 'Aktivitas pengujian validasi laporan.',
             'status' => $status,
             'submitted_at' => now(),
         ]);
@@ -249,6 +249,25 @@ class DailyReportValidationTest extends TestCase
         $this->assertSame(
             'on_progress',
             $this->project->status
+        );
+
+        $this->assertDatabaseHas(
+            'project_progress',
+            [
+                'project_id' => $this->project->id,
+                'user_id' => $this->mandor->id,
+                'progress_percentage' => 60,
+            ]
+        );
+
+        $this->assertSame(
+            1,
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $this->project->id
+                )
+                ->count()
         );
     }
 

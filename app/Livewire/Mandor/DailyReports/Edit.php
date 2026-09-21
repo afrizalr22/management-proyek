@@ -5,6 +5,7 @@ namespace App\Livewire\Mandor\DailyReports;
 use App\Models\DailyReport;
 use App\Models\Documentation;
 use App\Models\Project;
+use App\Models\ProjectProgress;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -103,7 +104,8 @@ class Edit extends Component
 
                 if ($report->project) {
                     $this->synchronizeProjectProgress(
-                        $report->project
+                        $report->project,
+                        $report
                     );
                 }
             }
@@ -381,7 +383,8 @@ class Edit extends Component
     }
 
     private function synchronizeProjectProgress(
-        Project $project
+        Project $project,
+        DailyReport $report
     ): void {
         $tasks = $project
             ->tasks()
@@ -458,6 +461,47 @@ class Edit extends Component
 
         $project->update(
             $projectData
+        );
+
+        ProjectProgress::query()->create([
+            'project_id' => $project->id,
+
+            'user_id' => Auth::id(),
+
+            'progress_percentage' => $projectProgress,
+
+            'description' => $this->buildProgressDescription(
+                $report,
+                $projectProgress
+            ),
+        ]);
+    }
+
+    private function buildProgressDescription(
+        DailyReport $report,
+        int $projectProgress
+    ): string {
+        $taskCode =
+            $report->task?->task_code;
+
+        $taskTitle =
+            $report->task?->title;
+
+        $taskLabel = collect([
+            $taskCode,
+            $taskTitle,
+        ])
+            ->filter()
+            ->implode(' - ');
+
+        if ($taskLabel === '') {
+            $taskLabel = 'Task';
+        }
+
+        return sprintf(
+            'Laporan %s disetujui. Progress Project diperbarui menjadi %d%%.',
+            $taskLabel,
+            $projectProgress
         );
     }
 }
