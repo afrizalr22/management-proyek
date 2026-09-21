@@ -86,7 +86,8 @@ class DailyReportValidationTest extends TestCase
 
     private function createTask(
         string $code,
-        int $progress = 20
+        int $progress = 20,
+        float $weight = 1
     ): Task {
         return Task::query()->create([
             'project_id' => $this->project->id,
@@ -102,7 +103,7 @@ class DailyReportValidationTest extends TestCase
             'submitted_at' => now(),
             'due_at' => '2026-09-30 17:00:00',
             'progress' => $progress,
-            'weight' => 1,
+            'weight' => $weight,
         ]);
     }
 
@@ -268,6 +269,133 @@ class DailyReportValidationTest extends TestCase
                     $this->project->id
                 )
                 ->count()
+        );
+    }
+
+    public function test_project_progress_is_calculated_from_multiple_task_weights(): void
+    {
+        /*
+        * Task A:
+        * Weight   = 60
+        * Progress awal = 20
+        * Setelah laporan disetujui = 50
+        *
+        * Task B:
+        * Weight   = 40
+        * Progress = 100
+        *
+        * Expected:
+        * ((50 × 60) + (100 × 40)) / 100
+        * = 70
+        */
+
+        $taskA = $this->createTask(
+            'TSK-WEIGHT-A',
+            20,
+            60
+        );
+
+        $taskB = $this->createTask(
+            'TSK-WEIGHT-B',
+            100,
+            40
+        );
+
+        $taskB->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+
+        $report = $this->createReport(
+            $taskA,
+            'RPT-WEIGHT-001',
+            50
+        );
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                Edit::class,
+                [
+                    'report' => $report,
+                ]
+            )
+            ->set(
+                'reviewNotes',
+                'Progress Task A telah diperiksa.'
+            )
+            ->call('approveReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'mandor.daily-reports.show',
+                    $report->id
+                )
+            );
+
+        $report->refresh();
+        $taskA->refresh();
+        $taskB->refresh();
+        $this->project->refresh();
+
+        $this->assertSame(
+            'approved',
+            $report->status
+        );
+
+        $this->assertSame(
+            50,
+            $taskA->progress
+        );
+
+        $this->assertSame(
+            'in_progress',
+            $taskA->status
+        );
+
+        $this->assertSame(
+            100,
+            $taskB->progress
+        );
+
+        $this->assertSame(
+            'completed',
+            $taskB->status
+        );
+
+        $this->assertSame(
+            70,
+            $this->project->progress
+        );
+
+        $this->assertSame(
+            'on_progress',
+            $this->project->status
+        );
+
+        $this->assertDatabaseHas(
+            'project_progress',
+            [
+                'project_id' => $this->project->id,
+                'user_id' => $this->mandor->id,
+                'progress_percentage' => 70,
+            ]
+        );
+
+        $progressHistory = ProjectProgress::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull(
+            $progressHistory
+        );
+
+        $this->assertSame(
+            70,
+            $progressHistory->progress_percentage
         );
     }
 
