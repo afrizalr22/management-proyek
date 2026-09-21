@@ -392,4 +392,260 @@ class ProjectWorkflowTest extends TestCase
                     && $task->progress === 60
             );
     }
+
+    public function test_project_is_completed_end_to_end_when_worker_finishes_all_work(): void
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Pekerja menyelesaikan Task 100%
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->worker)
+            ->test(WorkerReportCreate::class)
+            ->set(
+                'taskId',
+                (string) $this->task->id
+            )
+            ->set(
+                'reportDate',
+                '2026-09-18'
+            )
+            ->set(
+                'activities',
+                'Seluruh pekerjaan pada Task telah diselesaikan.'
+            )
+            ->set(
+                'workStatus',
+                'completed'
+            )
+            ->set(
+                'reportedProgress',
+                100
+            )
+            ->set(
+                'obstacles',
+                ''
+            )
+            ->set(
+                'notes',
+                'Pekerjaan telah selesai seluruhnya.'
+            )
+            ->call('submitReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('pekerja.report.index')
+            );
+
+        $report = DailyReport::query()
+            ->where(
+                'task_id',
+                $this->task->id
+            )
+            ->where(
+                'user_id',
+                $this->worker->id
+            )
+            ->sole();
+
+        $this->assertSame(
+            'submitted',
+            $report->status
+        );
+
+        $this->assertSame(
+            'completed',
+            $report->work_status
+        );
+
+        $this->assertSame(
+            100,
+            $report->reported_progress
+        );
+
+        $this->assertSame(
+            'submitted',
+            $this->task->fresh()->status
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mandor menyetujui laporan selesai
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                MandorReportValidation::class,
+                [
+                    'report' => $report,
+                ]
+            )
+            ->set(
+                'reviewNotes',
+                'Pekerjaan telah diperiksa dan dinyatakan selesai.'
+            )
+            ->call('approveReport')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'mandor.daily-reports.show',
+                    $report->id
+                )
+            );
+
+        $report->refresh();
+        $this->task->refresh();
+        $this->project->refresh();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Laporan harus selesai diproses
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertSame(
+            'approved',
+            $report->status
+        );
+
+        $this->assertSame(
+            $this->mandor->id,
+            $report->reviewed_by
+        );
+
+        $this->assertNotNull(
+            $report->reviewed_at
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Task harus selesai
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertSame(
+            'completed',
+            $this->task->status
+        );
+
+        $this->assertSame(
+            100,
+            $this->task->progress
+        );
+
+        $this->assertNotNull(
+            $this->task->completed_at
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Project harus otomatis selesai
+        |--------------------------------------------------------------------------
+        */
+
+        $this->assertSame(
+            'completed',
+            $this->project->status
+        );
+
+        $this->assertSame(
+            100,
+            $this->project->progress
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Histori progress 100% harus tercatat
+        |--------------------------------------------------------------------------
+        */
+
+        $progressHistory = ProjectProgress::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull(
+            $progressHistory
+        );
+
+        $this->assertSame(
+            $this->mandor->id,
+            $progressHistory->user_id
+        );
+
+        $this->assertSame(
+            100,
+            $progressHistory->progress_percentage
+        );
+
+        $this->assertStringContainsString(
+            '100%',
+            $progressHistory->description
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Owner Monitoring harus membaca Project sebagai completed
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->owner)
+            ->test(OwnerMonitoring::class)
+            ->assertSee(
+                $this->project->project_name
+            )
+            ->assertViewHas(
+                'statistics',
+                fn (array $statistics): bool => $statistics['total'] === 1
+                    && $statistics['in_progress'] === 0
+                    && $statistics['completed'] === 1
+            )
+            ->assertViewHas(
+                'projects',
+                function ($projects): bool {
+                    $project = $projects
+                        ->getCollection()
+                        ->firstWhere(
+                            'id',
+                            $this->project->id
+                        );
+
+                    return $project !== null
+                        && $project->status === 'completed'
+                        && $project->progress === 100;
+                }
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Detail Monitoring Owner harus membaca kondisi terakhir
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                OwnerMonitoringShow::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertSee(
+                $this->project->project_code
+            )
+            ->assertSee(
+                $this->task->title
+            )
+            ->assertViewHas(
+                'projectData',
+                function (Project $project): bool {
+                    return $project->status === 'completed'
+                        && $project->progress === 100
+                        && $project->approved_reports_count === 1;
+                }
+            );
+    }
 }
