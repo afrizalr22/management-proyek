@@ -3,13 +3,13 @@
 namespace App\Livewire\Mandor\DailyReports;
 
 use App\Models\DailyReport;
+use App\Models\Documentation;
 use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Livewire\Component;
-use App\Models\Documentation;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
 
 class Edit extends Component
 {
@@ -133,14 +133,11 @@ class Edit extends Component
                 'max:2000',
             ],
         ], [
-            'reviewNotes.required' =>
-                'Alasan revisi wajib diisi.',
+            'reviewNotes.required' => 'Alasan revisi wajib diisi.',
 
-            'reviewNotes.min' =>
-                'Alasan revisi minimal 10 karakter.',
+            'reviewNotes.min' => 'Alasan revisi minimal 10 karakter.',
 
-            'reviewNotes.max' =>
-                'Catatan validasi maksimal 2.000 karakter.',
+            'reviewNotes.max' => 'Catatan validasi maksimal 2.000 karakter.',
         ]);
 
         DB::transaction(
@@ -216,8 +213,7 @@ class Edit extends Component
 
                 'user:id,name,email,status',
 
-                'documentations' => fn ($query) =>
-                $query
+                'documentations' => fn ($query) => $query
                     ->with([
                         'user:id,name',
                     ])
@@ -233,37 +229,37 @@ class Edit extends Component
         );
 
         $report->documentations->transform(
-        function (
-            Documentation $documentation
-        ): Documentation {
-            $photoExists = filled(
-                $documentation->photo
-            ) && Storage::disk('public')
-                ->exists(
+            function (
+                Documentation $documentation
+            ): Documentation {
+                $photoExists = filled(
                     $documentation->photo
+                ) && Storage::disk('public')
+                    ->exists(
+                        $documentation->photo
+                    );
+
+                $documentation->setAttribute(
+                    'photo_exists',
+                    $photoExists
                 );
 
-            $documentation->setAttribute(
-                'photo_exists',
-                $photoExists
-            );
+                $documentation->setAttribute(
+                    'photo_url',
+                    $photoExists
+                        ? asset(
+                            'storage/'
+                                .ltrim(
+                                    $documentation->photo,
+                                    '/'
+                                )
+                        )
+                        : null
+                );
 
-            $documentation->setAttribute(
-                'photo_url',
-                $photoExists
-                    ? asset(
-                        'storage/'
-                            . ltrim(
-                                $documentation->photo,
-                                '/'
-                            )
-                    )
-                    : null
-            );
-
-            return $documentation;
-        }
-    );
+                return $documentation;
+            }
+        );
 
         abort_unless(
             $report->status === 'submitted',
@@ -397,6 +393,7 @@ class Edit extends Component
             ->get([
                 'id',
                 'project_id',
+                'status',
                 'progress',
                 'weight',
             ]);
@@ -417,14 +414,13 @@ class Edit extends Component
         }
 
         $weightedProgress = $tasks->sum(
-            fn (Task $task) =>
-                max(
-                    0,
-                    min(
-                        100,
-                        (int) $task->progress
-                    )
+            fn (Task $task) => max(
+                0,
+                min(
+                    100,
+                    (int) $task->progress
                 )
+            )
                 * max(
                     0.01,
                     (float) $task->weight
@@ -446,7 +442,14 @@ class Edit extends Component
             'progress' => $projectProgress,
         ];
 
-        if (
+        $allActiveTasksCompleted = $tasks->every(
+            fn (Task $task) => $task->status === 'completed'
+                && (int) $task->progress === 100
+        );
+
+        if ($allActiveTasksCompleted) {
+            $projectData['status'] = 'completed';
+        } elseif (
             $projectProgress > 0
             && $project->status === 'planning'
         ) {

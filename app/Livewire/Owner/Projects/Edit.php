@@ -81,19 +81,31 @@ class Edit extends Component
         $this->sourceQuotation =
             $project->quotation;
 
-        $this->clientId = $project->client_id;
-        $this->mandorId = $project->mandor_id;
-        $this->projectCode = $project->project_code;
-        $this->projectName = $project->project_name;
-        $this->location = $project->location ?? '';
-        $this->description = $project->description ?? '';
+        $this->clientId =
+            $project->client_id;
+
+        $this->mandorId =
+            $project->mandor_id;
+
+        $this->projectCode =
+            $project->project_code;
+
+        $this->projectName =
+            $project->project_name;
+
+        $this->location =
+            $project->location ?? '';
+
+        $this->description =
+            $project->description ?? '';
 
         $this->contractNumber =
             $project->contract_number ?? '';
 
-        $this->contractDate = $project->contract_date
-            ? $project->contract_date->format('Y-m-d')
-            : '';
+        $this->contractDate =
+            $project->contract_date
+                ? $project->contract_date->format('Y-m-d')
+                : '';
 
         $this->projectBudget =
             (float) $project->project_budget;
@@ -101,13 +113,15 @@ class Edit extends Component
         $this->contractValue =
             (float) $project->contract_value;
 
-        $this->startDate = $project->start_date
-            ? $project->start_date->format('Y-m-d')
-            : '';
+        $this->startDate =
+            $project->start_date
+                ? $project->start_date->format('Y-m-d')
+                : '';
 
-        $this->endDate = $project->end_date
-            ? $project->end_date->format('Y-m-d')
-            : '';
+        $this->endDate =
+            $project->end_date
+                ? $project->end_date->format('Y-m-d')
+                : '';
 
         $this->pageTitle =
             'Edit '.$project->project_name;
@@ -180,62 +194,43 @@ class Edit extends Component
     protected function messages(): array
     {
         return [
-            'mandorId.required' =>
-                'Mandor wajib dipilih.',
+            'mandorId.required' => 'Mandor wajib dipilih.',
 
-            'mandorId.exists' =>
-                'Mandor yang dipilih tidak ditemukan.',
+            'mandorId.exists' => 'Mandor yang dipilih tidak ditemukan.',
 
-            'projectName.required' =>
-                'Nama Project wajib diisi.',
+            'projectName.required' => 'Nama Project wajib diisi.',
 
-            'projectName.min' =>
-                'Nama Project minimal 3 karakter.',
+            'projectName.min' => 'Nama Project minimal 3 karakter.',
 
-            'projectName.max' =>
-                'Nama Project maksimal 255 karakter.',
+            'projectName.max' => 'Nama Project maksimal 255 karakter.',
 
-            'location.required' =>
-                'Lokasi Project wajib diisi.',
+            'location.required' => 'Lokasi Project wajib diisi.',
 
-            'location.min' =>
-                'Lokasi Project minimal 3 karakter.',
+            'location.min' => 'Lokasi Project minimal 3 karakter.',
 
-            'location.max' =>
-                'Lokasi Project maksimal 2.000 karakter.',
+            'location.max' => 'Lokasi Project maksimal 2.000 karakter.',
 
-            'description.max' =>
-                'Deskripsi Project maksimal 5.000 karakter.',
+            'description.max' => 'Deskripsi Project maksimal 5.000 karakter.',
 
-            'contractNumber.max' =>
-                'Nomor kontrak maksimal 255 karakter.',
+            'contractNumber.max' => 'Nomor kontrak maksimal 255 karakter.',
 
-            'contractDate.date' =>
-                'Format tanggal kontrak tidak valid.',
+            'contractDate.date' => 'Format tanggal kontrak tidak valid.',
 
-            'projectBudget.required' =>
-                'Anggaran Project wajib diisi.',
+            'projectBudget.required' => 'Anggaran Project wajib diisi.',
 
-            'projectBudget.numeric' =>
-                'Anggaran Project harus berupa angka.',
+            'projectBudget.numeric' => 'Anggaran Project harus berupa angka.',
 
-            'projectBudget.min' =>
-                'Anggaran Project tidak boleh negatif.',
+            'projectBudget.min' => 'Anggaran Project tidak boleh negatif.',
 
-            'startDate.required' =>
-                'Tanggal mulai wajib diisi.',
+            'startDate.required' => 'Tanggal mulai wajib diisi.',
 
-            'startDate.date' =>
-                'Format tanggal mulai tidak valid.',
+            'startDate.date' => 'Format tanggal mulai tidak valid.',
 
-            'endDate.required' =>
-                'Tanggal selesai wajib diisi.',
+            'endDate.required' => 'Tanggal selesai wajib diisi.',
 
-            'endDate.date' =>
-                'Format tanggal selesai tidak valid.',
+            'endDate.date' => 'Format tanggal selesai tidak valid.',
 
-            'endDate.after_or_equal' =>
-                'Tanggal selesai tidak boleh sebelum tanggal mulai.',
+            'endDate.after_or_equal' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
         ];
     }
 
@@ -243,13 +238,16 @@ class Edit extends Component
     {
         $this->authorizeUpdateProject();
 
-        $validated = $this->validate();
+        $validated =
+            $this->validate();
 
         $mandor = User::query()
             ->role('mandor')
-            ->find($validated['mandorId']);
+            ->find(
+                $validated['mandorId']
+            );
 
-        if (!$mandor) {
+        if (! $mandor) {
             $this->addError(
                 'mandorId',
                 'User yang dipilih bukan Mandor.'
@@ -271,95 +269,154 @@ class Edit extends Component
         }
 
         try {
-            DB::transaction(function () use (
-                $validated,
-                $mandor
-            ): void {
-                $project = Project::query()
-                    ->lockForUpdate()
-                    ->find($this->project->id);
+            DB::transaction(
+                function () use (
+                    $validated,
+                    $mandor
+                ): void {
+                    $project = Project::query()
+                        ->lockForUpdate()
+                        ->find(
+                            $this->project->id
+                        );
 
-                if (!$project) {
-                    throw new \RuntimeException(
-                        'project_not_found'
-                    );
-                }
+                    if (! $project) {
+                        throw new \RuntimeException(
+                            'project_not_found'
+                        );
+                    }
 
-                if (
-                    !in_array(
-                        $project->status,
-                        [
-                            'planning',
-                            'on_progress',
-                        ],
-                        true
-                    )
-                ) {
-                    throw new \RuntimeException(
-                        'project_locked'
-                    );
-                }
+                    if (
+                        ! in_array(
+                            $project->status,
+                            [
+                                'planning',
+                                'on_progress',
+                            ],
+                            true
+                        )
+                    ) {
+                        throw new \RuntimeException(
+                            'project_locked'
+                        );
+                    }
 
-                $project->update([
                     /*
-                     * client_id, project_code, contract_value,
-                     * progress, dan status tidak diubah.
+                     * Mandor hanya dapat diganti selama
+                     * Project belum memiliki Task.
+                     *
+                     * Setelah Task operasional dibuat,
+                     * Mandor lama tetap bertanggung jawab
+                     * terhadap Project tersebut.
                      */
-                    'mandor_id' => $mandor->id,
-                    'project_name' =>
-                        trim($validated['projectName']),
-                    'location' =>
-                        trim($validated['location']),
-                    'description' =>
-                        filled($validated['description'])
-                            ? trim($validated['description'])
-                            : null,
-                    'contract_number' =>
-                        filled($validated['contractNumber'])
-                            ? trim($validated['contractNumber'])
-                            : null,
-                    'contract_date' =>
-                        filled($validated['contractDate'])
-                            ? $validated['contractDate']
-                            : null,
-                    'project_budget' =>
-                        (float) $validated['projectBudget'],
-                    'start_date' =>
-                        $validated['startDate'],
-                    'end_date' =>
-                        $validated['endDate'],
-                ]);
+                    if (
+                        (int) $project->mandor_id
+                            !== (int) $mandor->id
+                        && $project->tasks()->exists()
+                    ) {
+                        $this->addError(
+                            'mandorId',
+                            'Mandor tidak dapat diganti karena Project sudah memiliki Task.'
+                        );
 
-                $this->project = $project->fresh();
-            });
+                        return;
+                    }
 
-            session()->flash('notification', [
-    'type' => 'update',
-    'message' => sprintf(
-        'Project %s berhasil diperbarui.',
-        $this->project->project_code
-    ),
-]);
+                    $project->update([
+                        /*
+                         * client_id,
+                         * project_code,
+                         * contract_value,
+                         * progress,
+                         * dan status
+                         * tidak diubah dari halaman Edit.
+                         */
+                        'mandor_id' => $mandor->id,
 
-return $this->redirectRoute(
-    'owner.projects.show',
-    [
-        'project' => $this->project->id,
-    ]
-);
+                        'project_name' => trim(
+                            $validated['projectName']
+                        ),
+
+                        'location' => trim(
+                            $validated['location']
+                        ),
+
+                        'description' => filled(
+                            $validated['description']
+                        )
+                                ? trim(
+                                    $validated['description']
+                                )
+                                : null,
+
+                        'contract_number' => filled(
+                            $validated['contractNumber']
+                        )
+                                ? trim(
+                                    $validated['contractNumber']
+                                )
+                                : null,
+
+                        'contract_date' => filled(
+                            $validated['contractDate']
+                        )
+                                ? $validated['contractDate']
+                                : null,
+
+                        'project_budget' => (float) $validated['projectBudget'],
+
+                        'start_date' => $validated['startDate'],
+
+                        'end_date' => $validated['endDate'],
+                    ]);
+
+                    $this->project =
+                        $project->fresh();
+                }
+            );
+
+            /*
+             * Jika terdapat error dari dalam transaction,
+             * misalnya Mandor tidak boleh diganti,
+             * jangan redirect dan jangan tampilkan
+             * notifikasi berhasil.
+             */
+            if ($this->getErrorBag()->isNotEmpty()) {
+                return;
+            }
+
+            session()->flash(
+                'notification',
+                [
+                    'type' => 'update',
+                    'message' => sprintf(
+                        'Project %s berhasil diperbarui.',
+                        $this->project->project_code
+                    ),
+                ]
+            );
+
+            return $this->redirectRoute(
+                'owner.projects.show',
+                [
+                    'project' => $this->project->id,
+                ]
+            );
         } catch (\RuntimeException $exception) {
-            $message = match ($exception->getMessage()) {
-                'project_not_found' =>
-                    'Project tidak ditemukan.',
+            $message = match (
+                $exception->getMessage()
+            ) {
+                'project_not_found' => 'Project tidak ditemukan.',
 
-                'project_locked' =>
-                    'Project tidak dapat diubah karena telah selesai atau dibatalkan.',
+                'project_locked' => 'Project tidak dapat diubah karena telah selesai atau dibatalkan.',
 
-                default =>
-                    'Project gagal diperbarui.',
+                default => 'Project gagal diperbarui.',
             };
 
-            $this->addError('save', $message);
+            $this->addError(
+                'save',
+                $message
+            );
         } catch (Throwable $exception) {
             report($exception);
 
@@ -373,7 +430,9 @@ return $this->redirectRoute(
     public function render()
     {
         $clients = Client::query()
-            ->whereKey($this->project->client_id)
+            ->whereKey(
+                $this->project->client_id
+            )
             ->get([
                 'id',
                 'company_name',
@@ -390,22 +449,31 @@ return $this->redirectRoute(
                 'email',
             ]);
 
-        $selectedClient = $clients->first();
+        $selectedClient =
+            $clients->first();
 
-        return view('livewire.owner.projects.edit', [
-            'clients' => $clients,
-            'mandors' => $mandors,
-            'selectedClient' => $selectedClient,
-        ]);
+        return view(
+            'livewire.owner.projects.edit',
+            [
+                'clients' => $clients,
+
+                'mandors' => $mandors,
+
+                'selectedClient' => $selectedClient,
+            ]
+        );
     }
 
     private function authorizeUpdateProject(): void
     {
-        $user = Auth::user();
+        $user =
+            Auth::user();
 
         abort_unless(
             $user instanceof User
-                && $user->can('update projects'),
+                && $user->can(
+                    'update projects'
+                ),
             403
         );
     }
