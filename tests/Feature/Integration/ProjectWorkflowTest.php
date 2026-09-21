@@ -9,6 +9,7 @@ use App\Livewire\Pekerja\Report\Create as WorkerReportCreate;
 use App\Models\Client;
 use App\Models\DailyReport;
 use App\Models\Project;
+use App\Models\ProjectProgress;
 use App\Models\ProjectWorker;
 use App\Models\Task;
 use App\Models\User;
@@ -116,8 +117,7 @@ class ProjectWorkflowTest extends TestCase
             'project_code' => 'PRJ-INTEGRATION-001',
             'project_name' => 'Proyek Integrasi Sistem',
             'location' => 'Jakarta Selatan',
-            'description' =>
-                'Project pengujian alur lintas peran.',
+            'description' => 'Project pengujian alur lintas peran.',
             'start_date' => '2026-09-01',
             'end_date' => '2026-12-31',
             'progress' => 0,
@@ -138,8 +138,7 @@ class ProjectWorkflowTest extends TestCase
             'worker_id' => $this->worker->id,
             'task_code' => 'TSK-INTEGRATION-001',
             'title' => 'Pekerjaan Integrasi Sistem',
-            'description' =>
-                'Task untuk pengujian alur sistem.',
+            'description' => 'Task untuk pengujian alur sistem.',
             'location' => 'Jakarta Selatan',
             'priority' => 'high',
             'status' => 'in_progress',
@@ -301,6 +300,33 @@ class ProjectWorkflowTest extends TestCase
             $this->project->progress
         );
 
+        $progressHistory = ProjectProgress::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull(
+            $progressHistory
+        );
+
+        $this->assertSame(
+            $this->mandor->id,
+            $progressHistory->user_id
+        );
+
+        $this->assertSame(
+            60,
+            $progressHistory->progress_percentage
+        );
+
+        $this->assertStringContainsString(
+            '60%',
+            $progressHistory->description
+        );
+
         /*
         |--------------------------------------------------------------------------
         | Owner melihat hasil sinkronisasi
@@ -314,8 +340,7 @@ class ProjectWorkflowTest extends TestCase
             )
             ->assertViewHas(
                 'statistics',
-                fn (array $statistics): bool =>
-                    $statistics['total'] === 1
+                fn (array $statistics): bool => $statistics['total'] === 1
                     && $statistics['in_progress'] === 1
                     && $statistics['completed'] === 0
             )
@@ -361,8 +386,7 @@ class ProjectWorkflowTest extends TestCase
             )
             ->assertViewHas(
                 'currentTask',
-                fn (?Task $task): bool =>
-                    $task?->id === $this->task->id
+                fn (?Task $task): bool => $task?->id === $this->task->id
                     && $task->status
                         === 'in_progress'
                     && $task->progress === 60
