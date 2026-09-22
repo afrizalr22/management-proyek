@@ -889,4 +889,95 @@ class ProjectLifecycleTest extends TestCase
             'approved_at' => now(),
         ]);
     }
+
+    public function test_project_cannot_be_cancelled_if_status_changes_after_cancel_page_is_opened(): void
+    {
+        $component = Livewire::actingAs($this->owner)
+            ->test(Cancel::class, [
+                'project' => $this->project,
+            ]);
+
+        $this->project->update([
+            'status' => 'completed',
+            'progress' => 100,
+        ]);
+
+        $component
+            ->set(
+                'cancellationReason',
+                'Project tidak jadi dilanjutkan oleh pihak client.'
+            )
+            ->call('cancelProject')
+            ->assertHasErrors([
+                'cancel',
+            ]);
+
+        $this->project->refresh();
+
+        $this->assertSame(
+            'completed',
+            $this->project->status
+        );
+
+        $this->assertSame(
+            100,
+            $this->project->progress
+        );
+
+        $this->assertNull(
+            $this->project->cancelled_at
+        );
+
+        $this->assertNull(
+            $this->project->cancelled_by
+        );
+
+        $this->assertNull(
+            $this->project->cancellation_reason
+        );
+    }
+
+    public function test_project_cannot_be_updated_if_cancelled_after_edit_page_is_opened(): void
+    {
+        $component = Livewire::actingAs($this->owner)
+            ->test(Edit::class, [
+                'project' => $this->project,
+            ]);
+
+        $this->project->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+            'cancelled_by' => $this->owner->id,
+            'cancellation_reason' => 'Project dibatalkan saat halaman edit masih terbuka.',
+        ]);
+
+        $component
+            ->set(
+                'projectName',
+                'Project Seharusnya Tidak Berubah'
+            )
+            ->call('updateProject')
+            ->assertStatus(409);
+
+        $this->project->refresh();
+
+        $this->assertSame(
+            'cancelled',
+            $this->project->status
+        );
+
+        $this->assertNotSame(
+            'Project Seharusnya Tidak Berubah',
+            $this->project->project_name
+        );
+
+        $this->assertNotNull(
+            $this->project->cancelled_at
+        );
+
+        $this->assertSame(
+            $this->owner->id,
+            $this->project->cancelled_by
+        );
+    }
 }

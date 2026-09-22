@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use RuntimeException;
 use Throwable;
 
 class Edit extends Component
@@ -66,6 +67,7 @@ class Edit extends Component
         $project->load([
             'client',
             'mandor',
+
             'quotation' => fn ($query) => $query
                 ->with([
                     'creator:id,name,email',
@@ -238,6 +240,28 @@ class Edit extends Component
     {
         $this->authorizeUpdateProject();
 
+        /*
+         * Ambil kembali kondisi terbaru Project.
+         *
+         * Halaman Edit mungkin sudah terbuka sebelum
+         * Project diselesaikan atau dibatalkan dari
+         * proses lain.
+         */
+        $this->project->refresh();
+
+        abort_if(
+            in_array(
+                $this->project->status,
+                [
+                    'completed',
+                    'cancelled',
+                ],
+                true
+            ),
+            409,
+            'Project yang telah selesai atau dibatalkan tidak dapat diubah.'
+        );
+
         $validated =
             $this->validate();
 
@@ -274,6 +298,10 @@ class Edit extends Component
                     $validated,
                     $mandor
                 ): void {
+                    /*
+                     * Lock row Project agar status tidak berubah
+                     * saat proses update berlangsung.
+                     */
                     $project = Project::query()
                         ->lockForUpdate()
                         ->find(
@@ -281,12 +309,16 @@ class Edit extends Component
                         );
 
                     if (! $project) {
-                        throw new \RuntimeException(
+                        throw new RuntimeException(
                             'project_not_found'
                         );
                     }
 
-                    if (
+                    /*
+                     * Pemeriksaan kedua dilakukan setelah row
+                     * berhasil di-lock untuk mencegah race condition.
+                     */
+                    abort_if(
                         ! in_array(
                             $project->status,
                             [
@@ -294,12 +326,10 @@ class Edit extends Component
                                 'on_progress',
                             ],
                             true
-                        )
-                    ) {
-                        throw new \RuntimeException(
-                            'project_locked'
-                        );
-                    }
+                        ),
+                        409,
+                        'Project yang telah selesai atau dibatalkan tidak dapat diubah.'
+                    );
 
                     /*
                      * Mandor hanya dapat diganti selama
@@ -344,24 +374,24 @@ class Edit extends Component
                         'description' => filled(
                             $validated['description']
                         )
-                                ? trim(
-                                    $validated['description']
-                                )
-                                : null,
+                            ? trim(
+                                $validated['description']
+                            )
+                            : null,
 
                         'contract_number' => filled(
                             $validated['contractNumber']
                         )
-                                ? trim(
-                                    $validated['contractNumber']
-                                )
-                                : null,
+                            ? trim(
+                                $validated['contractNumber']
+                            )
+                            : null,
 
                         'contract_date' => filled(
                             $validated['contractDate']
                         )
-                                ? $validated['contractDate']
-                                : null,
+                            ? $validated['contractDate']
+                            : null,
 
                         'project_budget' => (float) $validated['projectBudget'],
 
@@ -389,6 +419,7 @@ class Edit extends Component
                 'notification',
                 [
                     'type' => 'update',
+
                     'message' => sprintf(
                         'Project %s berhasil diperbarui.',
                         $this->project->project_code
@@ -402,13 +433,11 @@ class Edit extends Component
                     'project' => $this->project->id,
                 ]
             );
-        } catch (\RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             $message = match (
                 $exception->getMessage()
             ) {
                 'project_not_found' => 'Project tidak ditemukan.',
-
-                'project_locked' => 'Project tidak dapat diubah karena telah selesai atau dibatalkan.',
 
                 default => 'Project gagal diperbarui.',
             };
