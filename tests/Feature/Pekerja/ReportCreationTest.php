@@ -511,7 +511,9 @@ class ReportCreationTest extends TestCase
 
         $component
             ->call('submitReport')
-            ->assertStatus(409);
+            ->assertHasErrors([
+                'submit' => 'Project sudah selesai atau dibatalkan. Laporan tidak dapat dikirim lagi.',
+            ]);
 
         $this->assertDatabaseMissing(
             'daily_reports',
