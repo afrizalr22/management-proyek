@@ -270,28 +270,133 @@
         </p>
 
         @if ($task->status === 'assigned')
-            <button
-                type="button"
-                wire:click="startTask({{ $task->id }})"
-                wire:confirm="Mulai mengerjakan task ini?"
-                wire:loading.attr="disabled"
+    <div
+        x-data="{ showStartConfirmation: false }"
+        class="w-full"
+    >
+        <button
+            type="button"
+            x-on:click="showStartConfirmation = true"
+            wire:loading.attr="disabled"
+            wire:target="startTask({{ $task->id }})"
+            class="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+            <span
+                wire:loading.remove
                 wire:target="startTask({{ $task->id }})"
-                class="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-blue-600 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
-                <span
-                    wire:loading.remove
-                    wire:target="startTask({{ $task->id }})"
-                >
-                    Mulai Task
-                </span>
+                Mulai Task
+            </span>
 
-                <span
-                    wire:loading
-                    wire:target="startTask({{ $task->id }})"
-                >
-                    Memulai...
-                </span>
-            </button>
+            <span
+                wire:loading
+                wire:target="startTask({{ $task->id }})"
+            >
+                Memulai...
+            </span>
+        </button>
+
+        {{-- Modal Konfirmasi Mulai Task --}}
+        <div
+            x-cloak
+            x-show="showStartConfirmation"
+            x-transition.opacity
+            x-on:keydown.escape.window="showStartConfirmation = false"
+            class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+        >
+            {{-- Backdrop --}}
+            <div
+                x-on:click="showStartConfirmation = false"
+                class="absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
+            ></div>
+
+            {{-- Modal --}}
+            <div
+                x-show="showStartConfirmation"
+                x-transition
+                x-on:click.stop
+                class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+            >
+                <div class="p-6">
+                    <div class="flex items-start gap-4">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                            <svg
+                                class="h-6 w-6"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.868v4.264a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                                />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">
+                                Mulai pekerjaan ini?
+                            </h3>
+
+                            <p class="mt-2 text-sm leading-6 text-slate-500">
+                                Setelah Task dimulai, status pekerjaan akan berubah menjadi
+                                <span class="font-semibold text-slate-700">
+                                    Sedang Dikerjakan
+                                </span>
+                                dan Anda dapat mulai membuat dokumentasi serta laporan pekerjaan.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end">
+                    <button
+                        type="button"
+                        x-on:click="showStartConfirmation = false"
+                        wire:loading.attr="disabled"
+                        wire:target="startTask({{ $task->id }})"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                    >
+                        Batal
+                    </button>
+
+                    <button
+                        type="button"
+                        x-on:click="
+                            showStartConfirmation = false;
+                            $wire.startTask({{ $task->id }});
+                        "
+                        wire:loading.attr="disabled"
+                        wire:target="startTask({{ $task->id }})"
+                        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60"
+                    >
+                        <span
+                            wire:loading.remove
+                            wire:target="startTask({{ $task->id }})"
+                        >
+                            Mulai Pekerjaan
+                        </span>
+
+                        <span
+                            wire:loading
+                            wire:target="startTask({{ $task->id }})"
+                        >
+                            Memulai...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
         @elseif ($task->status === 'in_progress')
             <a
                 href="{{ route(
