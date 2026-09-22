@@ -13,7 +13,7 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-               /*
+            /*
             |--------------------------------------------------------------------------
             | Dashboard
             |--------------------------------------------------------------------------
@@ -56,6 +56,7 @@ class PermissionSeeder extends Seeder
             'create projects',
             'update projects',
             'delete projects',
+            'cancel projects',
 
             /*
             |--------------------------------------------------------------------------

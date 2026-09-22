@@ -27,6 +27,10 @@ class Edit extends Component
             $report
         );
 
+        $this->ensureProjectCanBeReviewed(
+            $report
+        );
+
         abort_unless(
             $report->status === 'submitted',
             409,
@@ -49,6 +53,10 @@ class Edit extends Component
         ]);
 
         $currentReport = $this->findReport();
+
+        $this->ensureProjectCanBeReviewed(
+            $currentReport
+        );
 
         if (
             $currentReport->work_status === 'completed'
@@ -75,6 +83,10 @@ class Edit extends Component
                     );
 
                 $this->authorizeReport(
+                    $report
+                );
+
+                $this->ensureProjectCanBeReviewed(
                     $report
                 );
 
@@ -158,6 +170,10 @@ class Edit extends Component
                     $report
                 );
 
+                $this->ensureProjectCanBeReviewed(
+                    $report
+                );
+
                 abort_unless(
                     $report->status === 'submitted',
                     409,
@@ -230,6 +246,10 @@ class Edit extends Component
             $report
         );
 
+        $this->ensureProjectCanBeReviewed(
+            $report
+        );
+
         $report->documentations->transform(
             function (
                 Documentation $documentation
@@ -291,6 +311,10 @@ class Edit extends Component
             );
 
         $this->authorizeReport(
+            $report
+        );
+
+        $this->ensureProjectCanBeReviewed(
             $report
         );
 
@@ -379,6 +403,26 @@ class Edit extends Component
 
         $task->update(
             $taskData
+        );
+    }
+
+    private function ensureProjectCanBeReviewed(
+        DailyReport $report
+    ): void {
+        $project = $report->project;
+
+        abort_if(
+            $project
+                && in_array(
+                    $project->status,
+                    [
+                        'completed',
+                        'cancelled',
+                    ],
+                    true
+                ),
+            409,
+            'Laporan tidak dapat diproses karena Project telah selesai atau dibatalkan.'
         );
     }
 

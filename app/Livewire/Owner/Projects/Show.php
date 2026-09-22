@@ -63,6 +63,27 @@ $activities->push([
 ]);
 
 /*
+ * Project dibatalkan.
+ */
+if (
+    $this->project->status === 'cancelled'
+    && $this->project->cancelled_at
+) {
+    $activities->push([
+        'type' => 'cancelled',
+        'title' => 'Project Dibatalkan',
+        'description' =>
+            $this->project->cancellation_reason
+                ?: 'Project telah dibatalkan.',
+        'actor' =>
+            $this->project->cancelledBy?->name
+                ?? 'Owner',
+        'occurred_at' =>
+            $this->project->cancelled_at,
+    ]);
+}
+
+/*
  * Quotation disetujui dan menjadi sumber Project.
  */
 if ($sourceQuotation) {
@@ -278,8 +299,9 @@ $activities = $activities
 private function loadProjectData(): void
 {
     $this->project->load([
-        'client',
-        'mandor',
+    'client',
+    'mandor',
+    'cancelledBy:id,name,email',
 
         'workers' => fn ($query) => $query
             ->orderBy('name'),

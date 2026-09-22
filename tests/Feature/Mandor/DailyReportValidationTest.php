@@ -181,6 +181,159 @@ class DailyReportValidationTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_mandor_cannot_approve_report_after_project_is_cancelled(): void
+    {
+        $task = $this->createTask(
+            'TSK-CANCELLED-APPROVE',
+            60
+        );
+
+        $report = $this->createReport(
+            $task,
+            'RPT-CANCELLED-APPROVE',
+            100,
+            'completed'
+        );
+
+        /*
+        * Simulasikan halaman validasi sudah dibuka Mandor
+        * ketika Project masih aktif.
+        */
+        $component = Livewire::actingAs(
+            $this->mandor
+        )->test(
+            Edit::class,
+            [
+                'report' => $report,
+            ]
+        );
+
+        /*
+        * Setelah halaman terbuka, Project dibatalkan.
+        * Ini mensimulasikan perubahan lifecycle yang
+        * terjadi sebelum Mandor menekan tombol Setujui.
+        */
+        $this->project->update([
+            'status' => 'cancelled',
+        ]);
+
+        $task->update([
+            'status' => 'cancelled',
+        ]);
+
+        $component
+            ->call('approveReport')
+            ->assertStatus(409);
+
+        $report->refresh();
+        $task->refresh();
+        $this->project->refresh();
+
+        $this->assertSame(
+            'submitted',
+            $report->status
+        );
+
+        $this->assertSame(
+            'cancelled',
+            $task->status
+        );
+
+        $this->assertSame(
+            60,
+            $task->progress
+        );
+
+        $this->assertSame(
+            'cancelled',
+            $this->project->status
+        );
+
+        $this->assertSame(
+            0,
+            ProjectProgress::query()
+                ->where(
+                    'project_id',
+                    $this->project->id
+                )
+                ->count()
+        );
+    }
+
+    public function test_mandor_cannot_request_revision_after_project_is_cancelled(): void
+    {
+        $task = $this->createTask(
+            'TSK-CANCELLED-REVISION',
+            50
+        );
+
+        $report = $this->createReport(
+            $task,
+            'RPT-CANCELLED-REVISION',
+            60
+        );
+
+        /*
+        * Mandor telah membuka halaman validasi ketika
+        * Project masih aktif.
+        */
+        $component = Livewire::actingAs(
+            $this->mandor
+        )->test(
+            Edit::class,
+            [
+                'report' => $report,
+            ]
+        );
+
+        /*
+        * Project kemudian dibatalkan sebelum keputusan
+        * validasi dikirim.
+        */
+        $this->project->update([
+            'status' => 'cancelled',
+        ]);
+
+        $task->update([
+            'status' => 'cancelled',
+        ]);
+
+        $component
+            ->set(
+                'reviewNotes',
+                'Project telah dibatalkan sehingga laporan tidak boleh diproses.'
+            )
+            ->call('requestRevision')
+            ->assertStatus(409);
+
+        $report->refresh();
+        $task->refresh();
+        $this->project->refresh();
+
+        $this->assertSame(
+            'submitted',
+            $report->status
+        );
+
+        $this->assertNull(
+            $report->reviewed_by
+        );
+
+        $this->assertNull(
+            $report->reviewed_at
+        );
+
+        $this->assertSame(
+            'cancelled',
+            $task->status
+        );
+
+        $this->assertSame(
+            'cancelled',
+            $this->project->status
+        );
+    }
+
     public function test_mandor_can_approve_report_and_synchronize_progress(): void
     {
         $task = $this->createTask(

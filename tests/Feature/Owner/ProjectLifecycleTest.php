@@ -3,6 +3,7 @@
 namespace Tests\Feature\Owner;
 
 use App\Livewire\Mandor\DailyReports\Edit as ReportValidation;
+use App\Livewire\Owner\Projects\Cancel;
 use App\Livewire\Owner\Projects\Delete;
 use App\Livewire\Owner\Projects\Edit;
 use App\Models\Client;
@@ -58,6 +59,7 @@ class ProjectLifecycleTest extends TestCase
                 'view projects',
                 'update projects',
                 'delete projects',
+                'cancel projects',
             ] as $permission
         ) {
             Permission::findOrCreate(
@@ -73,6 +75,7 @@ class ProjectLifecycleTest extends TestCase
             'view projects',
             'update projects',
             'delete projects',
+            'cancel projects',
         ]);
 
         $this->owner = User::factory()->create([
@@ -360,6 +363,293 @@ class ProjectLifecycleTest extends TestCase
                 )
                 ->assertForbidden();
         }
+    }
+
+    public function test_owner_can_cancel_project_and_close_operational_data(): void
+    {
+        $this->project->update([
+            'status' => 'on_progress',
+            'progress' => 55,
+        ]);
+
+        $activeTask = $this->createTask(
+            'TSK-CANCEL-ACTIVE',
+            55,
+            'in_progress'
+        );
+
+        $completedTask = $this->createTask(
+            'TSK-CANCEL-COMPLETED',
+            100,
+            'completed'
+        );
+
+        $completedTask->update([
+            'completed_at' => now(),
+        ]);
+
+        $alreadyCancelledTask = $this->createTask(
+            'TSK-CANCEL-EXISTING',
+            20,
+            'cancelled'
+        );
+
+        $assignment = ProjectWorker::query()
+            ->updateOrCreate(
+                [
+                    'project_id' => $this->project->id,
+
+                    'worker_id' => $this->worker->id,
+                ],
+                [
+                    'assigned_by' => $this->owner->id,
+
+                    'status' => 'active',
+
+                    'joined_at' => '2026-09-01',
+
+                    'ended_at' => null,
+                ]
+            );
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                Cancel::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->set(
+                'cancellationReason',
+                'Project dibatalkan berdasarkan keputusan operasional dari pihak client.'
+            )
+            ->call('cancelProject')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'owner.projects.show',
+                    [
+                        'project' => $this->project->id,
+                    ]
+                )
+            );
+
+        $this->project->refresh();
+        $activeTask->refresh();
+        $completedTask->refresh();
+        $alreadyCancelledTask->refresh();
+        $assignment->refresh();
+
+        $this->assertSame(
+            'cancelled',
+            $this->project->status
+        );
+
+        /*
+         * Progress terakhir Project harus tetap disimpan.
+         */
+        $this->assertSame(
+            55,
+            $this->project->progress
+        );
+
+        $this->assertSame(
+            $this->owner->id,
+            $this->project->cancelled_by
+        );
+
+        $this->assertNotNull(
+            $this->project->cancelled_at
+        );
+
+        $this->assertSame(
+            'Project dibatalkan berdasarkan keputusan operasional dari pihak client.',
+            $this->project->cancellation_reason
+        );
+
+        /*
+         * Task aktif dihentikan.
+         */
+        $this->assertSame(
+            'cancelled',
+            $activeTask->status
+        );
+
+        /*
+         * Task yang sudah selesai tidak boleh diubah.
+         */
+        $this->assertSame(
+            'completed',
+            $completedTask->status
+        );
+
+        $this->assertSame(
+            100,
+            $completedTask->progress
+        );
+
+        $this->assertNotNull(
+            $completedTask->completed_at
+        );
+
+        /*
+         * Task yang memang sudah cancelled tetap cancelled.
+         */
+        $this->assertSame(
+            'cancelled',
+            $alreadyCancelledTask->status
+        );
+
+        /*
+         * Assignment aktif harus ditutup.
+         */
+        $this->assertSame(
+            'inactive',
+            $assignment->status
+        );
+
+        $this->assertNotNull(
+            $assignment->ended_at
+        );
+
+        $this->actingAs($this->owner)
+            ->get(
+                route(
+                    'owner.projects.show',
+                    [
+                        'project' => $this->project->id,
+                    ]
+                )
+            )
+            ->assertOk()
+            ->assertSee('Dibatalkan')
+            ->assertSee('Informasi Pembatalan')
+            ->assertSee(
+                'Project dibatalkan berdasarkan keputusan operasional dari pihak client.'
+            )
+            ->assertSee(
+                $this->owner->name
+            )
+            ->assertDontSee(
+                'Batalkan Project'
+            );
+    }
+
+    public function test_owner_can_open_project_cancellation_page(): void
+    {
+        $this->actingAs($this->owner)
+            ->get(
+                route(
+                    'owner.projects.cancel',
+                    [
+                        'project' => $this->project->id,
+                    ]
+                )
+            )
+            ->assertOk()
+            ->assertSee(
+                'Batalkan Project'
+            )
+            ->assertSee(
+                $this->project->project_code
+            )
+            ->assertSee(
+                'Alasan Pembatalan'
+            );
+    }
+
+    public function test_project_cancellation_requires_valid_reason(): void
+    {
+        Livewire::actingAs($this->owner)
+            ->test(
+                Cancel::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->set(
+                'cancellationReason',
+                'Pendek'
+            )
+            ->call('cancelProject')
+            ->assertHasErrors([
+                'cancellationReason',
+            ]);
+
+        $this->project->refresh();
+
+        $this->assertSame(
+            'planning',
+            $this->project->status
+        );
+
+        $this->assertNull(
+            $this->project->cancelled_at
+        );
+
+        $this->assertNull(
+            $this->project->cancelled_by
+        );
+
+        $this->assertNull(
+            $this->project->cancellation_reason
+        );
+    }
+
+    public function test_completed_and_cancelled_projects_cannot_be_cancelled(): void
+    {
+        foreach (
+            [
+                'completed',
+                'cancelled',
+            ] as $status
+        ) {
+            $project = $this->createProject(
+                'PRJ-CANCEL-'.strtoupper(
+                    $status
+                ),
+                $status
+            );
+
+            Livewire::actingAs($this->owner)
+                ->test(
+                    Cancel::class,
+                    [
+                        'project' => $project,
+                    ]
+                )
+                ->assertStatus(409);
+        }
+    }
+
+    public function test_user_without_permission_cannot_cancel_project(): void
+    {
+        $unauthorizedUser =
+            User::factory()->create([
+                'status' => 'active',
+            ]);
+
+        $unauthorizedUser->assignRole(
+            'mandor'
+        );
+
+        Livewire::actingAs(
+            $unauthorizedUser
+        )
+            ->test(
+                Cancel::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertForbidden();
+
+        $this->project->refresh();
+
+        $this->assertSame(
+            'planning',
+            $this->project->status
+        );
     }
 
     public function test_clean_planning_project_can_be_deleted_and_quotation_is_released(): void

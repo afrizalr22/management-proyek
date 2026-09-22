@@ -19,6 +19,7 @@ use App\Livewire\Owner\Projects\Index as ProjectsIndex;
 use App\Livewire\Owner\Projects\Show as ProjectsShow;
 use App\Livewire\Owner\Projects\Create as ProjectCreate;
 use App\Livewire\Owner\Projects\Delete as ProjectsDelete;
+use App\Livewire\Owner\Projects\Cancel as ProjectsCancel;
 use App\Livewire\Owner\Projects\Edit as ProjectEdit;
 
 // Quotations
@@ -138,6 +139,9 @@ Route::prefix('owner/projects')
 
         Route::get('/{project}/delete', ProjectsDelete::class)
             ->name('delete');
+
+            Route::get('/{project}/cancel', ProjectsCancel::class)
+    ->name('cancel');
 
         Route::get('/{project}', ProjectsShow::class)
             ->name('show');

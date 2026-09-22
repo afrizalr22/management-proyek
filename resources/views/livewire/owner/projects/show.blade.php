@@ -53,6 +53,29 @@
                         Edit Project
                     </button>
                 @endif
+
+                @can('cancel projects')
+                    @if (
+                        in_array(
+                            $project->status,
+                            [
+                                'planning',
+                                'on_progress',
+                            ],
+                            true
+                        )
+                    )
+                        <a
+                            href="{{ route('owner.projects.cancel', [
+                                'project' => $project->id,
+                            ]) }}"
+                            wire:navigate
+                            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100"
+                        >
+                            Batalkan Project
+                        </a>
+                    @endif
+                @endcan
             </div>
         </x-slot:actions>
     </x-ui.page-header>
@@ -138,8 +161,52 @@
         </div>
     </section>
 
+    {{-- Informasi Pembatalan --}}
+    @if ($project->status === 'cancelled')
+        <section
+            class="rounded-2xl border border-red-200 bg-red-50 p-5"
+        >
+            <div
+                class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+            >
+                <div class="min-w-0">
+                    <h2 class="font-semibold text-red-800">
+                        Informasi Pembatalan
+                    </h2>
+
+                    <p
+                        class="mt-2 whitespace-pre-line text-sm leading-6 text-red-700"
+                    >
+                        {{ $project->cancellation_reason
+                            ?: 'Tidak ada alasan pembatalan.' }}
+                    </p>
+                </div>
+
+                <div
+                    class="shrink-0 text-sm text-red-700 sm:text-right"
+                >
+                    @if ($project->cancelledBy)
+                        <p>
+                            Dibatalkan oleh
+                            <span class="font-semibold">
+                                {{ $project->cancelledBy->name }}
+                            </span>
+                        </p>
+                    @endif
+
+                    @if ($project->cancelled_at)
+                        <p class="mt-1">
+                            {{ $project->cancelled_at->format(
+                                'd M Y H:i'
+                            ) }}
+                        </p>
+                    @endif
+                </div>
+            </div>
+        </section>
+    @endif
+
     {{-- Informasi utama --}}
-    {{-- Konten detail Project --}}
     <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
         {{-- Konten utama --}}
         <main class="min-w-0 space-y-6 xl:col-span-2">
@@ -151,6 +218,7 @@
                 :status-color="$statusColor"
             />
 
+            {{-- Tim Project --}}
             <x-owner.project.project-team
                 :project="$project"
             />
@@ -183,6 +251,8 @@
             />
         </aside>
     </div>
+
+    {{-- Kelola Pekerja --}}
     <livewire:owner.projects.manage-workers
         :project="$project"
         :key="'manage-workers-'.$project->id"

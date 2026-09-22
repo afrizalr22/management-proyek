@@ -25,6 +25,9 @@ class Project extends Model
         'end_date',
         'progress',
         'status',
+        'cancelled_at',
+        'cancelled_by',
+        'cancellation_reason',
     ];
 
     protected function casts(): array
@@ -36,12 +39,15 @@ class Project extends Model
             'project_budget' => 'decimal:2',
             'contract_value' => 'decimal:2',
             'progress' => 'integer',
+            'cancelled_at' => 'datetime',
         ];
     }
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(
+            Client::class
+        );
     }
 
     public function mandor(): BelongsTo
@@ -49,6 +55,14 @@ class Project extends Model
         return $this->belongsTo(
             User::class,
             'mandor_id'
+        );
+    }
+
+    public function cancelledBy(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'cancelled_by'
         );
     }
 
@@ -70,9 +84,18 @@ class Project extends Model
             ->withTimestamps();
     }
 
+    public function workerAssignments(): HasMany
+    {
+        return $this->hasMany(
+            ProjectWorker::class
+        );
+    }
+
     public function tasks(): HasMany
     {
-        return $this->hasMany(Task::class);
+        return $this->hasMany(
+            Task::class
+        );
     }
 
     public function progresses(): HasMany
@@ -114,13 +137,6 @@ class Project extends Model
     {
         return $this->hasMany(
             DeliveryOrder::class
-        );
-    }
-
-    public function workerAssignments(): HasMany
-    {
-        return $this->hasMany(
-            ProjectWorker::class
         );
     }
 }
