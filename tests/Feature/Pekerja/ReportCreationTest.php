@@ -118,8 +118,7 @@ class ReportCreationTest extends TestCase
             'taskId' => (string) $task->id,
             'reportDate' => now('Asia/Jakarta')
                 ->toDateString(),
-            'activities' =>
-                'Melaksanakan pekerjaan sesuai rencana proyek.',
+            'activities' => 'Melaksanakan pekerjaan sesuai rencana proyek.',
             'workStatus' => 'in_progress',
             'reportedProgress' => 50,
             'obstacles' => '',
@@ -150,8 +149,7 @@ class ReportCreationTest extends TestCase
             ->test(Create::class);
 
         foreach (
-            $this->validReportData($task)
-            as $property => $value
+            $this->validReportData($task) as $property => $value
         ) {
             $component->set(
                 $property,
@@ -241,8 +239,7 @@ class ReportCreationTest extends TestCase
             ->test(Create::class);
 
         foreach (
-            $this->validReportData($otherTask)
-            as $property => $value
+            $this->validReportData($otherTask) as $property => $value
         ) {
             $component->set(
                 $property,
@@ -293,8 +290,7 @@ class ReportCreationTest extends TestCase
             'report_date' => $reportDate,
             'reported_progress' => 30,
             'work_status' => 'in_progress',
-            'activities' =>
-                'Laporan yang sudah tersedia.',
+            'activities' => 'Laporan yang sudah tersedia.',
             'status' => 'submitted',
             'submitted_at' => now(),
         ]);
@@ -303,8 +299,7 @@ class ReportCreationTest extends TestCase
             ->test(Create::class);
 
         foreach (
-            $this->validReportData($task)
-            as $property => $value
+            $this->validReportData($task) as $property => $value
         ) {
             $component->set(
                 $property,
@@ -352,8 +347,7 @@ class ReportCreationTest extends TestCase
             ->test(Create::class);
 
         foreach (
-            $this->validReportData($task)
-            as $property => $value
+            $this->validReportData($task) as $property => $value
         ) {
             $component->set(
                 $property,
@@ -397,8 +391,7 @@ class ReportCreationTest extends TestCase
             ->test(Create::class);
 
         foreach (
-            $this->validReportData($task)
-            as $property => $value
+            $this->validReportData($task) as $property => $value
         ) {
             $component->set(
                 $property,
@@ -438,8 +431,7 @@ class ReportCreationTest extends TestCase
             ->test(Create::class);
 
         foreach (
-            $this->validReportData($task)
-            as $property => $value
+            $this->validReportData($task) as $property => $value
         ) {
             $component->set(
                 $property,
@@ -461,6 +453,88 @@ class ReportCreationTest extends TestCase
                 'user_id' => $worker->id,
                 'task_id' => $task->id,
             ]
+        );
+    }
+
+    public function test_worker_cannot_submit_report_after_project_is_cancelled(): void
+    {
+        $disk = Storage::fake('public');
+
+        $worker = $this->createWorker(
+            'cancelled-project-report@example.com'
+        );
+
+        $task = $this->createTask(
+            $worker,
+            'TSK-CANCELLED-REPORT-001'
+        );
+
+        $photo = UploadedFile::fake()->image(
+            'cancelled-project-report.jpg',
+            800,
+            600
+        )->size(500);
+
+        /*
+         * Form laporan dibuka ketika Project
+         * masih aktif.
+         */
+        $component = Livewire::actingAs($worker)
+            ->test(Create::class);
+
+        foreach (
+            $this->validReportData($task) as $property => $value
+        ) {
+            $component->set(
+                $property,
+                $value
+            );
+        }
+
+        $component->set(
+            'photos',
+            [
+                $photo,
+            ]
+        );
+
+        /*
+         * Simulasikan Project dibatalkan setelah
+         * form laporan sudah dibuka.
+         *
+         * Task sengaja tetap in_progress agar test
+         * benar-benar menguji lifecycle Project.
+         */
+        $this->project->update([
+            'status' => 'cancelled',
+        ]);
+
+        $component
+            ->call('submitReport')
+            ->assertStatus(409);
+
+        $this->assertDatabaseMissing(
+            'daily_reports',
+            [
+                'user_id' => $worker->id,
+                'task_id' => $task->id,
+            ]
+        );
+
+        $task->refresh();
+
+        $this->assertSame(
+            'in_progress',
+            $task->status
+        );
+
+        $this->assertNull(
+            $task->submitted_at
+        );
+
+        $this->assertSame(
+            [],
+            $disk->allFiles()
         );
     }
 }

@@ -71,6 +71,7 @@ class Index extends Component
                 $worker
             ): void {
                 $task = Task::query()
+                    ->with('project')
                     ->whereKey($taskId)
                     ->where(
                         'worker_id',
@@ -80,16 +81,28 @@ class Index extends Component
                     ->firstOrFail();
 
                 abort_unless(
+                    $task->project
+                        && in_array(
+                            $task->project->status,
+                            [
+                                'planning',
+                                'on_progress',
+                            ],
+                            true
+                        ),
+                    409,
+                    'Task tidak dapat dimulai karena Project telah selesai atau dibatalkan.'
+                );
+
+                abort_unless(
                     $task->status === 'assigned',
                     409
                 );
 
                 $task->update([
-                    'status' =>
-                        'in_progress',
+                    'status' => 'in_progress',
 
-                    'started_at' =>
-                        $task->started_at
+                    'started_at' => $task->started_at
                         ?? now(),
                 ]);
             }
@@ -133,63 +146,58 @@ class Index extends Component
         );
 
         return [
-            'total' =>
-                (clone $query)
-                    ->where(
-                        'status',
-                        '!=',
-                        'cancelled'
-                    )
-                    ->count(),
+            'total' => (clone $query)
+                ->where(
+                    'status',
+                    '!=',
+                    'cancelled'
+                )
+                ->count(),
 
-            'assigned' =>
-                (clone $query)
-                    ->where(
-                        'status',
-                        'assigned'
-                    )
-                    ->count(),
+            'assigned' => (clone $query)
+                ->where(
+                    'status',
+                    'assigned'
+                )
+                ->count(),
 
-            'active' =>
-                (clone $query)
-                    ->whereIn(
-                        'status',
-                        [
-                            'in_progress',
-                            'submitted',
-                            'revision',
-                        ]
-                    )
-                    ->count(),
+            'active' => (clone $query)
+                ->whereIn(
+                    'status',
+                    [
+                        'in_progress',
+                        'submitted',
+                        'revision',
+                    ]
+                )
+                ->count(),
 
-            'completed' =>
-                (clone $query)
-                    ->where(
-                        'status',
-                        'completed'
-                    )
-                    ->count(),
+            'completed' => (clone $query)
+                ->where(
+                    'status',
+                    'completed'
+                )
+                ->count(),
 
-            'overdue' =>
-                (clone $query)
-                    ->whereIn(
-                        'status',
-                        [
-                            'assigned',
-                            'in_progress',
-                            'submitted',
-                            'revision',
-                        ]
-                    )
-                    ->whereNotNull(
-                        'due_at'
-                    )
-                    ->where(
-                        'due_at',
-                        '<',
-                        now()
-                    )
-                    ->count(),
+            'overdue' => (clone $query)
+                ->whereIn(
+                    'status',
+                    [
+                        'assigned',
+                        'in_progress',
+                        'submitted',
+                        'revision',
+                    ]
+                )
+                ->whereNotNull(
+                    'due_at'
+                )
+                ->where(
+                    'due_at',
+                    '<',
+                    now()
+                )
+                ->count(),
         ];
     }
 
@@ -197,18 +205,15 @@ class Index extends Component
         Builder $query
     ): Builder {
         return match ($this->sort) {
-            'latest' =>
-                $query
-                    ->latest('id'),
+            'latest' => $query
+                ->latest('id'),
 
-            'oldest' =>
-                $query
-                    ->oldest('id'),
+            'oldest' => $query
+                ->oldest('id'),
 
-            'priority' =>
-                $query
-                    ->orderByRaw(
-                        "
+            'priority' => $query
+                ->orderByRaw(
+                    "
                             CASE priority
                                 WHEN 'urgent' THEN 1
                                 WHEN 'high' THEN 2
@@ -217,45 +222,42 @@ class Index extends Component
                                 ELSE 5
                             END
                         "
-                    )
-                    ->orderByRaw(
-                        'CASE
+                )
+                ->orderByRaw(
+                    'CASE
                             WHEN due_at IS NULL
                             THEN 1
                             ELSE 0
                         END'
-                    )
-                    ->orderBy(
-                        'due_at'
-                    ),
+                )
+                ->orderBy(
+                    'due_at'
+                ),
 
-            'progress_highest' =>
-                $query
-                    ->orderByDesc(
-                        'progress'
-                    )
-                    ->latest('id'),
+            'progress_highest' => $query
+                ->orderByDesc(
+                    'progress'
+                )
+                ->latest('id'),
 
-            'progress_lowest' =>
-                $query
-                    ->orderBy(
-                        'progress'
-                    )
-                    ->latest('id'),
+            'progress_lowest' => $query
+                ->orderBy(
+                    'progress'
+                )
+                ->latest('id'),
 
-            default =>
-                $query
-                    ->orderByRaw(
-                        'CASE
+            default => $query
+                ->orderByRaw(
+                    'CASE
                             WHEN due_at IS NULL
                             THEN 1
                             ELSE 0
                         END'
-                    )
-                    ->orderBy(
-                        'due_at'
-                    )
-                    ->latest('id'),
+                )
+                ->orderBy(
+                    'due_at'
+                )
+                ->latest('id'),
         };
     }
 
@@ -291,13 +293,12 @@ class Index extends Component
 
                 'mandor:id,name',
 
-                'dailyReports' =>
-                    fn ($query) => $query
-                        ->where(
-                            'user_id',
-                            $worker->id
-                        )
-                        ->latest('id'),
+                'dailyReports' => fn ($query) => $query
+                    ->where(
+                        'user_id',
+                        $worker->id
+                    )
+                    ->latest('id'),
             ])
             ->when(
                 $search !== '',
@@ -355,11 +356,10 @@ class Index extends Component
                     $allowedStatuses,
                     true
                 ),
-                fn (Builder $query) =>
-                    $query->where(
-                        'status',
-                        $this->status
-                    )
+                fn (Builder $query) => $query->where(
+                    'status',
+                    $this->status
+                )
             )
             ->when(
                 in_array(
@@ -367,11 +367,10 @@ class Index extends Component
                     $allowedPriorities,
                     true
                 ),
-                fn (Builder $query) =>
-                    $query->where(
-                        'priority',
-                        $this->priority
-                    )
+                fn (Builder $query) => $query->where(
+                    'priority',
+                    $this->priority
+                )
             );
 
         $tasks = $this
@@ -383,16 +382,13 @@ class Index extends Component
         return view(
             'livewire.pekerja.tasks.index',
             [
-                'worker' =>
-                    $worker->fresh(),
+                'worker' => $worker->fresh(),
 
-                'tasks' =>
-                    $tasks,
+                'tasks' => $tasks,
 
-                'statistics' =>
-                    $this->statistics(
-                        $worker->id
-                    ),
+                'statistics' => $this->statistics(
+                    $worker->id
+                ),
             ]
         );
     }

@@ -55,18 +55,15 @@ class TaskDocumentationAuthorizationTest extends TestCase
         $this->mandor->assignRole('mandor');
 
         $client = Client::query()->create([
-            'company_name' =>
-                'PT Dokumentasi Pengujian',
-            'contact_person' =>
-                'Kontak Dokumentasi',
+            'company_name' => 'PT Dokumentasi Pengujian',
+            'contact_person' => 'Kontak Dokumentasi',
         ]);
 
         $this->project = Project::query()->create([
             'client_id' => $client->id,
             'mandor_id' => $this->mandor->id,
             'project_code' => 'PRJ-DOC-001',
-            'project_name' =>
-                'Proyek Dokumentasi Pengujian',
+            'project_name' => 'Proyek Dokumentasi Pengujian',
             'location' => 'Jakarta',
             'start_date' => '2026-09-01',
             'status' => 'on_progress',
@@ -133,12 +130,9 @@ class TaskDocumentationAuthorizationTest extends TestCase
             'original_name' => basename($photo),
             'mime_type' => 'image/jpeg',
             'file_size' => 1024,
-            'description' =>
-                'Dokumentasi '.$title,
-            'documentation_date' =>
-                '2026-09-16',
-            'taken_at' =>
-                '2026-09-16 08:00:00',
+            'description' => 'Dokumentasi '.$title,
+            'documentation_date' => '2026-09-16',
+            'taken_at' => '2026-09-16 08:00:00',
         ]);
     }
 
@@ -420,6 +414,53 @@ class TaskDocumentationAuthorizationTest extends TestCase
         $this->assertSame(
             [],
             $disk->allFiles()
+        );
+    }
+
+    public function test_worker_cannot_start_task_after_project_is_cancelled(): void
+    {
+        $worker = $this->createWorker(
+            'cancelled-project-task-worker@example.com'
+        );
+
+        $task = $this->createTask(
+            $worker,
+            'TSK-CANCELLED-PROJECT-001',
+            'Task Project Dibatalkan',
+            'assigned'
+        );
+
+        $component = Livewire::actingAs($worker)
+            ->test(TaskIndex::class);
+
+        /*
+         * Simulasikan Project dibatalkan setelah
+         * halaman Task sudah dibuka oleh Pekerja.
+         *
+         * Task sengaja tetap assigned untuk memastikan
+         * startTask benar-benar memeriksa lifecycle Project,
+         * bukan hanya status Task.
+         */
+        $this->project->update([
+            'status' => 'cancelled',
+        ]);
+
+        $component
+            ->call(
+                'startTask',
+                $task->id
+            )
+            ->assertStatus(409);
+
+        $task->refresh();
+
+        $this->assertSame(
+            'assigned',
+            $task->status
+        );
+
+        $this->assertNull(
+            $task->started_at
         );
     }
 }

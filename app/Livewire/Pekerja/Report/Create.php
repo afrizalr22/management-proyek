@@ -4,6 +4,7 @@ namespace App\Livewire\Pekerja\Report;
 
 use App\Models\DailyReport;
 use App\Models\Documentation;
+use App\Models\ProjectWorker;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,6 +16,7 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 class Create extends Component
@@ -66,7 +68,7 @@ class Create extends Component
                 'required',
                 'date',
                 'before_or_equal:'
-                    . now('Asia/Jakarta')
+                    .now('Asia/Jakarta')
                         ->toDateString(),
             ],
 
@@ -121,77 +123,53 @@ class Create extends Component
     protected function messages(): array
     {
         return [
-            'taskId.required' =>
-                'Task wajib dipilih.',
+            'taskId.required' => 'Task wajib dipilih.',
 
-            'taskId.integer' =>
-                'Task yang dipilih tidak valid.',
+            'taskId.integer' => 'Task yang dipilih tidak valid.',
 
-            'reportDate.required' =>
-                'Tanggal laporan wajib diisi.',
+            'reportDate.required' => 'Tanggal laporan wajib diisi.',
 
-            'reportDate.date' =>
-                'Tanggal laporan tidak valid.',
+            'reportDate.date' => 'Tanggal laporan tidak valid.',
 
-            'reportDate.before_or_equal' =>
-                'Tanggal laporan tidak boleh melewati tanggal hari ini.',
+            'reportDate.before_or_equal' => 'Tanggal laporan tidak boleh melewati tanggal hari ini.',
 
-            'activities.required' =>
-                'Uraian hasil pekerjaan wajib diisi.',
+            'activities.required' => 'Uraian hasil pekerjaan wajib diisi.',
 
-            'activities.string' =>
-                'Uraian hasil pekerjaan tidak valid.',
+            'activities.string' => 'Uraian hasil pekerjaan tidak valid.',
 
-            'activities.min' =>
-                'Uraian hasil pekerjaan minimal 10 karakter.',
+            'activities.min' => 'Uraian hasil pekerjaan minimal 10 karakter.',
 
-            'activities.max' =>
-                'Uraian hasil pekerjaan maksimal 2.000 karakter.',
+            'activities.max' => 'Uraian hasil pekerjaan maksimal 2.000 karakter.',
 
-            'workStatus.required' =>
-                'Status pekerjaan wajib dipilih.',
+            'workStatus.required' => 'Status pekerjaan wajib dipilih.',
 
-            'workStatus.in' =>
-                'Status pekerjaan tidak valid.',
+            'workStatus.in' => 'Status pekerjaan tidak valid.',
 
-            'reportedProgress.required' =>
-                'Persentase progres wajib diisi.',
+            'reportedProgress.required' => 'Persentase progres wajib diisi.',
 
-            'reportedProgress.integer' =>
-                'Persentase progres harus berupa angka bulat.',
+            'reportedProgress.integer' => 'Persentase progres harus berupa angka bulat.',
 
-            'reportedProgress.min' =>
-                'Persentase progres minimal 0%.',
+            'reportedProgress.min' => 'Persentase progres minimal 0%.',
 
-            'reportedProgress.max' =>
-                'Persentase progres maksimal 100%.',
+            'reportedProgress.max' => 'Persentase progres maksimal 100%.',
 
-            'obstacles.string' =>
-                'Kendala pekerjaan tidak valid.',
+            'obstacles.string' => 'Kendala pekerjaan tidak valid.',
 
-            'obstacles.max' =>
-                'Kendala pekerjaan maksimal 1.000 karakter.',
+            'obstacles.max' => 'Kendala pekerjaan maksimal 1.000 karakter.',
 
-            'notes.string' =>
-                'Catatan tambahan tidak valid.',
+            'notes.string' => 'Catatan tambahan tidak valid.',
 
-            'notes.max' =>
-                'Catatan tambahan maksimal 1.000 karakter.',
+            'notes.max' => 'Catatan tambahan maksimal 1.000 karakter.',
 
-            'photos.array' =>
-                'Daftar foto dokumentasi tidak valid.',
+            'photos.array' => 'Daftar foto dokumentasi tidak valid.',
 
-            'photos.max' =>
-                'Maksimal lima foto dalam satu laporan.',
+            'photos.max' => 'Maksimal lima foto dalam satu laporan.',
 
-            'photos.*.image' =>
-                'Setiap file harus berupa gambar.',
+            'photos.*.image' => 'Setiap file harus berupa gambar.',
 
-            'photos.*.mimes' =>
-                'Foto harus berformat JPG, JPEG, PNG, atau WEBP.',
+            'photos.*.mimes' => 'Foto harus berformat JPG, JPEG, PNG, atau WEBP.',
 
-            'photos.*.max' =>
-                'Ukuran setiap foto maksimal 5 MB.',
+            'photos.*.max' => 'Ukuran setiap foto maksimal 5 MB.',
         ];
     }
 
@@ -330,19 +308,84 @@ class Create extends Component
                     $reportedProgress,
                     &$storedPaths
                 ): void {
-                    $task = $this
-                        ->availableTaskQuery()
+                    /*
+                     * Ambil Task terbaru dan lock row.
+                     *
+                     * Jangan mengandalkan state form lama karena
+                     * Project atau assignment dapat berubah setelah
+                     * halaman laporan dibuka.
+                     */
+                    $task = Task::query()
                         ->with('project')
-                        ->lockForUpdate()
-                        ->find(
+                        ->whereKey(
                             $validated['taskId']
-                        );
+                        )
+                        ->where(
+                            'worker_id',
+                            $worker->id
+                        )
+                        ->lockForUpdate()
+                        ->first();
 
                     if (! $task) {
                         throw new RuntimeException(
                             'Task tidak tersedia atau sudah tidak dapat dilaporkan.'
                         );
                     }
+
+                    /*
+                     * Project terminal tidak boleh menerima
+                     * aktivitas operasional baru.
+                     */
+                    abort_unless(
+                        $task->project
+                            && in_array(
+                                $task->project->status,
+                                [
+                                    'planning',
+                                    'on_progress',
+                                ],
+                                true
+                            ),
+                        409,
+                        'Laporan tidak dapat dikirim karena Project telah selesai atau dibatalkan.'
+                    );
+
+                    /*
+                     * Hanya Task yang sedang berjalan
+                     * yang boleh dibuatkan laporan.
+                     */
+                    abort_unless(
+                        $task->status === 'in_progress',
+                        409,
+                        'Task sudah tidak dapat dilaporkan.'
+                    );
+
+                    /*
+                     * Pastikan Pekerja masih memiliki
+                     * assignment aktif pada Project.
+                     */
+                    $activeAssignmentExists =
+                        ProjectWorker::query()
+                            ->where(
+                                'project_id',
+                                $task->project_id
+                            )
+                            ->where(
+                                'worker_id',
+                                $worker->id
+                            )
+                            ->where(
+                                'status',
+                                'active'
+                            )
+                            ->exists();
+
+                    abort_unless(
+                        $activeAssignmentExists,
+                        409,
+                        'Laporan tidak dapat dikirim karena penugasan Pekerja sudah tidak aktif.'
+                    );
 
                     $reportDate =
                         $validated['reportDate'];
@@ -399,75 +442,60 @@ class Create extends Component
                         ->create([
                             'report_number' => null,
 
-                            'project_id' =>
-                                $task->project_id,
+                            'project_id' => $task->project_id,
 
-                            'task_id' =>
-                                $task->id,
+                            'task_id' => $task->id,
 
-                            'user_id' =>
-                                $worker->id,
+                            'user_id' => $worker->id,
 
-                            'report_date' =>
-                                $reportDate,
+                            'report_date' => $reportDate,
 
-                            'reported_progress' =>
-                                $reportedProgress,
+                            'reported_progress' => $reportedProgress,
 
-                            'work_status' =>
-                                $validated['workStatus'],
+                            'work_status' => $validated['workStatus'],
 
-                            'activities' =>
-                                trim(
-                                    $validated['activities']
-                                ),
+                            'activities' => trim(
+                                $validated['activities']
+                            ),
 
-                            'obstacles' =>
-                                filled(
-                                    $validated['obstacles']
-                                    ?? null
-                                )
+                            'obstacles' => filled(
+                                $validated['obstacles']
+                                ?? null
+                            )
                                     ? trim(
                                         $validated['obstacles']
                                     )
                                     : null,
 
-                            'notes' =>
-                                filled(
-                                    $validated['notes']
-                                    ?? null
-                                )
+                            'notes' => filled(
+                                $validated['notes']
+                                ?? null
+                            )
                                     ? trim(
                                         $validated['notes']
                                     )
                                     : null,
 
-                            'status' =>
-                                'submitted',
+                            'status' => 'submitted',
 
-                            'submitted_at' =>
-                                $submittedAt,
+                            'submitted_at' => $submittedAt,
 
-                            'reviewed_by' =>
-                                null,
+                            'reviewed_by' => null,
 
-                            'reviewed_at' =>
-                                null,
+                            'reviewed_at' => null,
 
-                            'review_notes' =>
-                                null,
+                            'review_notes' => null,
                         ]);
 
                     $report->update([
-                        'report_number' =>
-                            'RPT-'
-                            . str_replace(
+                        'report_number' => 'RPT-'
+                            .str_replace(
                                 '-',
                                 '',
                                 $reportDate
                             )
-                            . '-'
-                            . str_pad(
+                            .'-'
+                            .str_pad(
                                 (string) $report->id,
                                 6,
                                 '0',
@@ -477,9 +505,9 @@ class Create extends Component
 
                     $storageDirectory =
                         'documentations/'
-                        . $worker->id
-                        . '/'
-                        . str_replace(
+                        .$worker->id
+                        .'/'
+                        .str_replace(
                             '-',
                             '/',
                             substr(
@@ -490,8 +518,7 @@ class Create extends Component
                         );
 
                     foreach (
-                        $validated['photos'] ?? []
-                        as $photo
+                        $validated['photos'] ?? [] as $photo
                     ) {
                         $originalName =
                             $photo->getClientOriginalName();
@@ -520,55 +547,40 @@ class Create extends Component
 
                         Documentation::query()
                             ->create([
-                                'project_id' =>
-                                    $task->project_id,
+                                'project_id' => $task->project_id,
 
-                                'task_id' =>
-                                    $task->id,
+                                'task_id' => $task->id,
 
-                                'daily_report_id' =>
-                                    $report->id,
+                                'daily_report_id' => $report->id,
 
-                                'user_id' =>
-                                    $worker->id,
+                                'user_id' => $worker->id,
 
-                                'title' =>
-                                    $task->title,
+                                'title' => $task->title,
 
-                                'category' =>
-                                    'progress',
+                                'category' => 'progress',
 
-                                'photo' =>
-                                    $storedPath,
+                                'photo' => $storedPath,
 
-                                'original_name' =>
-                                    $originalName,
+                                'original_name' => $originalName,
 
-                                'mime_type' =>
-                                    $mimeType,
+                                'mime_type' => $mimeType,
 
-                                'file_size' =>
-                                    $fileSize,
+                                'file_size' => $fileSize,
 
-                                'description' =>
-                                    trim(
-                                        $validated['activities']
-                                    ),
+                                'description' => trim(
+                                    $validated['activities']
+                                ),
 
-                                'documentation_date' =>
-                                    $reportDate,
+                                'documentation_date' => $reportDate,
 
-                                'taken_at' =>
-                                    $submittedAt,
+                                'taken_at' => $submittedAt,
                             ]);
                     }
 
                     $task->update([
-                        'status' =>
-                            'submitted',
+                        'status' => 'submitted',
 
-                        'submitted_at' =>
-                            $submittedAt,
+                        'submitted_at' => $submittedAt,
                     ]);
                 },
                 3
@@ -584,14 +596,27 @@ class Create extends Component
                 navigate: true
             );
         } catch (Throwable $exception) {
+            /*
+             * Hapus semua file yang sudah sempat
+             * tersimpan apabila transaksi gagal.
+             */
             foreach (
-                $storedPaths
-                as $storedPath
+                $storedPaths as $storedPath
             ) {
                 Storage::disk('public')
                     ->delete(
                         $storedPath
                     );
+            }
+
+            /*
+             * Jangan ubah HTTP lifecycle exception
+             * seperti 409 menjadi validation error.
+             */
+            if (
+                $exception instanceof HttpExceptionInterface
+            ) {
+                throw $exception;
             }
 
             report(
@@ -613,8 +638,11 @@ class Create extends Component
     private function resetTaskInformation(): void
     {
         $this->projectName = '';
+
         $this->taskLocation = '';
+
         $this->currentTaskProgress = 0;
+
         $this->reportedProgress = 0;
     }
 
@@ -622,9 +650,24 @@ class Create extends Component
     {
         $worker = $this->authenticatedWorker();
 
+        /*
+         * Task hanya tersedia jika:
+         * - assignment Pekerja masih aktif;
+         * - Project masih operasional;
+         * - Task masih in_progress.
+         */
         $activeProjectIds = $worker
             ->activeWorkerProjects()
-            ->pluck('projects.id');
+            ->whereIn(
+                'projects.status',
+                [
+                    'planning',
+                    'on_progress',
+                ]
+            )
+            ->pluck(
+                'projects.id'
+            );
 
         return Task::query()
             ->where(
@@ -669,8 +712,7 @@ class Create extends Component
         return view(
             'livewire.pekerja.report.create',
             [
-                'availableTasks' =>
-                    $availableTasks,
+                'availableTasks' => $availableTasks,
             ]
         );
     }
