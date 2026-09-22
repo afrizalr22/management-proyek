@@ -40,12 +40,13 @@ class RolePermissionSeeder extends Seeder
             'delete clients',
 
             // Project
-            'view-any projects',
-            'view projects',
-            'create projects',
-            'update projects',
-            'delete projects',
-            'assign workers',
+'view-any projects',
+'view projects',
+'create projects',
+'update projects',
+'delete projects',
+'cancel projects',
+'assign workers',
 
             // Project Progress
             'view-any project progress',
