@@ -540,6 +540,35 @@ class ProjectWorkflowTest extends TestCase
             $this->task->progress
         );
 
+        $assignment = ProjectWorker::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->where(
+                'worker_id',
+                $this->worker->id
+            )
+            ->sole();
+
+        $this->assertSame(
+            'inactive',
+            $assignment->status
+        );
+
+        $this->assertNotNull(
+            $assignment->ended_at
+        );
+
+        $this->assertFalse(
+            $this->worker
+                ->activeWorkerProjects()
+                ->whereKey(
+                    $this->project->id
+                )
+                ->exists()
+        );
+
         $this->assertNotNull(
             $this->task->completed_at
         );

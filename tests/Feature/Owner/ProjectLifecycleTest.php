@@ -138,6 +138,17 @@ class ProjectLifecycleTest extends TestCase
         $task->refresh();
         $this->project->refresh();
 
+        $assignment = ProjectWorker::query()
+            ->where(
+                'project_id',
+                $this->project->id
+            )
+            ->where(
+                'worker_id',
+                $this->worker->id
+            )
+            ->sole();
+
         $this->assertSame(
             'completed',
             $task->status
@@ -151,6 +162,29 @@ class ProjectLifecycleTest extends TestCase
         $this->assertSame(
             'completed',
             $this->project->status
+        );
+
+        /*
+         * Ketika Project selesai, assignment Pekerja
+         * harus otomatis ditutup agar Pekerja dapat
+         * digunakan kembali pada Project lain.
+         */
+        $this->assertSame(
+            'inactive',
+            $assignment->status
+        );
+
+        $this->assertNotNull(
+            $assignment->ended_at
+        );
+
+        $this->assertFalse(
+            $this->worker
+                ->activeWorkerProjects()
+                ->whereKey(
+                    $this->project->id
+                )
+                ->exists()
         );
     }
 

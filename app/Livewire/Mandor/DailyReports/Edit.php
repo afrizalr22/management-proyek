@@ -6,6 +6,7 @@ use App\Models\DailyReport;
 use App\Models\Documentation;
 use App\Models\Project;
 use App\Models\ProjectProgress;
+use App\Models\ProjectWorker;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -496,6 +497,7 @@ class Edit extends Component
 
         if ($allActiveTasksCompleted) {
             $projectData['status'] = 'completed';
+            $projectData['progress'] = 100;
         } elseif (
             $projectProgress > 0
             && $project->status === 'planning'
@@ -506,6 +508,22 @@ class Edit extends Component
         $project->update(
             $projectData
         );
+
+        if ($allActiveTasksCompleted) {
+            ProjectWorker::query()
+                ->where(
+                    'project_id',
+                    $project->id
+                )
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->update([
+                    'status' => 'inactive',
+                    'ended_at' => now(),
+                ]);
+        }
 
         ProjectProgress::query()->create([
             'project_id' => $project->id,
