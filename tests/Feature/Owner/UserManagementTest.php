@@ -289,6 +289,86 @@ class UserManagementTest extends TestCase
         );
     }
 
+    public function test_updating_user_without_changes_shows_no_changes_notification(): void
+    {
+        $worker = $this->createUser(
+            'Pekerja Tanpa Perubahan',
+            'pekerja.tanpa.perubahan@example.com',
+            'pekerja',
+            'active',
+            'Password123'
+        );
+
+        $worker->update([
+            'phone' => '081234567890',
+        ]);
+
+        $originalPassword =
+            $worker->password;
+
+        Livewire::actingAs($this->owner)
+            ->test(
+                Edit::class,
+                [
+                    'user' => $worker,
+                ]
+            )
+            ->set(
+                'password',
+                ''
+            )
+            ->set(
+                'password_confirmation',
+                ''
+            )
+            ->call('updateUser')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'owner.users.show',
+                    $worker
+                )
+            )
+            ->assertSessionHas(
+                'notification',
+                [
+                    'type' => 'warning',
+                    'message' => 'Tidak ada perubahan data pengguna.',
+                ]
+            );
+
+        $worker->refresh();
+
+        $this->assertSame(
+            'Pekerja Tanpa Perubahan',
+            $worker->name
+        );
+
+        $this->assertSame(
+            'pekerja.tanpa.perubahan@example.com',
+            $worker->email
+        );
+
+        $this->assertSame(
+            '081234567890',
+            $worker->phone
+        );
+
+        $this->assertSame(
+            'active',
+            $worker->status
+        );
+
+        $this->assertSame(
+            $originalPassword,
+            $worker->password
+        );
+
+        $this->assertTrue(
+            $worker->hasRole('pekerja')
+        );
+    }
+
     public function test_owner_cannot_change_own_role_or_deactivate_own_account(): void
     {
         Livewire::actingAs($this->owner)

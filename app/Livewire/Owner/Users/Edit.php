@@ -101,235 +101,295 @@ class Edit extends Component
     protected function messages(): array
     {
         return [
-            'name.required' =>
-                'Nama pengguna wajib diisi.',
+            'name.required' => 'Nama pengguna wajib diisi.',
 
-            'name.min' =>
-                'Nama pengguna minimal 3 karakter.',
+            'name.min' => 'Nama pengguna minimal 3 karakter.',
 
-            'name.max' =>
-                'Nama pengguna maksimal 100 karakter.',
+            'name.max' => 'Nama pengguna maksimal 100 karakter.',
 
-            'email.required' =>
-                'Email wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
 
-            'email.email' =>
-                'Format email tidak valid.',
+            'email.email' => 'Format email tidak valid.',
 
-            'email.unique' =>
-                'Email sudah digunakan pengguna lain.',
+            'email.unique' => 'Email sudah digunakan pengguna lain.',
 
-            'phone.regex' =>
-                'Format nomor telepon tidak valid.',
+            'phone.regex' => 'Format nomor telepon tidak valid.',
 
-            'phone.max' =>
-                'Nomor telepon maksimal 20 karakter.',
+            'phone.max' => 'Nomor telepon maksimal 20 karakter.',
 
-            'role.required' =>
-                'Role pengguna wajib dipilih.',
+            'role.required' => 'Role pengguna wajib dipilih.',
 
-            'role.in' =>
-                'Role pengguna tidak valid.',
+            'role.in' => 'Role pengguna tidak valid.',
 
-            'status.required' =>
-                'Status akun wajib dipilih.',
+            'status.required' => 'Status akun wajib dipilih.',
 
-            'status.in' =>
-                'Status akun tidak valid.',
+            'status.in' => 'Status akun tidak valid.',
 
-            'password.confirmed' =>
-                'Konfirmasi password tidak sesuai.',
+            'password.confirmed' => 'Konfirmasi password tidak sesuai.',
 
-            'password.min' =>
-                'Password minimal 8 karakter.',
+            'password.min' => 'Password minimal 8 karakter.',
         ];
     }
 
     public function updateUser(): void
-{
-    Gate::authorize('update users');
+    {
+        Gate::authorize('update users');
 
-    $validated = $this->validate();
+        $validated = $this->validate();
 
-    $currentRole = $this->user
-        ->roles()
-        ->value('name');
+        $currentRole = $this->user
+            ->roles()
+            ->value('name');
 
-    $isCurrentUser = Auth::id() === $this->user->id;
+        $isCurrentUser =
+            Auth::id() === $this->user->id;
 
-    /*
-     * Perlindungan akun yang sedang digunakan.
-     */
-    if ($isCurrentUser) {
-        if ($validated['role'] !== $currentRole) {
-            $this->addError(
-                'role',
-                'Anda tidak dapat mengubah role akun sendiri.'
+        /*
+         * Normalisasi input sebelum membandingkan
+         * perubahan dengan data yang tersimpan.
+         */
+        $normalizedName =
+            trim($validated['name']);
+
+        $normalizedEmail =
+            mb_strtolower(
+                trim($validated['email'])
+            );
+
+        $normalizedPhone =
+            filled($validated['phone'] ?? null)
+                ? trim($validated['phone'])
+                : null;
+
+        $hasDataChanges =
+            $normalizedName !== $this->user->name
+            || $normalizedEmail !== $this->user->email
+            || $normalizedPhone !== $this->user->phone
+            || $validated['status'] !== $this->user->status;
+
+        $hasRoleChange =
+            $validated['role'] !== $currentRole;
+
+        /*
+         * Password kosong berarti password lama
+         * tetap digunakan.
+         */
+        $hasPasswordChange =
+            filled($validated['password'] ?? null);
+
+        /*
+         * Jangan melakukan update apabila form
+         * tidak memiliki perubahan apa pun.
+         */
+        if (
+            ! $hasDataChanges
+            && ! $hasRoleChange
+            && ! $hasPasswordChange
+        ) {
+            session()->flash('notification', [
+                'type' => 'warning',
+                'message' => 'Tidak ada perubahan data pengguna.',
+            ]);
+
+            $this->redirectRoute(
+                'owner.users.show',
+                [
+                    'user' => $this->user->id,
+                ],
+                navigate: true
             );
 
             return;
         }
 
-        if ($validated['status'] !== 'active') {
-            $this->addError(
-                'status',
-                'Anda tidak dapat menonaktifkan akun sendiri.'
-            );
+        /*
+         * Perlindungan akun yang sedang digunakan.
+         */
+        if ($isCurrentUser) {
+            if ($hasRoleChange) {
+                $this->addError(
+                    'role',
+                    'Anda tidak dapat mengubah role akun sendiri.'
+                );
 
-            return;
-        }
-    }
-
-    /*
-     * Pemeriksaan Project dan penugasan aktif.
-     */
-    $hasActiveManagedProjects =
-        $currentRole === 'mandor'
-        && $this->hasActiveManagedProjects();
-
-    $hasActiveWorkerAssignment =
-        $currentRole === 'pekerja'
-        && $this->hasActiveWorkerAssignment();
-
-    /*
-     * Mandor yang masih mengelola Project aktif
-     * tidak dapat dinonaktifkan.
-     */
-    if (
-        $hasActiveManagedProjects
-        && $validated['status'] === 'inactive'
-    ) {
-        $this->addError(
-            'status',
-            'Akun Mandor tidak dapat dinonaktifkan karena masih mengelola Project aktif.'
-        );
-
-        return;
-    }
-
-    /*
-     * Pekerja yang masih memiliki penugasan aktif
-     * tidak dapat dinonaktifkan.
-     */
-    if (
-        $hasActiveWorkerAssignment
-        && $validated['status'] === 'inactive'
-    ) {
-        $this->addError(
-            'status',
-            'Akun Pekerja tidak dapat dinonaktifkan karena masih memiliki penugasan aktif.'
-        );
-
-        return;
-    }
-
-    /*
-     * Mandor dengan Project aktif tidak dapat
-     * dipindahkan ke role lain.
-     */
-    if (
-        $hasActiveManagedProjects
-        && $validated['role'] !== 'mandor'
-    ) {
-        $this->addError(
-            'role',
-            'Role Mandor tidak dapat diubah karena masih mengelola Project aktif.'
-        );
-
-        return;
-    }
-
-    /*
-     * Pekerja dengan penugasan aktif tidak dapat
-     * dipindahkan ke role lain.
-     */
-    if (
-        $hasActiveWorkerAssignment
-        && $validated['role'] !== 'pekerja'
-    ) {
-        $this->addError(
-            'role',
-            'Role Pekerja tidak dapat diubah karena masih memiliki penugasan aktif.'
-        );
-
-        return;
-    }
-
-    /*
-     * Sistem harus selalu memiliki minimal
-     * satu Owner aktif.
-     */
-    if (
-        $currentRole === 'owner'
-        && (
-            $validated['role'] !== 'owner'
-            || $validated['status'] !== 'active'
-        )
-        && !$this->hasAnotherActiveOwner()
-    ) {
-        $errorField = $validated['role'] !== 'owner'
-            ? 'role'
-            : 'status';
-
-        $this->addError(
-            $errorField,
-            'Owner terakhir yang aktif tidak dapat diubah role atau dinonaktifkan.'
-        );
-
-        return;
-    }
-
-    try {
-        DB::transaction(function () use ($validated): void {
-            $data = [
-                'name' => trim($validated['name']),
-
-                'email' => mb_strtolower(
-                    trim($validated['email'])
-                ),
-
-                'phone' => filled($validated['phone'] ?? null)
-                    ? trim($validated['phone'])
-                    : null,
-
-                'status' => $validated['status'],
-            ];
-
-            /*
-             * Password hanya diperbarui jika diisi.
-             */
-            if (filled($validated['password'] ?? null)) {
-                $data['password'] = $validated['password'];
+                return;
             }
 
-            $this->user->update($data);
+            if ($validated['status'] !== 'active') {
+                $this->addError(
+                    'status',
+                    'Anda tidak dapat menonaktifkan akun sendiri.'
+                );
 
-            $this->user->syncRoles([
-                $validated['role'],
+                return;
+            }
+        }
+
+        /*
+         * Pemeriksaan Project dan penugasan aktif.
+         */
+        $hasActiveManagedProjects =
+            $currentRole === 'mandor'
+            && $this->hasActiveManagedProjects();
+
+        $hasActiveWorkerAssignment =
+            $currentRole === 'pekerja'
+            && $this->hasActiveWorkerAssignment();
+
+        /*
+         * Mandor yang masih mengelola Project aktif
+         * tidak dapat dinonaktifkan.
+         */
+        if (
+            $hasActiveManagedProjects
+            && $validated['status'] === 'inactive'
+        ) {
+            $this->addError(
+                'status',
+                'Akun Mandor tidak dapat dinonaktifkan karena masih mengelola Project aktif.'
+            );
+
+            return;
+        }
+
+        /*
+         * Pekerja yang masih memiliki penugasan aktif
+         * tidak dapat dinonaktifkan.
+         */
+        if (
+            $hasActiveWorkerAssignment
+            && $validated['status'] === 'inactive'
+        ) {
+            $this->addError(
+                'status',
+                'Akun Pekerja tidak dapat dinonaktifkan karena masih memiliki penugasan aktif.'
+            );
+
+            return;
+        }
+
+        /*
+         * Mandor dengan Project aktif tidak dapat
+         * dipindahkan ke role lain.
+         */
+        if (
+            $hasActiveManagedProjects
+            && $validated['role'] !== 'mandor'
+        ) {
+            $this->addError(
+                'role',
+                'Role Mandor tidak dapat diubah karena masih mengelola Project aktif.'
+            );
+
+            return;
+        }
+
+        /*
+         * Pekerja dengan penugasan aktif tidak dapat
+         * dipindahkan ke role lain.
+         */
+        if (
+            $hasActiveWorkerAssignment
+            && $validated['role'] !== 'pekerja'
+        ) {
+            $this->addError(
+                'role',
+                'Role Pekerja tidak dapat diubah karena masih memiliki penugasan aktif.'
+            );
+
+            return;
+        }
+
+        /*
+         * Sistem harus selalu memiliki minimal
+         * satu Owner aktif.
+         */
+        if (
+            $currentRole === 'owner'
+            && (
+                $validated['role'] !== 'owner'
+                || $validated['status'] !== 'active'
+            )
+            && ! $this->hasAnotherActiveOwner()
+        ) {
+            $errorField =
+                $validated['role'] !== 'owner'
+                    ? 'role'
+                    : 'status';
+
+            $this->addError(
+                $errorField,
+                'Owner terakhir yang aktif tidak dapat diubah role atau dinonaktifkan.'
+            );
+
+            return;
+        }
+
+        try {
+            DB::transaction(
+                function () use (
+                    $validated,
+                    $normalizedName,
+                    $normalizedEmail,
+                    $normalizedPhone
+                ): void {
+                    $data = [
+                        'name' => $normalizedName,
+                        'email' => $normalizedEmail,
+                        'phone' => $normalizedPhone,
+                        'status' => $validated['status'],
+                    ];
+
+                    /*
+                     * Password hanya diperbarui
+                     * apabila pengguna mengisinya.
+                     */
+                    if (
+                        filled(
+                            $validated['password']
+                                ?? null
+                        )
+                    ) {
+                        $data['password'] =
+                            $validated['password'];
+                    }
+
+                    $this->user->update($data);
+
+                    if (
+                        $validated['role']
+                        !== $this->user
+                            ->roles()
+                            ->value('name')
+                    ) {
+                        $this->user->syncRoles([
+                            $validated['role'],
+                        ]);
+                    }
+                }
+            );
+
+            session()->flash('notification', [
+                'type' => 'success',
+                'message' => 'Data pengguna berhasil diperbarui.',
             ]);
-        });
 
-        session()->flash('notification', [
-            'type' => 'success',
-            'message' => 'Data pengguna berhasil diperbarui.',
-        ]);
+            $this->redirectRoute(
+                'owner.users.show',
+                [
+                    'user' => $this->user->id,
+                ],
+                navigate: true
+            );
+        } catch (Throwable $exception) {
+            report($exception);
 
-        $this->redirectRoute(
-            'owner.users.show',
-            [
-                'user' => $this->user->id,
-            ],
-            navigate: true
-        );
-    } catch (Throwable $exception) {
-        report($exception);
-
-        $this->addError(
-            'save',
-            'Data pengguna gagal diperbarui. Silakan coba kembali.'
-        );
+            $this->addError(
+                'save',
+                'Data pengguna gagal diperbarui. Silakan coba kembali.'
+            );
+        }
     }
-}
 
     private function hasActiveManagedProjects(): bool
     {
