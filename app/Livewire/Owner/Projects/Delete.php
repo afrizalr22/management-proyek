@@ -27,7 +27,9 @@ class Delete extends Component
                 'mandor:id,name',
             ])
             ->withCount([
-                'workers',
+                'workerAssignments as workers_count' => fn ($query) => $query
+                    ->where('status', 'active'),
+
                 'tasks',
                 'progresses',
                 'dailyReports',
@@ -37,7 +39,7 @@ class Delete extends Component
             ])
             ->find($projectId);
 
-        if (!$project) {
+        if (! $project) {
             $this->dispatch(
                 'project-delete-failed',
                 message: 'Project tidak ditemukan.'
@@ -65,7 +67,7 @@ class Delete extends Component
     {
         $this->authorizeDeleteProject();
 
-        if (!$this->project) {
+        if (! $this->project) {
             $this->addError(
                 'delete',
                 'Project tidak ditemukan.'
@@ -82,7 +84,7 @@ class Delete extends Component
                     ->lockForUpdate()
                     ->find($this->project->id);
 
-                if (!$project) {
+                if (! $project) {
                     throw new \RuntimeException(
                         'project_not_found'
                     );
@@ -94,8 +96,29 @@ class Delete extends Component
                     );
                 }
 
+                /*
+ * Project tidak boleh dihapus apabila masih memiliki
+ * Pekerja yang aktif.
+ *
+ * Assignment Pekerja yang sudah inactive hanya menjadi
+ * riwayat penugasan dan tidak menghalangi penghapusan
+ * selama belum terdapat data operasional.
+ */
+                if (
+                    $project
+                        ->workerAssignments()
+                        ->where('status', 'active')
+                        ->exists()
+                ) {
+                    throw new \RuntimeException(
+                        'project_has_workers:pekerja aktif'
+                    );
+                }
+
+                /*
+                 * Data operasional tetap menghalangi penghapusan Project.
+                 */
                 $relations = [
-                    'workers' => 'pekerja',
                     'tasks' => 'tugas',
                     'progresses' => 'riwayat progres',
                     'dailyReports' => 'laporan harian',
@@ -111,6 +134,16 @@ class Delete extends Component
                         );
                     }
                 }
+
+                /*
+                 * Assignment Pekerja yang sudah inactive hanya merupakan
+                 * histori penempatan. Hapus assignment tersebut sebelum
+                 * Project dihapus agar foreign key tidak menghalangi delete.
+                 */
+                $project
+                    ->workerAssignments()
+                    ->where('status', 'inactive')
+                    ->delete();
 
                 /*
                  * Quotation tidak dihapus. Hubungannya dilepas agar
@@ -139,18 +172,15 @@ class Delete extends Component
         } catch (\RuntimeException $exception) {
             $message = match (true) {
                 $exception->getMessage()
-                    === 'project_not_found' =>
-                    'Project tidak ditemukan.',
+                    === 'project_not_found' => 'Project tidak ditemukan.',
 
                 $exception->getMessage()
-                    === 'project_not_planning' =>
-                    'Hanya Project berstatus Perencanaan yang dapat dihapus.',
+                    === 'project_not_planning' => 'Hanya Project berstatus Perencanaan yang dapat dihapus.',
 
                 str_starts_with(
                     $exception->getMessage(),
                     'project_has_'
-                ) =>
-                    'Project tidak dapat dihapus karena sudah mempunyai '.
+                ) => 'Project tidak dapat dihapus karena sudah mempunyai '.
                     (
                         explode(
                             ':',
@@ -159,8 +189,7 @@ class Delete extends Component
                         )[1] ?? 'data operasional'
                     ).'.',
 
-                default =>
-                    'Project gagal dihapus.',
+                default => 'Project gagal dihapus.',
             };
 
             $this->addError('delete', $message);

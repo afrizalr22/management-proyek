@@ -5,6 +5,7 @@ namespace Tests\Feature\Owner;
 use App\Livewire\Mandor\DailyReports\Edit as ReportValidation;
 use App\Livewire\Owner\Projects\Cancel;
 use App\Livewire\Owner\Projects\Delete;
+use App\Livewire\Owner\Projects\Delete as ProjectDelete;
 use App\Livewire\Owner\Projects\Edit;
 use App\Models\Client;
 use App\Models\DailyReport;
@@ -720,6 +721,114 @@ class ProjectLifecycleTest extends TestCase
             'quotations',
             [
                 'id' => $quotation->id,
+                'project_id' => null,
+            ]
+        );
+    }
+
+    public function test_planning_project_with_inactive_worker_assignment_can_be_deleted_and_quotation_is_released(): void
+    {
+        $project = $this->createProject(
+            'PRJ-INACTIVE-WORKER-DELETE'
+        );
+
+        $quotation = $this->createQuotation(
+            $project
+        );
+
+        /*
+         * Project pernah mempunyai Pekerja aktif.
+         */
+        $assignment = ProjectWorker::query()->create([
+            'project_id' => $project->id,
+            'worker_id' => $this->worker->id,
+            'assigned_by' => $this->owner->id,
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
+
+        $this->assertDatabaseHas(
+            'project_workers',
+            [
+                'id' => $assignment->id,
+                'project_id' => $project->id,
+                'worker_id' => $this->worker->id,
+                'status' => 'active',
+            ]
+        );
+
+        /*
+         * Pekerja kemudian dilepas dari Project.
+         * Assignment tetap menjadi histori tetapi inactive.
+         */
+        $assignment->update([
+            'status' => 'inactive',
+            'ended_at' => now(),
+        ]);
+
+        $this->assertDatabaseHas(
+            'project_workers',
+            [
+                'id' => $assignment->id,
+                'project_id' => $project->id,
+                'worker_id' => $this->worker->id,
+                'status' => 'inactive',
+            ]
+        );
+
+        /*
+         * Project planning tanpa data operasional
+         * harus tetap dapat dihapus walaupun pernah
+         * mempunyai histori assignment Pekerja.
+         */
+        Livewire::actingAs($this->owner)
+            ->test(ProjectDelete::class)
+            ->call(
+                'openDeleteModal',
+                $project->id
+            )
+            ->call('deleteProject')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('owner.projects.index')
+            );
+
+        /*
+         * Project benar-benar terhapus.
+         */
+        $this->assertDatabaseMissing(
+            'projects',
+            [
+                'id' => $project->id,
+            ]
+        );
+
+        /*
+         * Histori assignment inactive ikut dibersihkan
+         * karena Project sudah dihapus permanen.
+         */
+        $this->assertDatabaseMissing(
+            'project_workers',
+            [
+                'id' => $assignment->id,
+            ]
+        );
+
+        /*
+         * Quotation tidak ikut dihapus dan hubungan
+         * dengan Project lama harus dilepas.
+         */
+        $quotation->refresh();
+
+        $this->assertNull(
+            $quotation->project_id
+        );
+
+        $this->assertDatabaseHas(
+            'quotations',
+            [
+                'id' => $quotation->id,
+                'status' => 'approved',
                 'project_id' => null,
             ]
         );

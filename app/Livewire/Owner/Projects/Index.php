@@ -60,8 +60,10 @@ class Index extends Component
                 'mandor:id,name,email',
             ])
             ->withCount([
-                'workers',
                 'tasks',
+
+                'workerAssignments as workers_count' => fn (Builder $query) => $query
+                    ->where('status', 'active'),
             ])
             ->when(
                 $this->search !== '',
