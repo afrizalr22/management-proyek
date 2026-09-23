@@ -220,62 +220,274 @@
                     @endif
 
                     @if ($invoice->status === 'issued')
-                        <button
-                            type="button"
-                            wire:click="markAsSent"
-                            wire:confirm="Tandai invoice ini sebagai sudah dikirim kepada klien?"
-                            wire:loading.attr="disabled"
-                            wire:target="markAsSent"
-                            class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <span
-                                wire:loading.remove
-                                wire:target="markAsSent"
-                            >
-                                Tandai Dikirim
-                            </span>
+    <div
+        x-data="{ showSendConfirmation: false }"
+        x-on:keydown.escape.window="showSendConfirmation = false"
+    >
+        <button
+            type="button"
+            x-on:click="showSendConfirmation = true"
+            wire:loading.attr="disabled"
+            wire:target="markAsSent"
+            class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+            <span
+                wire:loading.remove
+                wire:target="markAsSent"
+            >
+                Tandai Dikirim
+            </span>
 
-                            <span
-                                wire:loading
-                                wire:target="markAsSent"
+            <span
+                wire:loading
+                wire:target="markAsSent"
+            >
+                Memproses...
+            </span>
+        </button>
+
+        {{-- Modal konfirmasi kirim --}}
+        <div
+            x-cloak
+            x-show="showSendConfirmation"
+            x-transition.opacity
+            class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 px-4"
+            role="dialog"
+            aria-modal="true"
+        >
+            <div
+                x-on:click.self="showSendConfirmation = false"
+                class="absolute inset-0"
+            ></div>
+
+            <div
+                x-show="showSendConfirmation"
+                x-transition
+                class="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl"
+            >
+                <div class="p-6">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.8"
+                                stroke="currentColor"
+                                class="h-6 w-6"
                             >
-                                Memproses...
-                            </span>
-                        </button>
-                    @endif
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                                />
+                            </svg>
+                        </div>
+
+                        <div class="min-w-0">
+                            <h3 class="text-lg font-bold text-gray-900">
+                                Tandai Invoice Dikirim?
+                            </h3>
+
+                            <p class="mt-2 text-sm leading-6 text-gray-500">
+                                Invoice
+                                <span class="font-semibold text-gray-700">
+                                    {{ $invoice->invoice_number }}
+                                </span>
+                                akan ditandai sebagai sudah dikirim kepada klien.
+                            </p>
+
+                            <p class="mt-2 text-sm text-gray-500">
+                                Setelah dikirim, status invoice akan berubah menjadi
+                                <span class="font-semibold text-blue-600">
+                                    Dikirim
+                                </span>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 sm:flex-row sm:justify-end"
+                >
+                    <button
+                        type="button"
+                        x-on:click="showSendConfirmation = false"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                    >
+                        Kembali
+                    </button>
+
+                    <button
+                        type="button"
+                        x-on:click="
+                            showSendConfirmation = false;
+                            $wire.markAsSent();
+                        "
+                        wire:loading.attr="disabled"
+                        wire:target="markAsSent"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <span
+                            wire:loading.remove
+                            wire:target="markAsSent"
+                        >
+                            Ya, Tandai Dikirim
+                        </span>
+
+                        <span
+                            wire:loading
+                            wire:target="markAsSent"
+                        >
+                            Memproses...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 
                     @if (
-                        in_array(
-                            $invoice->status,
-                            ['draft', 'issued', 'sent'],
-                            true
-                        )
-                        && (float) $invoice->paid_amount <= 0
-                        && $invoice->payment_status === 'unpaid'
-                    )
-                        <button
-                            type="button"
-                            wire:click="cancelInvoice"
-                            wire:confirm="Batalkan invoice ini? Tindakan ini tidak dapat dibatalkan."
-                            wire:loading.attr="disabled"
-                            wire:target="cancelInvoice"
-                            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            <span
-                                wire:loading.remove
-                                wire:target="cancelInvoice"
-                            >
-                                Batalkan
-                            </span>
+    in_array(
+        $invoice->status,
+        ['draft', 'issued', 'sent'],
+        true
+    )
+    && (float) $invoice->paid_amount <= 0
+    && $invoice->payment_status === 'unpaid'
+)
+    <div
+        x-data="{ showCancelConfirmation: false }"
+        x-on:keydown.escape.window="showCancelConfirmation = false"
+    >
+        <button
+            type="button"
+            x-on:click="showCancelConfirmation = true"
+            wire:loading.attr="disabled"
+            wire:target="cancelInvoice"
+            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-red-300 bg-white px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+            <span
+                wire:loading.remove
+                wire:target="cancelInvoice"
+            >
+                Batalkan
+            </span>
 
-                            <span
-                                wire:loading
-                                wire:target="cancelInvoice"
+            <span
+                wire:loading
+                wire:target="cancelInvoice"
+            >
+                Membatalkan...
+            </span>
+        </button>
+
+        {{-- Modal konfirmasi pembatalan --}}
+        <div
+            x-cloak
+            x-show="showCancelConfirmation"
+            x-transition.opacity
+            class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 px-4"
+            role="dialog"
+            aria-modal="true"
+        >
+            <div
+                x-on:click.self="showCancelConfirmation = false"
+                class="absolute inset-0"
+            ></div>
+
+            <div
+                x-show="showCancelConfirmation"
+                x-transition
+                class="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl"
+            >
+                <div class="p-6">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.8"
+                                stroke="currentColor"
+                                class="h-6 w-6"
                             >
-                                Membatalkan...
-                            </span>
-                        </button>
-                    @endif
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                                />
+                            </svg>
+                        </div>
+
+                        <div class="min-w-0">
+                            <h3 class="text-lg font-bold text-gray-900">
+                                Batalkan Invoice?
+                            </h3>
+
+                            <p class="mt-2 text-sm leading-6 text-gray-500">
+                                Invoice
+                                <span class="font-semibold text-gray-700">
+                                    {{ $invoice->invoice_number }}
+                                </span>
+                                akan dibatalkan.
+                            </p>
+
+                            <div
+                                class="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-5 text-red-700"
+                            >
+                                Invoice yang sudah dibatalkan tidak dapat digunakan
+                                untuk proses pembayaran.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 sm:flex-row sm:justify-end"
+                >
+                    <button
+                        type="button"
+                        x-on:click="showCancelConfirmation = false"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                    >
+                        Kembali
+                    </button>
+
+                    <button
+                        type="button"
+                        x-on:click="
+                            showCancelConfirmation = false;
+                            $wire.cancelInvoice();
+                        "
+                        wire:loading.attr="disabled"
+                        wire:target="cancelInvoice"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <span
+                            wire:loading.remove
+                            wire:target="cancelInvoice"
+                        >
+                            Ya, Batalkan Invoice
+                        </span>
+
+                        <span
+                            wire:loading
+                            wire:target="cancelInvoice"
+                        >
+                            Membatalkan...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
                 @endcan
             </div>
         </div>
