@@ -29,11 +29,11 @@
             </div>
 
             <a
-                href="{{ route('mandor.projects.index') }}"
+                href="{{ route('mandor.documentations.index') }}"
                 wire:navigate
                 class="inline-flex w-fit items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-700"
             >
-                Lihat Project Saya
+                Lihat Photo Gallery
 
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

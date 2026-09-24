@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\ProjectWorker;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -21,13 +22,10 @@ class Dashboard extends Component
 
     private const COMPLETED_TASK_STATUSES = [
         'completed',
-        'approved',
     ];
 
     private const PENDING_REPORT_STATUSES = [
-        'draft',
         'submitted',
-        'pending',
     ];
 
     /**
@@ -65,8 +63,14 @@ class Dashboard extends Component
             ->count('worker_id');
 
         $todayTasksQuery = Task::query()
-            ->whereIn('project_id', $projectIds)
-            ->whereDate('start_at', today());
+            ->whereIn(
+                'project_id',
+                $projectIds
+            )
+            ->whereDate(
+                'start_at',
+                today()
+            );
 
         $todayTasks = (clone $todayTasksQuery)
             ->count();
@@ -85,12 +89,21 @@ class Dashboard extends Component
             : 0;
 
         $todayReports = DailyReport::query()
-            ->whereIn('project_id', $projectIds)
-            ->whereDate('report_date', today())
+            ->whereIn(
+                'project_id',
+                $projectIds
+            )
+            ->whereDate(
+                'report_date',
+                today()
+            )
             ->count();
 
         $reportsAwaitingReview = DailyReport::query()
-            ->whereIn('project_id', $projectIds)
+            ->whereIn(
+                'project_id',
+                $projectIds
+            )
             ->whereIn(
                 'status',
                 self::PENDING_REPORT_STATUSES
@@ -125,8 +138,14 @@ class Dashboard extends Component
                 'project:id,project_code,project_name,location',
                 'worker:id,name',
             ])
-            ->whereIn('project_id', $projectIds)
-            ->whereDate('start_at', today())
+            ->whereIn(
+                'project_id',
+                $projectIds
+            )
+            ->whereDate(
+                'start_at',
+                today()
+            )
             ->orderBy('start_at')
             ->get([
                 'id',
@@ -151,8 +170,13 @@ class Dashboard extends Component
         Collection $projectIds
     ): Collection {
         $taskActivities = Task::query()
-            ->with('project:id,project_name')
-            ->whereIn('project_id', $projectIds)
+            ->with(
+                'project:id,project_name'
+            )
+            ->whereIn(
+                'project_id',
+                $projectIds
+            )
             ->latest('updated_at')
             ->limit(5)
             ->get()
@@ -165,14 +189,21 @@ class Dashboard extends Component
 
                 return [
                     'key' => 'task-'.$task->id,
+
                     'type' => 'task',
+
                     'title' => $completed
-                        ? 'Task diselesaikan'
-                        : 'Task diperbarui',
+                            ? 'Task diselesaikan'
+                            : 'Task diperbarui',
+
                     'description' => $task->title.' — '
-                        .($task->project?->project_name
-                            ?? 'Project tidak ditemukan'),
+                        .(
+                            $task->project?->project_name
+                            ?? 'Project tidak ditemukan'
+                        ),
+
                     'occurred_at' => $task->updated_at,
+
                     'href' => route(
                         'mandor.projects.show',
                         [
@@ -187,7 +218,18 @@ class Dashboard extends Component
                 'project:id,project_name',
                 'user:id,name',
             ])
-            ->whereIn('project_id', $projectIds)
+            ->whereIn(
+                'project_id',
+                $projectIds
+            )
+            ->whereIn(
+                'status',
+                [
+                    'submitted',
+                    'revision',
+                    'approved',
+                ]
+            )
             ->latest('updated_at')
             ->limit(5)
             ->get()
@@ -196,15 +238,29 @@ class Dashboard extends Component
             ): array {
                 return [
                     'key' => 'report-'.$report->id,
+
                     'type' => 'report',
-                    'title' => $report->status === 'approved'
-                        ? 'Laporan disetujui'
-                        : 'Laporan diterima',
-                    'description' => ($report->user?->name ?? 'Pekerja')
+
+                    'title' => match ($report->status) {
+                        'approved' => 'Laporan disetujui',
+
+                        'revision' => 'Laporan perlu revisi',
+
+                        default => 'Laporan diterima',
+                    },
+
+                    'description' => (
+                        $report->user?->name
+                        ?? 'Pekerja'
+                    )
                         .' — '
-                        .($report->project?->project_name
-                            ?? 'Project tidak ditemukan'),
+                        .(
+                            $report->project?->project_name
+                            ?? 'Project tidak ditemukan'
+                        ),
+
                     'occurred_at' => $report->updated_at,
+
                     'href' => route(
                         'mandor.daily-reports.show',
                         [
@@ -224,6 +280,17 @@ class Dashboard extends Component
                     'project_id',
                     $projectIds
                 )
+                ->whereNotNull(
+                    'daily_report_id'
+                )
+                ->whereHas(
+                    'dailyReport',
+                    fn (Builder $query) => $query
+                        ->where(
+                            'status',
+                            'approved'
+                        )
+                )
                 ->latest('created_at')
                 ->limit(5)
                 ->get()
@@ -238,13 +305,17 @@ class Dashboard extends Component
 
                         'title' => 'Dokumentasi ditambahkan',
 
-                        'description' => ($documentation->title
-                                ?: 'Dokumentasi pekerjaan')
+                        'description' => (
+                            $documentation->title
+                            ?: 'Dokumentasi pekerjaan'
+                        )
                             .' — '
-                            .($documentation
-                                ->project
-                                ?->project_name
-                                ?? 'Project tidak ditemukan'),
+                            .(
+                                $documentation
+                                    ->project
+                                    ?->project_name
+                                ?? 'Project tidak ditemukan'
+                            ),
 
                         'occurred_at' => $documentation->created_at,
 
@@ -259,14 +330,22 @@ class Dashboard extends Component
                 });
 
         return collect()
-            ->concat($taskActivities)
-            ->concat($reportActivities)
-            ->concat($documentationActivities)
+            ->concat(
+                $taskActivities
+            )
+            ->concat(
+                $reportActivities
+            )
+            ->concat(
+                $documentationActivities
+            )
             ->filter(
                 fn (array $activity): bool => $activity['occurred_at']
-                    !== null
+                        !== null
             )
-            ->sortByDesc('occurred_at')
+            ->sortByDesc(
+                'occurred_at'
+            )
             ->take(5)
             ->values();
     }
@@ -282,7 +361,21 @@ class Dashboard extends Component
                 'project:id,project_code,project_name',
                 'user:id,name',
             ])
-            ->whereIn('project_id', $projectIds)
+            ->whereIn(
+                'project_id',
+                $projectIds
+            )
+            ->whereNotNull(
+                'daily_report_id'
+            )
+            ->whereHas(
+                'dailyReport',
+                fn (Builder $query) => $query
+                    ->where(
+                        'status',
+                        'approved'
+                    )
+            )
             ->latest(
                 'documentation_date'
             )
