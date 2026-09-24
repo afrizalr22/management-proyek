@@ -4,6 +4,7 @@ namespace Tests\Feature\Integration;
 
 use App\Livewire\Mandor\DailyReports\Edit as MandorReportValidation;
 use App\Livewire\Mandor\DailyReports\Show as MandorReportShow;
+use App\Livewire\Mandor\Documentations\Index as MandorDocumentationsIndex;
 use App\Livewire\Owner\Monitoring\Documentation as OwnerMonitoringDocumentation;
 use App\Livewire\Owner\Monitoring\Index as OwnerMonitoring;
 use App\Livewire\Owner\Monitoring\Show as OwnerMonitoringShow;
@@ -1654,6 +1655,462 @@ class ProjectWorkflowTest extends TestCase
                         && $item->user_id
                             === $this->worker->id;
                 }
+            );
+    }
+
+    public function test_mandor_global_documentation_gallery_filters_and_protects_project_scope(): void
+    {
+        Storage::fake('public');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dokumentasi dari laporan Project utama
+        |--------------------------------------------------------------------------
+        */
+
+        $mainReport = DailyReport::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $this->task->id,
+            'user_id' => $this->worker->id,
+            'report_number' => 'RPT-GALLERY-001',
+            'report_date' => '2026-09-18',
+            'activities' => 'Dokumentasi Project utama.',
+            'work_status' => 'in_progress',
+            'reported_progress' => 40,
+            'obstacles' => null,
+            'notes' => 'Foto untuk pengujian gallery.',
+            'submitted_at' => now(),
+            'status' => 'approved',
+        ]);
+
+        $mainPhotoPath = 'documentations/testing/gallery-main.jpg';
+
+        Storage::disk('public')->put(
+            $mainPhotoPath,
+            'fake-main-image'
+        );
+
+        $mainDocumentation = Documentation::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $this->task->id,
+            'daily_report_id' => $mainReport->id,
+            'user_id' => $this->worker->id,
+            'title' => 'Foto Gallery Project Utama',
+            'category' => 'progress',
+            'photo' => $mainPhotoPath,
+            'original_name' => 'gallery-main.jpg',
+            'mime_type' => 'image/jpeg',
+            'file_size' => 1024,
+            'description' => 'Dokumentasi dari laporan harian.',
+            'documentation_date' => '2026-09-18',
+            'taken_at' => '2026-09-18 09:00:00',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dokumentasi standalone tidak boleh muncul
+        |--------------------------------------------------------------------------
+        */
+
+        $standalonePhotoPath =
+            'documentations/testing/gallery-standalone.jpg';
+
+        Storage::disk('public')->put(
+            $standalonePhotoPath,
+            'fake-standalone-image'
+        );
+
+        $standaloneDocumentation = Documentation::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $this->task->id,
+            'daily_report_id' => null,
+            'user_id' => $this->worker->id,
+            'title' => 'Foto Standalone Tidak Boleh Tampil',
+            'category' => 'progress',
+            'photo' => $standalonePhotoPath,
+            'original_name' => 'gallery-standalone.jpg',
+            'mime_type' => 'image/jpeg',
+            'file_size' => 1024,
+            'description' => 'Dokumentasi tanpa laporan harian.',
+            'documentation_date' => '2026-09-18',
+            'taken_at' => '2026-09-18 09:05:00',
+        ]);
+
+        /*
+|--------------------------------------------------------------------------
+| Dokumentasi laporan submitted tidak boleh tampil
+|--------------------------------------------------------------------------
+*/
+
+        $submittedReport = DailyReport::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $this->task->id,
+            'user_id' => $this->worker->id,
+            'report_number' => 'RPT-GALLERY-SUBMITTED',
+            'report_date' => '2026-09-18',
+            'activities' => 'Dokumentasi masih menunggu validasi.',
+            'work_status' => 'in_progress',
+            'reported_progress' => 45,
+            'obstacles' => null,
+            'notes' => 'Belum disetujui Mandor.',
+            'submitted_at' => now(),
+            'status' => 'submitted',
+        ]);
+
+        $submittedPhotoPath =
+            'documentations/testing/gallery-submitted.jpg';
+
+        Storage::disk('public')->put(
+            $submittedPhotoPath,
+            'fake-submitted-image'
+        );
+
+        $submittedDocumentation = Documentation::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $this->task->id,
+            'daily_report_id' => $submittedReport->id,
+            'user_id' => $this->worker->id,
+            'title' => 'Foto Submitted Tidak Boleh Tampil',
+            'category' => 'progress',
+            'photo' => $submittedPhotoPath,
+            'original_name' => 'gallery-submitted.jpg',
+            'mime_type' => 'image/jpeg',
+            'file_size' => 1024,
+            'description' => 'Dokumentasi masih menunggu validasi.',
+            'documentation_date' => '2026-09-18',
+            'taken_at' => '2026-09-18 09:10:00',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dokumentasi laporan revision tidak boleh tampil
+        |--------------------------------------------------------------------------
+        */
+
+        $revisionReport = DailyReport::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $this->task->id,
+            'user_id' => $this->worker->id,
+            'report_number' => 'RPT-GALLERY-REVISION',
+            'report_date' => '2026-09-18',
+            'activities' => 'Dokumentasi sedang direvisi.',
+            'work_status' => 'in_progress',
+            'reported_progress' => 50,
+            'obstacles' => null,
+            'notes' => 'Perlu revisi dokumentasi.',
+            'submitted_at' => now(),
+            'status' => 'revision',
+        ]);
+
+        $revisionPhotoPath =
+            'documentations/testing/gallery-revision.jpg';
+
+        Storage::disk('public')->put(
+            $revisionPhotoPath,
+            'fake-revision-image'
+        );
+
+        $revisionDocumentation = Documentation::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $this->task->id,
+            'daily_report_id' => $revisionReport->id,
+            'user_id' => $this->worker->id,
+            'title' => 'Foto Revision Tidak Boleh Tampil',
+            'category' => 'progress',
+            'photo' => $revisionPhotoPath,
+            'original_name' => 'gallery-revision.jpg',
+            'mime_type' => 'image/jpeg',
+            'file_size' => 1024,
+            'description' => 'Dokumentasi yang sedang direvisi.',
+            'documentation_date' => '2026-09-18',
+            'taken_at' => '2026-09-18 09:15:00',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Project kedua milik Mandor yang sama
+        |--------------------------------------------------------------------------
+        */
+
+        $secondProject = Project::query()->create([
+            'client_id' => $this->project->client_id,
+            'mandor_id' => $this->mandor->id,
+            'project_code' => 'PRJ-GALLERY-002',
+            'project_name' => 'Project Gallery Kedua',
+            'location' => 'Jakarta Pusat',
+            'description' => 'Project kedua untuk filter gallery.',
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-12-31',
+            'progress' => 0,
+            'status' => 'planning',
+        ]);
+
+        $secondTask = Task::query()->create([
+            'project_id' => $secondProject->id,
+            'mandor_id' => $this->mandor->id,
+            'worker_id' => $this->worker->id,
+            'task_code' => 'TSK-GALLERY-002',
+            'title' => 'Task Gallery Kedua',
+            'description' => 'Task kedua untuk pengujian filter.',
+            'location' => 'Jakarta Pusat',
+            'priority' => 'medium',
+            'status' => 'in_progress',
+            'start_at' => '2026-09-01 08:00:00',
+            'due_at' => '2026-09-30 17:00:00',
+            'started_at' => '2026-09-01 08:00:00',
+            'progress' => 10,
+            'weight' => 1,
+        ]);
+
+        $secondReport = DailyReport::query()->create([
+            'project_id' => $secondProject->id,
+            'task_id' => $secondTask->id,
+            'user_id' => $this->worker->id,
+            'report_number' => 'RPT-GALLERY-002',
+            'report_date' => '2026-09-18',
+            'activities' => 'Dokumentasi Project kedua.',
+            'work_status' => 'in_progress',
+            'reported_progress' => 20,
+            'obstacles' => null,
+            'notes' => 'Foto Project kedua.',
+            'submitted_at' => now(),
+            'status' => 'approved',
+        ]);
+
+        $secondPhotoPath =
+            'documentations/testing/gallery-second.jpg';
+
+        Storage::disk('public')->put(
+            $secondPhotoPath,
+            'fake-second-image'
+        );
+
+        $secondDocumentation = Documentation::query()->create([
+            'project_id' => $secondProject->id,
+            'task_id' => $secondTask->id,
+            'daily_report_id' => $secondReport->id,
+            'user_id' => $this->worker->id,
+            'title' => 'Foto Gallery Project Kedua',
+            'category' => 'progress',
+            'photo' => $secondPhotoPath,
+            'original_name' => 'gallery-second.jpg',
+            'mime_type' => 'image/jpeg',
+            'file_size' => 2048,
+            'description' => 'Dokumentasi Project kedua.',
+            'documentation_date' => '2026-09-18',
+            'taken_at' => '2026-09-18 10:00:00',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dokumentasi Project Mandor lain tidak boleh bocor
+        |--------------------------------------------------------------------------
+        */
+
+        $otherMandor = User::factory()->create([
+            'name' => 'Mandor Lain',
+            'status' => 'active',
+        ]);
+
+        $otherMandor->assignRole('mandor');
+
+        $otherProject = Project::query()->create([
+            'client_id' => $this->project->client_id,
+            'mandor_id' => $otherMandor->id,
+            'project_code' => 'PRJ-OTHER-001',
+            'project_name' => 'Project Mandor Lain',
+            'location' => 'Jakarta Barat',
+            'description' => 'Project milik Mandor lain.',
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-12-31',
+            'progress' => 0,
+            'status' => 'planning',
+        ]);
+
+        $otherTask = Task::query()->create([
+            'project_id' => $otherProject->id,
+            'mandor_id' => $otherMandor->id,
+            'worker_id' => $this->worker->id,
+            'task_code' => 'TSK-OTHER-001',
+            'title' => 'Task Mandor Lain',
+            'description' => 'Task yang tidak boleh terlihat.',
+            'location' => 'Jakarta Barat',
+            'priority' => 'low',
+            'status' => 'in_progress',
+            'start_at' => '2026-09-01 08:00:00',
+            'due_at' => '2026-09-30 17:00:00',
+            'started_at' => '2026-09-01 08:00:00',
+            'progress' => 10,
+            'weight' => 1,
+        ]);
+
+        $otherReport = DailyReport::query()->create([
+            'project_id' => $otherProject->id,
+            'task_id' => $otherTask->id,
+            'user_id' => $this->worker->id,
+            'report_number' => 'RPT-OTHER-001',
+            'report_date' => '2026-09-18',
+            'activities' => 'Dokumentasi Project Mandor lain.',
+            'work_status' => 'in_progress',
+            'reported_progress' => 10,
+            'obstacles' => null,
+            'notes' => null,
+            'submitted_at' => now(),
+            'status' => 'submitted',
+        ]);
+
+        $otherPhotoPath =
+            'documentations/testing/gallery-other.jpg';
+
+        Storage::disk('public')->put(
+            $otherPhotoPath,
+            'fake-other-image'
+        );
+
+        $otherDocumentation = Documentation::query()->create([
+            'project_id' => $otherProject->id,
+            'task_id' => $otherTask->id,
+            'daily_report_id' => $otherReport->id,
+            'user_id' => $this->worker->id,
+            'title' => 'Foto Mandor Lain Tidak Boleh Tampil',
+            'category' => 'progress',
+            'photo' => $otherPhotoPath,
+            'original_name' => 'gallery-other.jpg',
+            'mime_type' => 'image/jpeg',
+            'file_size' => 1024,
+            'description' => 'Tidak boleh terlihat oleh Mandor utama.',
+            'documentation_date' => '2026-09-18',
+            'taken_at' => '2026-09-18 11:00:00',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Route global dapat dibuka
+        |--------------------------------------------------------------------------
+        */
+
+        $this->actingAs($this->mandor)
+            ->get(
+                route('mandor.documentations.index')
+            )
+            ->assertOk();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Gallery global
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(MandorDocumentationsIndex::class)
+            ->assertSee(
+                $mainDocumentation->title
+            )
+            ->assertSee(
+                $secondDocumentation->title
+            )
+            ->assertDontSee(
+                $standaloneDocumentation->title
+            )
+
+            ->assertDontSee(
+                $submittedDocumentation->title
+            )
+            ->assertDontSee(
+                $revisionDocumentation->title
+            )
+            ->assertDontSee(
+                $otherDocumentation->title
+            )
+            ->assertSee(
+                $this->project->project_name
+            )
+            ->assertSee(
+                $this->project->project_code
+            )
+            ->assertSee(
+                $this->task->title
+            )
+            ->assertSee(
+                $this->task->task_code
+            )
+            ->assertViewHas(
+                'totalDocumentations',
+                2
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Project
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(MandorDocumentationsIndex::class)
+            ->set(
+                'projectFilter',
+                (string) $this->project->id
+            )
+            ->assertSee(
+                $mainDocumentation->title
+            )
+            ->assertDontSee(
+                $secondDocumentation->title
+            )
+            ->assertViewHas(
+                'filteredDocumentations',
+                1
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Task
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(MandorDocumentationsIndex::class)
+            ->set(
+                'projectFilter',
+                (string) $secondProject->id
+            )
+            ->set(
+                'taskFilter',
+                (string) $secondTask->id
+            )
+            ->assertSee(
+                $secondDocumentation->title
+            )
+            ->assertDontSee(
+                $mainDocumentation->title
+            )
+            ->assertViewHas(
+                'filteredDocumentations',
+                1
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Route lama tetap memilih Project dari URL
+        |--------------------------------------------------------------------------
+        */
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                MandorDocumentationsIndex::class,
+                [
+                    'project' => $this->project,
+                ]
+            )
+            ->assertSet(
+                'projectFilter',
+                (string) $this->project->id
+            )
+            ->assertSee(
+                $mainDocumentation->title
+            )
+            ->assertDontSee(
+                $secondDocumentation->title
             );
     }
 }

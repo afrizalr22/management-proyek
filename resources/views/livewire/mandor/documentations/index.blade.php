@@ -1,14 +1,13 @@
 <div class="space-y-6">
 
     <x-mandor.documentations.page-header
-        :project="$project"
         :total-documentations="$totalDocumentations"
     />
 
     <x-mandor.documentations.documentation-filter
-        :categories="$categories"
+        :projects="$projects"
         :tasks="$tasks"
-        :category="$category"
+        :project-filter="$projectFilter"
         :task-filter="$taskFilter"
         :sort="$sort"
         :filtered-documentations="$filteredDocumentations"

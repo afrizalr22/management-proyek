@@ -4,6 +4,7 @@ namespace App\Livewire\Mandor\Documentations;
 
 use App\Models\Documentation;
 use App\Models\Project;
+use App\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,11 +15,9 @@ class Index extends Component
 {
     use WithPagination;
 
-    public Project $project;
-
     public string $search = '';
 
-    public string $category = '';
+    public string $projectFilter = '';
 
     public string $taskFilter = '';
 
@@ -31,8 +30,9 @@ class Index extends Component
             'except' => '',
         ],
 
-        'category' => [
+        'projectFilter' => [
             'except' => '',
+            'as' => 'project',
         ],
 
         'taskFilter' => [
@@ -46,22 +46,32 @@ class Index extends Component
     ];
 
     public function mount(
-        Project $project
+        ?Project $project = null
     ): void {
+        if (! $project) {
+            return;
+        }
+
         $this->authorizeProject($project);
 
-        $this->project = $project;
+        $this->projectFilter = (string) $project->id;
+    }
+
+    public function updatedProjectFilter(): void
+    {
+        $this->taskFilter = '';
+
+        $this->resetPage();
     }
 
     public function updated(
-    string $property
+        string $property
     ): void {
         if (
             in_array(
                 $property,
                 [
                     'search',
-                    'category',
                     'taskFilter',
                     'sort',
                     'perPage',
@@ -77,7 +87,7 @@ class Index extends Component
     {
         $this->reset([
             'search',
-            'category',
+            'projectFilter',
             'taskFilter',
         ]);
 
@@ -88,16 +98,10 @@ class Index extends Component
 
     public function render()
     {
-        $this->authorizeProject(
-            $this->project
-        );
-
-        $documentationQuery = Documentation::query()
-            ->where(
-                'project_id',
-                $this->project->id
-            )
+        $documentationQuery = $this
+            ->documentationQuery()
             ->with([
+                'project:id,project_code,project_name,status',
                 'task:id,project_id,task_code,title,location',
                 'dailyReport:id,project_id,report_number,status',
                 'user:id,name,email,status',
@@ -107,7 +111,7 @@ class Index extends Component
             $documentationQuery
         );
 
-        $this->applyCategoryFilter(
+        $this->applyProjectFilter(
             $documentationQuery
         );
 
@@ -141,36 +145,84 @@ class Index extends Component
                     );
 
                     $documentation->setAttribute(
-                    'photo_url',
-                    $photoExists
-                        ? asset(
-                            'storage/'
-                                . ltrim(
-                                    $documentation->photo,
-                                    '/'
-                                )
-                        )
-                        : null
-                );
+                        'photo_url',
+                        $photoExists
+                            ? asset(
+                                'storage/'
+                                    .ltrim(
+                                        $documentation->photo,
+                                        '/'
+                                    )
+                            )
+                            : null
+                    );
 
                     return $documentation;
                 }
             );
 
-        $categories = Documentation::query()
+        $projects = Project::query()
             ->where(
-                'project_id',
-                $this->project->id
+                'mandor_id',
+                Auth::id()
             )
-            ->whereNotNull('category')
-            ->where('category', '!=', '')
-            ->distinct()
-            ->orderBy('category')
-            ->pluck('category');
+            ->whereHas(
+                'documentations',
+                fn (Builder $query) => $query
+                    ->whereNotNull(
+                        'daily_report_id'
+                    )
+                    ->whereHas(
+                        'dailyReport',
+                        fn (Builder $reportQuery) => $reportQuery
+                            ->where(
+                                'status',
+                                'approved'
+                            )
+                    )
+            )
+            ->orderBy('project_name')
+            ->get([
+                            'id',
+                            'project_code',
+                            'project_name',
+                            'status',
+                        ]);
 
-        $tasks = $this->project
-            ->tasks()
-            ->whereHas('documentations')
+        $tasks = Task::query()
+            ->whereHas(
+                'project',
+                fn (Builder $query) => $query
+                    ->where(
+                        'mandor_id',
+                        Auth::id()
+                    )
+            )
+            ->whereHas(
+                'documentations',
+                fn (Builder $query) => $query
+                    ->whereNotNull(
+                        'daily_report_id'
+                    )
+                    ->whereHas(
+                        'dailyReport',
+                        fn (Builder $reportQuery) => $reportQuery
+                            ->where(
+                                'status',
+                                'approved'
+                            )
+                    )
+            )
+            ->when(
+                ctype_digit(
+                    $this->projectFilter
+                ),
+                fn (Builder $query) => $query
+                    ->where(
+                        'project_id',
+                        (int) $this->projectFilter
+                    )
+            )
             ->orderBy('title')
             ->get([
                 'id',
@@ -179,28 +231,53 @@ class Index extends Component
                 'title',
             ]);
 
-        $totalDocumentations = Documentation::query()
-            ->where(
-                'project_id',
-                $this->project->id
-            )
+        $totalDocumentations = $this
+            ->documentationQuery()
             ->count();
 
         return view(
             'livewire.mandor.documentations.index',
             [
                 'documentations' => $documentations,
-                'categories' => $categories,
+
+                'projects' => $projects,
+
                 'tasks' => $tasks,
+
                 'totalDocumentations' => $totalDocumentations,
+
                 'filteredDocumentations' => $documentations->total(),
 
                 'hasActiveFilters' => filled($this->search)
-                || filled($this->category)
+                || filled($this->projectFilter)
                 || filled($this->taskFilter)
                 || $this->sort !== 'newest',
             ]
         );
+    }
+
+    private function documentationQuery(): Builder
+    {
+        return Documentation::query()
+            ->whereNotNull(
+                'daily_report_id'
+            )
+            ->whereHas(
+                'dailyReport',
+                fn (Builder $query) => $query
+                    ->where(
+                        'status',
+                        'approved'
+                    )
+            )
+            ->whereHas(
+                'project',
+                fn (Builder $query) => $query
+                    ->where(
+                        'mandor_id',
+                        Auth::id()
+                    )
+            );
     }
 
     private function applySearch(
@@ -219,7 +296,8 @@ class Index extends Component
             '%_\\'
         );
 
-        $searchTerm = '%' . $escapedKeyword . '%';
+        $searchTerm =
+            '%'.$escapedKeyword.'%';
 
         $query->where(
             function (Builder $query) use (
@@ -245,6 +323,26 @@ class Index extends Component
                         'category',
                         'like',
                         $searchTerm
+                    )
+                    ->orWhereHas(
+                        'project',
+                        function (
+                            Builder $projectQuery
+                        ) use (
+                            $searchTerm
+                        ): void {
+                            $projectQuery
+                                ->where(
+                                    'project_code',
+                                    'like',
+                                    $searchTerm
+                                )
+                                ->orWhere(
+                                    'project_name',
+                                    'like',
+                                    $searchTerm
+                                );
+                        }
                     )
                     ->orWhereHas(
                         'task',
@@ -273,36 +371,46 @@ class Index extends Component
                     )
                     ->orWhereHas(
                         'user',
-                        fn (Builder $userQuery) =>
-                            $userQuery->where(
-                                'name',
-                                'like',
-                                $searchTerm
-                            )
+                        fn (Builder $userQuery) => $userQuery->where(
+                            'name',
+                            'like',
+                            $searchTerm
+                        )
                     )
                     ->orWhereHas(
                         'dailyReport',
-                        fn (Builder $reportQuery) =>
-                            $reportQuery->where(
-                                'report_number',
-                                'like',
-                                $searchTerm
-                            )
+                        fn (Builder $reportQuery) => $reportQuery->where(
+                            'report_number',
+                            'like',
+                            $searchTerm
+                        )
                     );
             }
         );
     }
 
-    private function applyCategoryFilter(
+    private function applyProjectFilter(
         Builder $query
     ): void {
-        if ($this->category === '') {
+        if (
+            $this->projectFilter === ''
+        ) {
+            return;
+        }
+
+        if (
+            ! ctype_digit(
+                $this->projectFilter
+            )
+        ) {
+            $query->whereRaw('1 = 0');
+
             return;
         }
 
         $query->where(
-            'category',
-            $this->category
+            'project_id',
+            (int) $this->projectFilter
         );
     }
 
@@ -313,7 +421,11 @@ class Index extends Component
             return;
         }
 
-        if (! ctype_digit($this->taskFilter)) {
+        if (
+            ! ctype_digit(
+                $this->taskFilter
+            )
+        ) {
             $query->whereRaw('1 = 0');
 
             return;
@@ -326,7 +438,7 @@ class Index extends Component
     }
 
     private function applySorting(
-    Builder $query
+        Builder $query
     ): void {
         match ($this->sort) {
             'oldest' => $query

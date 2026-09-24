@@ -1,5 +1,4 @@
 @props([
-    'project',
     'totalDocumentations' => 0,
 ])
 
@@ -11,33 +10,11 @@
             aria-label="Breadcrumb"
         >
             <a
-                href="{{ route('mandor.projects.index') }}"
+                href="{{ route('mandor.dashboard') }}"
                 wire:navigate
                 class="font-medium text-blue-600 transition hover:text-blue-700"
             >
-                Proyek Saya
-            </a>
-
-            <svg
-                class="h-4 w-4 text-gray-400"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M9 18l6-6-6-6"
-                />
-            </svg>
-
-            <a
-                href="{{ route('mandor.projects.show', $project) }}"
-                wire:navigate
-                class="max-w-64 truncate font-medium text-gray-500 transition hover:text-gray-700"
-            >
-                {{ $project->project_name }}
+                Dashboard
             </a>
 
             <svg
@@ -55,7 +32,7 @@
             </svg>
 
             <span class="font-medium text-gray-500">
-                Dokumentasi
+                Photo Gallery
             </span>
         </nav>
 
@@ -64,14 +41,12 @@
         </p>
 
         <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-            Dokumentasi Proyek
+            Dokumentasi Pekerjaan
         </h1>
 
         <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-            Lihat dokumentasi perkembangan pekerjaan pada
-            <span class="font-semibold text-gray-700">
-                {{ $project->project_name }}
-            </span>.
+            Lihat seluruh foto dokumentasi yang dikirim Pekerja melalui laporan harian
+            dari Project yang menjadi tanggung jawab Anda.
         </p>
     </div>
 

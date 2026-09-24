@@ -60,15 +60,6 @@
             ]
         )
         : route('mandor.projects.index');
-
-    $documentationHref = $selectedProjectId
-        ? route(
-            'mandor.projects.documentations.index',
-            [
-                'project' => $selectedProjectId,
-            ]
-        )
-        : route('mandor.projects.index');
 @endphp
 
 <div class="flex h-full min-h-0 flex-col overflow-hidden bg-white">
@@ -171,10 +162,11 @@
 
             {{-- Photo Gallery --}}
             <x-sidebar.item
-                :href="$documentationHref"
+                :href="route('mandor.documentations.index')"
                 :active="request()->routeIs(
-                    'mandor.projects.documentations.*'
-                )"
+                'mandor.documentations.*',
+                'mandor.projects.documentations.*'
+            )"
             >
                 <x-slot:icon>
                     <svg

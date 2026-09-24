@@ -339,6 +339,11 @@ Route::middleware([
     )->name('mandor.projects.work-progress.index');
 
     Route::get(
+        '/mandor/documentations',
+        MandorDocumentationsIndex::class
+    )->name('mandor.documentations.index');
+
+    Route::get(
         '/projects/{project}/documentations',
         MandorDocumentationsIndex::class
     )->name('mandor.projects.documentations.index');

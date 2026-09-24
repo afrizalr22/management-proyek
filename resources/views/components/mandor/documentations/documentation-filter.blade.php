@@ -1,7 +1,7 @@
 @props([
-    'categories',
+    'projects',
     'tasks',
-    'category' => '',
+    'projectFilter' => '',
     'taskFilter' => '',
     'sort' => 'newest',
     'filteredDocumentations' => 0,
@@ -10,9 +10,14 @@
 ])
 
 @php
-    $categoryLabel = filled($category)
-        ? str($category)->replace('_', ' ')->title()
-        : 'Semua Kategori';
+    $selectedProject = $projects->first(
+        fn ($project) =>
+            (string) $project->id === (string) $projectFilter
+    );
+
+    $projectLabel = $selectedProject
+        ? $selectedProject->project_code
+        : 'Semua Project';
 
     $selectedTask = $tasks->first(
         fn ($task) =>
@@ -43,21 +48,29 @@
         </x-slot:left>
 
         <x-slot:right>
-            <div class="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto lg:flex-nowrap">
+            <div class="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto">
 
-                {{-- Kategori --}}
+                {{-- Project --}}
                 <div
                     x-data="{ open: false }"
-                    class="relative w-full sm:w-48"
+                    class="relative w-full sm:w-56"
                 >
                     <button
                         type="button"
                         x-on:click="open = !open"
-                        class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                        class="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-left text-sm shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
                     >
-                        <span class="truncate">
-                            {{ $categoryLabel }}
-                        </span>
+                        <div class="min-w-0">
+                            <span class="block truncate font-medium text-gray-700">
+                                {{ $projectLabel }}
+                            </span>
+
+                            @if ($selectedProject)
+                                <span class="mt-0.5 block truncate text-xs text-gray-400">
+                                    {{ $selectedProject->project_name }}
+                                </span>
+                            @endif
+                        </div>
 
                         <svg
                             class="h-4 w-4 shrink-0 text-gray-500 transition"
@@ -80,53 +93,148 @@
                         x-show="open"
                         x-transition.origin.top
                         x-on:click.outside="open = false"
-                        class="absolute right-0 z-50 mt-2 max-h-64 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                        class="absolute left-0 z-50 mt-2 w-full min-w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
                     >
-                        <button
-                            type="button"
-                            wire:click="$set('category', '')"
-                            x-on:click="open = false"
-                            class="block w-full px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
-                        >
-                            Semua Kategori
-                        </button>
+                        <div class="max-h-80 overflow-y-auto p-1.5">
 
-                        @foreach ($categories as $categoryOption)
                             <button
                                 type="button"
-                                wire:key="category-{{ md5($categoryOption) }}"
-                                wire:click="$set(
-                                    'category',
-                                    @js($categoryOption)
-                                )"
+                                wire:click="$set('projectFilter', '')"
                                 x-on:click="open = false"
                                 @class([
-                                    'block w-full px-4 py-2.5 text-left text-sm transition hover:bg-gray-100',
-                                    'bg-blue-50 font-semibold text-blue-700' =>
-                                        $category === $categoryOption,
-                                    'text-gray-700' =>
-                                        $category !== $categoryOption,
+                                    'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition',
+                                    'bg-blue-50 text-blue-700' =>
+                                        $projectFilter === '',
+                                    'text-gray-700 hover:bg-gray-50' =>
+                                        $projectFilter !== '',
                                 ])
                             >
-                                {{ str($categoryOption)->replace('_', ' ')->title() }}
+                                <div class="min-w-0">
+                                    <span class="block text-sm font-semibold">
+                                        Semua Project
+                                    </span>
+
+                                    <span class="mt-0.5 block text-xs text-gray-400">
+                                        Tampilkan seluruh dokumentasi
+                                    </span>
+                                </div>
+
+                                @if ($projectFilter === '')
+                                    <svg
+                                        class="h-4 w-4 shrink-0 text-blue-600"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="m4.5 12.75 6 6 9-13.5"
+                                        />
+                                    </svg>
+                                @endif
                             </button>
-                        @endforeach
+
+                            @if ($projects->isNotEmpty())
+                                <div class="my-1 border-t border-gray-100"></div>
+                            @endif
+
+                            @forelse ($projects as $project)
+                                <button
+                                    type="button"
+                                    wire:key="project-filter-{{ $project->id }}"
+                                    wire:click="$set(
+                                        'projectFilter',
+                                        '{{ $project->id }}'
+                                    )"
+                                    x-on:click="open = false"
+                                    @class([
+                                        'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition',
+                                        'bg-blue-50' =>
+                                            (string) $projectFilter
+                                                === (string) $project->id,
+                                        'hover:bg-gray-50' =>
+                                            (string) $projectFilter
+                                                !== (string) $project->id,
+                                    ])
+                                >
+                                    <div class="min-w-0">
+                                        <span
+                                            @class([
+                                                'block truncate text-xs font-bold uppercase tracking-wide',
+                                                'text-blue-700' =>
+                                                    (string) $projectFilter
+                                                        === (string) $project->id,
+                                                'text-blue-600' =>
+                                                    (string) $projectFilter
+                                                        !== (string) $project->id,
+                                            ])
+                                        >
+                                            {{ $project->project_code }}
+                                        </span>
+
+                                        <span class="mt-1 block truncate text-sm font-medium text-gray-700">
+                                            {{ $project->project_name }}
+                                        </span>
+                                    </div>
+
+                                    @if (
+                                        (string) $projectFilter
+                                            === (string) $project->id
+                                    )
+                                        <svg
+                                            class="h-4 w-4 shrink-0 text-blue-600"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="m4.5 12.75 6 6 9-13.5"
+                                            />
+                                        </svg>
+                                    @endif
+                                </button>
+                            @empty
+                                <div class="px-3 py-6 text-center">
+                                    <p class="text-sm font-medium text-gray-500">
+                                        Belum ada Project
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-gray-400">
+                                        Belum ada Project yang memiliki dokumentasi.
+                                    </p>
+                                </div>
+                            @endforelse
+
+                        </div>
                     </div>
                 </div>
 
                 {{-- Task --}}
                 <div
                     x-data="{ open: false }"
-                    class="relative w-full sm:w-52"
+                    class="relative w-full sm:w-56"
                 >
                     <button
                         type="button"
                         x-on:click="open = !open"
-                        class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                        class="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-left text-sm shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
                     >
-                        <span class="truncate">
-                            {{ $taskLabel }}
-                        </span>
+                        <div class="min-w-0">
+                            <span class="block truncate font-medium text-gray-700">
+                                {{ $taskLabel }}
+                            </span>
+
+                            @if ($selectedTask)
+                                <span class="mt-0.5 block truncate text-xs text-gray-400">
+                                    {{ $selectedTask->title }}
+                                </span>
+                            @endif
+                        </div>
 
                         <svg
                             class="h-4 w-4 shrink-0 text-gray-500 transition"
@@ -149,54 +257,136 @@
                         x-show="open"
                         x-transition.origin.top
                         x-on:click.outside="open = false"
-                        class="absolute right-0 z-50 mt-2 max-h-72 w-72 overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                        class="absolute left-0 z-50 mt-2 w-full min-w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
                     >
-                        <button
-                            type="button"
-                            wire:click="$set('taskFilter', '')"
-                            x-on:click="open = false"
-                            class="block w-full px-4 py-2.5 text-left text-sm text-gray-700 transition hover:bg-gray-100"
-                        >
-                            Semua Task
-                        </button>
+                        <div class="max-h-80 overflow-y-auto p-1.5">
 
-                        @foreach ($tasks as $task)
                             <button
                                 type="button"
-                                wire:key="task-filter-{{ $task->id }}"
-                                wire:click="$set(
-                                    'taskFilter',
-                                    '{{ $task->id }}'
-                                )"
+                                wire:click="$set('taskFilter', '')"
                                 x-on:click="open = false"
                                 @class([
-                                    'block w-full px-4 py-2.5 text-left transition hover:bg-gray-100',
-                                    'bg-blue-50' =>
-                                        (string) $taskFilter
-                                            === (string) $task->id,
+                                    'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition',
+                                    'bg-blue-50 text-blue-700' =>
+                                        $taskFilter === '',
+                                    'text-gray-700 hover:bg-gray-50' =>
+                                        $taskFilter !== '',
                                 ])
                             >
-                                <span class="block truncate text-xs font-bold uppercase tracking-wide text-blue-600">
-                                    {{ $task->task_code }}
-                                </span>
+                                <div class="min-w-0">
+                                    <span class="block text-sm font-semibold">
+                                        Semua Task
+                                    </span>
 
-                                <span class="mt-0.5 block truncate text-sm text-gray-700">
-                                    {{ $task->title }}
-                                </span>
+                                    <span class="mt-0.5 block text-xs text-gray-400">
+                                        Tampilkan seluruh dokumentasi Task
+                                    </span>
+                                </div>
+
+                                @if ($taskFilter === '')
+                                    <svg
+                                        class="h-4 w-4 shrink-0 text-blue-600"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="m4.5 12.75 6 6 9-13.5"
+                                        />
+                                    </svg>
+                                @endif
                             </button>
-                        @endforeach
+
+                            @if ($tasks->isNotEmpty())
+                                <div class="my-1 border-t border-gray-100"></div>
+                            @endif
+
+                            @forelse ($tasks as $task)
+                                <button
+                                    type="button"
+                                    wire:key="task-filter-{{ $task->id }}"
+                                    wire:click="$set(
+                                        'taskFilter',
+                                        '{{ $task->id }}'
+                                    )"
+                                    x-on:click="open = false"
+                                    @class([
+                                        'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition',
+                                        'bg-blue-50' =>
+                                            (string) $taskFilter
+                                                === (string) $task->id,
+                                        'hover:bg-gray-50' =>
+                                            (string) $taskFilter
+                                                !== (string) $task->id,
+                                    ])
+                                >
+                                    <div class="min-w-0">
+                                        <span
+                                            @class([
+                                                'block truncate text-xs font-bold uppercase tracking-wide',
+                                                'text-blue-700' =>
+                                                    (string) $taskFilter
+                                                        === (string) $task->id,
+                                                'text-blue-600' =>
+                                                    (string) $taskFilter
+                                                        !== (string) $task->id,
+                                            ])
+                                        >
+                                            {{ $task->task_code }}
+                                        </span>
+
+                                        <span class="mt-1 block truncate text-sm font-medium text-gray-700">
+                                            {{ $task->title }}
+                                        </span>
+                                    </div>
+
+                                    @if (
+                                        (string) $taskFilter
+                                            === (string) $task->id
+                                    )
+                                        <svg
+                                            class="h-4 w-4 shrink-0 text-blue-600"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2.5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="m4.5 12.75 6 6 9-13.5"
+                                            />
+                                        </svg>
+                                    @endif
+                                </button>
+                            @empty
+                                <div class="px-3 py-6 text-center">
+                                    <p class="text-sm font-medium text-gray-500">
+                                        Belum ada Task
+                                    </p>
+
+                                    <p class="mt-1 text-xs text-gray-400">
+                                        Belum ada Task yang memiliki dokumentasi.
+                                    </p>
+                                </div>
+                            @endforelse
+
+                        </div>
                     </div>
                 </div>
 
                 {{-- Urutkan --}}
                 <div
                     x-data="{ open: false }"
-                    class="relative w-full sm:w-44"
+                    class="relative w-full sm:w-40"
                 >
                     <button
                         type="button"
                         x-on:click="open = !open"
-                        class="flex min-h-11 w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                        class="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100"
                     >
                         <span class="truncate">
                             {{ $sortLabel }}
@@ -223,7 +413,7 @@
                         x-show="open"
                         x-transition.origin.top
                         x-on:click.outside="open = false"
-                        class="absolute right-0 z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-xl"
+                        class="absolute right-0 z-50 mt-2 w-full min-w-44 overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl"
                     >
                         @foreach ([
                             'newest' => 'Terbaru',
@@ -239,14 +429,32 @@
                                 )"
                                 x-on:click="open = false"
                                 @class([
-                                    'block w-full px-4 py-2.5 text-left text-sm transition hover:bg-gray-100',
+                                    'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition',
                                     'bg-blue-50 font-semibold text-blue-700' =>
                                         $sort === $sortValue,
-                                    'text-gray-700' =>
+                                    'text-gray-700 hover:bg-gray-50' =>
                                         $sort !== $sortValue,
                                 ])
                             >
-                                {{ $sortText }}
+                                <span>
+                                    {{ $sortText }}
+                                </span>
+
+                                @if ($sort === $sortValue)
+                                    <svg
+                                        class="h-4 w-4 shrink-0 text-blue-600"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="m4.5 12.75 6 6 9-13.5"
+                                        />
+                                    </svg>
+                                @endif
                             </button>
                         @endforeach
                     </div>
@@ -282,13 +490,17 @@
     <div class="flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-gray-500">
             Ditemukan
+
             <span class="font-semibold text-gray-900">
                 {{ number_format($filteredDocumentations) }}
             </span>
+
             dari
+
             <span class="font-semibold text-gray-900">
                 {{ number_format($totalDocumentations) }}
             </span>
+
             dokumentasi
         </p>
 

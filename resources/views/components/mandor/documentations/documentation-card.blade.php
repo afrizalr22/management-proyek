@@ -37,6 +37,11 @@
     $uploader = $documentation->user?->name
         ?? 'Pengguna tidak tersedia';
 
+    $projectName = $documentation->project?->project_name
+        ?? 'Project tidak tersedia';
+
+    $projectCode = $documentation->project?->project_code;
+
     $taskName = $documentation->task?->title
         ?? 'Tidak terkait Task';
 
@@ -125,6 +130,8 @@
                 data-date="{{ $formattedDate }}"
                 data-time="{{ $formattedTime }}"
                 data-uploader="{{ $uploader }}"
+                data-project="{{ $projectName }}"
+                data-project-code="{{ $projectCode }}"
                 data-task="{{ $taskName }}"
                 data-task-code="{{ $taskCode }}"
                 data-report="{{ $reportNumber }}"
@@ -139,6 +146,8 @@
                         date: $el.dataset.date,
                         time: $el.dataset.time,
                         uploader: $el.dataset.uploader,
+                        project: $el.dataset.project,
+                        projectCode: $el.dataset.projectCode,
                         task: $el.dataset.task,
                         taskCode: $el.dataset.taskCode,
                         report: $el.dataset.report,
@@ -190,21 +199,39 @@
             {{ $description }}
         </p>
 
-        <div class="mt-4 rounded-xl bg-gray-50 p-3">
-            <p class="text-[10px] font-bold uppercase tracking-wide text-gray-400">
-                Task terkait
-            </p>
+        <div class="mt-4 space-y-3 rounded-xl bg-gray-50 p-3">
+    <div>
+        <p class="text-[10px] font-bold uppercase tracking-wide text-gray-400">
+            Project
+        </p>
 
-            <p class="mt-1 truncate text-sm font-semibold text-gray-700">
-                {{ $taskName }}
-            </p>
+        <p class="mt-1 truncate text-sm font-semibold text-gray-700">
+            {{ $projectName }}
+        </p>
 
-            @if ($taskCode)
-                <p class="mt-1 text-xs font-medium text-blue-600">
-                    {{ $taskCode }}
-                </p>
-            @endif
-        </div>
+        @if ($projectCode)
+            <p class="mt-1 text-xs font-medium text-blue-600">
+                {{ $projectCode }}
+            </p>
+        @endif
+    </div>
+
+    <div class="border-t border-gray-200 pt-3">
+        <p class="text-[10px] font-bold uppercase tracking-wide text-gray-400">
+            Task terkait
+        </p>
+
+        <p class="mt-1 truncate text-sm font-semibold text-gray-700">
+            {{ $taskName }}
+        </p>
+
+        @if ($taskCode)
+            <p class="mt-1 text-xs font-medium text-blue-600">
+                {{ $taskCode }}
+            </p>
+        @endif
+    </div>
+</div>
 
         <div class="mt-4 flex items-center justify-between gap-3 border-t border-gray-100 pt-4">
             <div class="flex min-w-0 items-center gap-2">

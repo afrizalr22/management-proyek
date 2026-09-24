@@ -8,6 +8,8 @@
         date: '',
         time: '',
         uploader: '',
+        project: '',
+        projectCode: '',
         task: '',
         taskCode: '',
         report: '',
@@ -22,6 +24,8 @@
             this.date = data.date ?? '';
             this.time = data.time ?? '';
             this.uploader = data.uploader ?? '';
+            this.project = data.project ?? '';
+            this.projectCode = data.projectCode ?? '';
             this.task = data.task ?? '';
             this.taskCode = data.taskCode ?? '';
             this.report = data.report ?? '';
@@ -116,7 +120,7 @@
                     x-text="description"
                 ></p>
 
-                <div class="mt-5 grid grid-cols-1 gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="mt-5 grid grid-cols-1 gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2 xl:grid-cols-5">
 
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
@@ -145,12 +149,29 @@
 
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                            Project
+                        </p>
+
+                        <p
+                            class="mt-1 truncate text-sm font-semibold text-gray-700"
+                            x-text="project || 'Tidak tersedia'"
+                        ></p>
+
+                        <p
+                            x-show="projectCode"
+                            class="mt-1 text-xs font-medium text-blue-600"
+                            x-text="projectCode"
+                        ></p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">
                             Task
                         </p>
 
                         <p
                             class="mt-1 truncate text-sm font-semibold text-gray-700"
-                            x-text="task"
+                            x-text="task || 'Tidak tersedia'"
                         ></p>
 
                         <p
