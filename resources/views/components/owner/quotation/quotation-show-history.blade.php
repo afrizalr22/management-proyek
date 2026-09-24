@@ -103,9 +103,14 @@
 
             {{-- Status draft --}}
             @if (
-                $quotation->status === 'draft' &&
-                !$quotation->sent_at
-            )
+                $quotation->status === 'draft'
+                && ! $quotation->sent_at
+                && (
+                    ! $quotation->valid_until
+                    || ! $quotation->valid_until
+                        ->isBefore(today())
+                )
+)
                 <div class="relative flex gap-4">
                     <span class="relative z-10 mt-1 h-4 w-4 shrink-0 rounded-full border-4 border-yellow-100 bg-yellow-400"></span>
 
@@ -122,7 +127,11 @@
             @endif
 
             {{-- Kedaluwarsa --}}
-            @if ($quotation->status === 'expired')
+            @if (
+                $quotation->status === 'draft'
+                && $quotation->valid_until
+                && $quotation->valid_until->isBefore(today())
+            )
                 <div class="relative flex gap-4">
                     <span class="relative z-10 mt-1 h-4 w-4 shrink-0 rounded-full border-4 border-gray-200 bg-gray-500"></span>
 

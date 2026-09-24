@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Owner;
 
+use App\Livewire\Owner\Quotations\Index;
 use App\Livewire\Owner\Quotations\Show;
 use App\Models\Client;
 use App\Models\Quotation;
@@ -42,15 +43,15 @@ class QuotationStatusWorkflowTest extends TestCase
             ->forgetCachedPermissions();
 
         $permissions = collect([
+            'view-any quotations',
             'view quotations',
             'update quotations',
             'delete quotations',
         ])->map(
-            fn (string $permission): Permission =>
-                Permission::findOrCreate(
-                    $permission,
-                    'web'
-                )
+            fn (string $permission): Permission => Permission::findOrCreate(
+                $permission,
+                'web'
+            )
         );
 
         $ownerRole = Role::findOrCreate(
@@ -72,29 +73,21 @@ class QuotationStatusWorkflowTest extends TestCase
         );
 
         $this->client = Client::query()->create([
-            'company_name' =>
-                'PT Workflow Quotation',
+            'company_name' => 'PT Workflow Quotation',
 
-            'contact_person' =>
-                'Ahmad Workflow',
+            'contact_person' => 'Ahmad Workflow',
 
-            'phone' =>
-                '+6281234567890',
+            'phone' => '+6281234567890',
 
-            'email' =>
-                'workflow.quotation@example.com',
+            'email' => 'workflow.quotation@example.com',
 
-            'city' =>
-                'Jakarta Selatan',
+            'city' => 'Jakarta Selatan',
 
-            'status' =>
-                'active',
+            'status' => 'active',
 
-            'address' =>
-                'Jl. Workflow No. 18',
+            'address' => 'Jl. Workflow No. 18',
 
-            'notes' =>
-                'Client pengujian alur status Quotation.',
+            'notes' => 'Client pengujian alur status Quotation.',
         ]);
     }
 
@@ -155,6 +148,97 @@ class QuotationStatusWorkflowTest extends TestCase
             ->assertHasErrors([
                 'statusAction',
             ]);
+
+        $quotation->refresh();
+
+        $this->assertSame(
+            'draft',
+            $quotation->status
+        );
+
+        $this->assertNull(
+            $quotation->sent_at
+        );
+    }
+
+    public function test_expired_filter_only_displays_expired_draft_quotations(): void
+    {
+        $expiredQuotation = $this->createQuotation([
+            'valid_until' => '2026-09-17',
+        ]);
+
+        $activeDraftQuotation = $this->createQuotation([
+            'valid_until' => '2026-09-25',
+        ]);
+
+        $sentQuotation = $this->createQuotation([
+            'status' => 'sent',
+            'valid_until' => '2026-09-17',
+            'sent_at' => now()->subDay(),
+        ]);
+
+        Livewire::actingAs($this->owner)
+            ->test(Index::class)
+            ->set('status', 'expired')
+            ->assertSee(
+                $expiredQuotation->quotation_number
+            )
+            ->assertDontSee(
+                $activeDraftQuotation->quotation_number
+            )
+            ->assertDontSee(
+                $sentQuotation->quotation_number
+            );
+
+        $expiredQuotation->refresh();
+
+        $this->assertSame(
+            'draft',
+            $expiredQuotation->status
+        );
+    }
+
+    public function test_draft_filter_excludes_expired_draft_quotations(): void
+    {
+        $expiredQuotation = $this->createQuotation([
+            'valid_until' => '2026-09-17',
+        ]);
+
+        $activeDraftQuotation = $this->createQuotation([
+            'valid_until' => '2026-09-25',
+        ]);
+
+        $draftWithoutExpiration = $this->createQuotation([
+            'valid_until' => null,
+        ]);
+
+        Livewire::actingAs($this->owner)
+            ->test(Index::class)
+            ->set('status', 'draft')
+            ->assertDontSee(
+                $expiredQuotation->quotation_number
+            )
+            ->assertSee(
+                $activeDraftQuotation->quotation_number
+            )
+            ->assertSee(
+                $draftWithoutExpiration->quotation_number
+            );
+    }
+
+    public function test_expired_quotation_is_displayed_as_derived_status_while_persisted_as_draft(): void
+    {
+        $quotation = $this->createQuotation([
+            'valid_until' => '2026-09-17',
+        ]);
+
+        Livewire::actingAs($this->owner)
+            ->test(Show::class, [
+                'quotation' => $quotation,
+            ])
+            ->assertSee('Kedaluwarsa')
+            ->assertSee('Masa Berlaku Berakhir')
+            ->assertDontSee('Tandai Sudah Dikirim');
 
         $quotation->refresh();
 
@@ -442,68 +526,48 @@ class QuotationStatusWorkflowTest extends TestCase
 
         return Quotation::query()->create(
             array_merge([
-                'client_id' =>
-                    $this->client->id,
+                'client_id' => $this->client->id,
 
-                'project_id' =>
-                    null,
+                'project_id' => null,
 
-                'created_by' =>
-                    $this->owner->id,
+                'created_by' => $this->owner->id,
 
-                'quotation_number' =>
-                    sprintf(
-                        'QT-2026-%04d',
-                        $sequence
-                    ),
+                'quotation_number' => sprintf(
+                    'QT-2026-%04d',
+                    $sequence
+                ),
 
-                'quotation_date' =>
-                    '2026-09-18',
+                'quotation_date' => '2026-09-18',
 
-                'valid_until' =>
-                    '2026-09-25',
+                'valid_until' => '2026-09-25',
 
-                'client_name' =>
-                    $this->client->company_name,
+                'client_name' => $this->client->company_name,
 
-                'client_contact_person' =>
-                    $this->client->contact_person,
+                'client_contact_person' => $this->client->contact_person,
 
-                'client_phone' =>
-                    $this->client->phone,
+                'client_phone' => $this->client->phone,
 
-                'client_email' =>
-                    $this->client->email,
+                'client_email' => $this->client->email,
 
-                'client_address' =>
-                    $this->client->address,
+                'client_address' => $this->client->address,
 
-                'project_name' =>
-                    'Project Workflow Quotation',
+                'project_name' => 'Project Workflow Quotation',
 
-                'project_location' =>
-                    'Jakarta Selatan',
+                'project_location' => 'Jakarta Selatan',
 
-                'subtotal' =>
-                    1000000,
+                'subtotal' => 1000000,
 
-                'grand_total' =>
-                    1000000,
+                'grand_total' => 1000000,
 
-                'status' =>
-                    'draft',
+                'status' => 'draft',
 
-                'sent_at' =>
-                    null,
+                'sent_at' => null,
 
-                'approved_at' =>
-                    null,
+                'approved_at' => null,
 
-                'rejected_at' =>
-                    null,
+                'rejected_at' => null,
 
-                'notes' =>
-                    'Pengujian alur status Quotation.',
+                'notes' => 'Pengujian alur status Quotation.',
             ], $attributes)
         );
     }

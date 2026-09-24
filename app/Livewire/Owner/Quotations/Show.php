@@ -5,8 +5,8 @@ namespace App\Livewire\Owner\Quotations;
 use App\Models\Quotation;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 use Throwable;
 
 class Show extends Component
@@ -34,7 +34,7 @@ class Show extends Component
             'reject',
         ];
 
-        if (!in_array($action, $allowedActions, true)) {
+        if (! in_array($action, $allowedActions, true)) {
             $this->addError(
                 'statusAction',
                 'Aksi quotation tidak valid.'
@@ -46,16 +46,14 @@ class Show extends Component
         $this->quotation->refresh();
 
         $allowed = match ($action) {
-            'send' =>
-                $this->quotation->status === 'draft',
+            'send' => $this->quotation->status === 'draft',
 
-            'approve', 'reject' =>
-                $this->quotation->status === 'sent',
+            'approve', 'reject' => $this->quotation->status === 'sent',
 
             default => false,
         };
 
-        if (!$allowed) {
+        if (! $allowed) {
             $this->addError(
                 'statusAction',
                 'Aksi tersebut tidak tersedia untuk status quotation saat ini.'
@@ -78,7 +76,7 @@ class Show extends Component
     {
         $action = $this->pendingStatusAction;
 
-        if (!$action) {
+        if (! $action) {
             $this->addError(
                 'statusAction',
                 'Tidak ada aksi quotation yang dipilih.'
@@ -106,7 +104,7 @@ class Show extends Component
 
         $quotation = $this->findCurrentQuotation();
 
-        if (!$quotation) {
+        if (! $quotation) {
             return;
         }
 
@@ -171,7 +169,7 @@ class Show extends Component
 
         $quotation = $this->findCurrentQuotation();
 
-        if (!$quotation) {
+        if (! $quotation) {
             return;
         }
 
@@ -223,7 +221,7 @@ class Show extends Component
 
         $quotation = $this->findCurrentQuotation();
 
-        if (!$quotation) {
+        if (! $quotation) {
             return;
         }
 
@@ -274,7 +272,7 @@ class Show extends Component
         $quotation = Quotation::query()
             ->find($this->quotation->id);
 
-        if (!$quotation) {
+        if (! $quotation) {
             $this->addError(
                 'statusAction',
                 'Quotation tidak ditemukan.'
@@ -335,57 +333,66 @@ class Show extends Component
 
     public function render()
     {
-        $statusText = match ($this->quotation->status) {
-            'draft' => 'Draft',
-            'sent' => 'Dikirim',
-            'approved' => 'Disetujui',
-            'rejected' => 'Ditolak',
-            'expired' => 'Kedaluwarsa',
-            default => 'Tidak diketahui',
-        };
+        $isExpired =
+            $this->quotation->status === 'draft'
+            && $this->quotation->valid_until
+            && $this->quotation->valid_until
+                ->isBefore(today());
 
-        $statusColor = match ($this->quotation->status) {
-            'draft' => 'yellow',
-            'sent' => 'blue',
-            'approved' => 'green',
-            'rejected' => 'red',
-            'expired' => 'gray',
-            default => 'gray',
-        };
+        $statusText = $isExpired
+            ? 'Kedaluwarsa'
+            : match ($this->quotation->status) {
+                'draft' => 'Draft',
+                'sent' => 'Dikirim',
+                'approved' => 'Disetujui',
+                'rejected' => 'Ditolak',
+                default => 'Tidak diketahui',
+            };
+
+        $statusColor = $isExpired
+            ? 'gray'
+            : match ($this->quotation->status) {
+                'draft' => 'yellow',
+                'sent' => 'blue',
+                'approved' => 'green',
+                'rejected' => 'red',
+                default => 'gray',
+            };
 
         return view('livewire.owner.quotations.show', [
             'statusText' => $statusText,
             'statusColor' => $statusColor,
+            'isExpired' => $isExpired,
         ]);
     }
 
     public function openDeleteModal(): void
-{
-    $this->authorizeDeleteQuotation();
+    {
+        $this->authorizeDeleteQuotation();
 
-    $this->quotation->refresh();
+        $this->quotation->refresh();
 
-    if ($this->quotation->status !== 'draft') {
-        $this->addError(
-            'statusAction',
-            'Hanya quotation berstatus Draft yang dapat dihapus.'
-        );
+        if ($this->quotation->status !== 'draft') {
+            $this->addError(
+                'statusAction',
+                'Hanya quotation berstatus Draft yang dapat dihapus.'
+            );
 
-        return;
-    }
+            return;
+        }
 
-    if ($this->quotation->project_id !== null) {
-        $this->addError(
-            'statusAction',
-            'Quotation yang sudah terhubung dengan Project tidak dapat dihapus.'
-        );
+        if ($this->quotation->project_id !== null) {
+            $this->addError(
+                'statusAction',
+                'Quotation yang sudah terhubung dengan Project tidak dapat dihapus.'
+            );
 
-        return;
-    }
+            return;
+        }
 
-    $this->resetValidation('deleteQuotation');
+        $this->resetValidation('deleteQuotation');
 
-    $this->showDeleteModal = true;
+        $this->showDeleteModal = true;
     }
 
     public function closeDeleteModal(): void
@@ -408,7 +415,7 @@ class Show extends Component
                     ->lockForUpdate()
                     ->find($quotationId);
 
-                if (!$quotation) {
+                if (! $quotation) {
                     throw new \RuntimeException(
                         'QUOTATION_NOT_FOUND'
                     );

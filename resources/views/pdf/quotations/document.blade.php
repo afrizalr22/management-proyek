@@ -68,23 +68,31 @@
         ?? $quotation->project?->location
         ?? '-';
 
-    $statusText = match ($quotation->status) {
+        $isExpired =
+    $quotation->status === 'draft'
+    && $quotation->valid_until
+    && $quotation->valid_until
+        ->isBefore(today());
+
+    $statusText = $isExpired
+    ? 'KEDALUWARSA'
+    : match ($quotation->status) {
         'draft' => 'DRAFT',
         'sent' => 'DIKIRIM',
         'approved' => 'DISETUJUI',
         'rejected' => 'DITOLAK',
-        'expired' => 'KEDALUWARSA',
         default => strtoupper(
             (string) $quotation->status
         ),
     };
 
-    $statusClass = match ($quotation->status) {
+    $statusClass = $isExpired
+    ? 'status-expired'
+    : match ($quotation->status) {
         'draft' => 'status-draft',
         'sent' => 'status-sent',
         'approved' => 'status-approved',
         'rejected' => 'status-rejected',
-        'expired' => 'status-expired',
         default => 'status-default',
     };
 

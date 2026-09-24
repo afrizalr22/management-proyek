@@ -5,42 +5,50 @@
 @php
     $status = $quotation->status;
 
-    $statusText = match ($status) {
-        'draft' => 'Draft',
-        'sent' => 'Dikirim',
-        'approved' => 'Disetujui',
-        'rejected' => 'Ditolak',
-        'expired' => 'Kedaluwarsa',
-        default => 'Tidak diketahui',
-    };
+    $isExpired =
+        $status === 'draft'
+        && $quotation->valid_until
+        && $quotation->valid_until
+            ->isBefore(today());
 
-    $statusDescription = match ($status) {
-        'draft' =>
-            'Quotation masih berupa Draft. Setelah quotation diserahkan kepada Client melalui email, WhatsApp, cetak, atau pertemuan langsung, tandai sebagai sudah dikirim.',
+    $statusText = $isExpired
+        ? 'Kedaluwarsa'
+        : match ($status) {
+            'draft' => 'Draft',
+            'sent' => 'Dikirim',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+            default => 'Tidak diketahui',
+        };
 
-        'sent' =>
-            'Quotation telah diserahkan kepada Client dan sedang menunggu keputusan persetujuan atau penolakan.',
+    $statusDescription = $isExpired
+        ? 'Masa berlaku quotation telah berakhir.'
+        : match ($status) {
+            'draft' =>
+                'Quotation masih berupa Draft. Setelah quotation diserahkan kepada Client melalui email, WhatsApp, cetak, atau pertemuan langsung, tandai sebagai sudah dikirim.',
 
-        'approved' =>
-            'Quotation telah disetujui dan dapat dilanjutkan ke proses pembuatan Project.',
+            'sent' =>
+                'Quotation telah diserahkan kepada Client dan sedang menunggu keputusan persetujuan atau penolakan.',
 
-        'rejected' =>
-            'Quotation telah ditolak. Periksa kembali penawaran sebelum membuat quotation baru.',
+            'approved' =>
+                'Quotation telah disetujui dan dapat dilanjutkan ke proses pembuatan Project.',
 
-        'expired' =>
-            'Masa berlaku quotation telah berakhir.',
+            'rejected' =>
+                'Quotation telah ditolak. Periksa kembali penawaran sebelum membuat quotation baru.',
 
-        default =>
-            'Status quotation tidak diketahui.',
-    };
+            default =>
+                'Status quotation tidak diketahui.',
+        };
 
-    $statusColor = match ($status) {
-        'draft' => 'yellow',
-        'sent' => 'blue',
-        'approved' => 'green',
-        'rejected' => 'red',
-        default => 'gray',
-    };
+    $statusColor = $isExpired
+        ? 'gray'
+        : match ($status) {
+            'draft' => 'yellow',
+            'sent' => 'blue',
+            'approved' => 'green',
+            'rejected' => 'red',
+            default => 'gray',
+        };
 @endphp
 
 <section
@@ -53,26 +61,37 @@
         <div class="flex min-w-0 items-start gap-4">
             <div
                 @class([
-                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
-                    'bg-yellow-100 text-yellow-700' =>
-                        $status === 'draft',
-                    'bg-blue-100 text-blue-700' =>
-                        $status === 'sent',
-                    'bg-green-100 text-green-700' =>
-                        $status === 'approved',
-                    'bg-red-100 text-red-700' =>
-                        $status === 'rejected',
-                    'bg-gray-100 text-gray-600' => !in_array(
-                        $status,
-                        [
-                            'draft',
-                            'sent',
-                            'approved',
-                            'rejected',
-                        ],
-                        true
-                    ),
-                ])
+    'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+
+    'bg-gray-100 text-gray-600' =>
+        $isExpired,
+
+    'bg-yellow-100 text-yellow-700' =>
+        ! $isExpired
+        && $status === 'draft',
+
+    'bg-blue-100 text-blue-700' =>
+        $status === 'sent',
+
+    'bg-green-100 text-green-700' =>
+        $status === 'approved',
+
+    'bg-red-100 text-red-700' =>
+        $status === 'rejected',
+
+    'bg-gray-100 text-gray-600' =>
+        ! $isExpired
+        && ! in_array(
+            $status,
+            [
+                'draft',
+                'sent',
+                'approved',
+                'rejected',
+            ],
+            true
+        ),
+])
             >
                 @if ($status === 'approved')
                     <svg
@@ -193,7 +212,7 @@
 @endif
 
             {{-- Draft: tandai sudah dikirim --}}
-            @if ($status === 'draft')
+            @if ($status === 'draft' && ! $isExpired)
                 <button
                     type="button"
                     wire:click="openStatusConfirmation('send')"
@@ -334,7 +353,7 @@
                 </div>
 
             {{-- Kedaluwarsa --}}
-            @elseif ($status === 'expired')
+@elseif ($isExpired)
                 <div
                     class="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-200 bg-gray-100 px-5 py-2.5 text-sm font-semibold text-gray-500"
                 >

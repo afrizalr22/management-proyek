@@ -52,21 +52,29 @@
         <tbody class="divide-y divide-gray-100 bg-white">
             @forelse ($quotations as $quotation)
                 @php
-                    $statusText = match ($quotation->status) {
+                    $isExpired =
+                    $quotation->status === 'draft'
+                    && $quotation->valid_until
+                    && $quotation->valid_until
+                        ->isBefore(today());
+
+                $statusText = $isExpired
+                    ? 'Kedaluwarsa'
+                    : match ($quotation->status) {
                         'draft' => 'Draft',
                         'sent' => 'Dikirim',
                         'approved' => 'Disetujui',
                         'rejected' => 'Ditolak',
-                        'expired' => 'Kedaluwarsa',
                         default => 'Tidak diketahui',
                     };
 
-                    $statusColor = match ($quotation->status) {
+                $statusColor = $isExpired
+                    ? 'gray'
+                    : match ($quotation->status) {
                         'draft' => 'yellow',
                         'sent' => 'blue',
                         'approved' => 'green',
                         'rejected' => 'red',
-                        'expired' => 'gray',
                         default => 'gray',
                     };
 

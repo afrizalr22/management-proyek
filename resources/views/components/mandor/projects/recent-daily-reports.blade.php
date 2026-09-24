@@ -4,31 +4,23 @@
     'total' => 0,
 ])
 
-@php
-    $statusConfiguration = [
+    @php
+        $statusConfiguration = [
         'draft' => [
             'text' => 'Draft',
             'class' => 'bg-gray-100 text-gray-600',
         ],
-
         'submitted' => [
             'text' => 'Menunggu Pemeriksaan',
             'class' => 'bg-amber-50 text-amber-700',
         ],
-
-        'pending' => [
-            'text' => 'Menunggu Pemeriksaan',
-            'class' => 'bg-amber-50 text-amber-700',
+        'revision' => [
+            'text' => 'Perlu Revisi',
+            'class' => 'bg-orange-50 text-orange-700',
         ],
-
         'approved' => [
             'text' => 'Disetujui',
             'class' => 'bg-green-50 text-green-700',
-        ],
-
-        'rejected' => [
-            'text' => 'Perlu Perbaikan',
-            'class' => 'bg-red-50 text-red-700',
         ],
     ];
 @endphp

@@ -67,7 +67,7 @@ class Index extends Component
             ->when(
                 $this->search !== '',
                 function ($query) {
-                    $search = '%' . trim($this->search) . '%';
+                    $search = '%'.trim($this->search).'%';
 
                     $query->where(function ($query) use ($search) {
                         $query
@@ -89,7 +89,40 @@ class Index extends Component
                 }
             )
             ->when(
-                $this->status !== '',
+                $this->status === 'expired',
+                fn ($query) => $query
+                    ->where('status', 'draft')
+                    ->whereNotNull('valid_until')
+                    ->whereDate(
+                        'valid_until',
+                        '<',
+                        today()
+                    )
+            )
+            ->when(
+                $this->status === 'draft',
+                fn ($query) => $query
+                    ->where('status', 'draft')
+                    ->where(function ($query): void {
+                        $query
+                            ->whereNull('valid_until')
+                            ->orWhereDate(
+                                'valid_until',
+                                '>=',
+                                today()
+                            );
+                    })
+            )
+            ->when(
+                $this->status !== ''
+                    && ! in_array(
+                        $this->status,
+                        [
+                            'draft',
+                            'expired',
+                        ],
+                        true
+                    ),
                 fn ($query) => $query->where(
                     'status',
                     $this->status
@@ -124,6 +157,15 @@ class Index extends Component
 
             'draft' => Quotation::query()
                 ->where('status', 'draft')
+                ->where(function ($query): void {
+                    $query
+                        ->whereNull('valid_until')
+                        ->orWhereDate(
+                            'valid_until',
+                            '>=',
+                            today()
+                        );
+                })
                 ->count(),
 
             'sent' => Quotation::query()
