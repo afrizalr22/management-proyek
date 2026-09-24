@@ -11,7 +11,6 @@ use App\Models\Project;
 use App\Models\Quotation;
 use Livewire\Component;
 
-
 class Dashboard extends Component
 {
     public function logout(Logout $logout)
@@ -84,53 +83,39 @@ class Dashboard extends Component
             ->count();
 
         $statistics = [
-            'active_clients' =>
-                $activeClients,
+            'active_clients' => $activeClients,
 
-            'total_clients' =>
-                $totalClients,
+            'total_clients' => $totalClients,
 
-            'active_projects' =>
-                $activeProjects,
+            'active_projects' => $activeProjects,
 
-            'total_projects' =>
-                $totalProjects,
+            'total_projects' => $totalProjects,
 
-            'invoice_grand_total' =>
-                $invoiceGrandTotal,
+            'invoice_grand_total' => $invoiceGrandTotal,
 
-            'invoice_paid_amount' =>
-                $invoicePaidAmount,
+            'invoice_paid_amount' => $invoicePaidAmount,
 
-            'outstanding_amount' =>
-                $outstandingAmount,
+            'outstanding_amount' => $outstandingAmount,
 
-            'total_invoices' =>
-                $totalInvoices,
+            'total_invoices' => $totalInvoices,
 
-            'unpaid_invoices' =>
-                $unpaidInvoices,
+            'unpaid_invoices' => $unpaidInvoices,
         ];
 
         $summary = [
-        'quotations' =>
-            Quotation::query()->count(),
+            'quotations' => Quotation::query()->count(),
 
-        'approved_quotations' =>
-            Quotation::query()
+            'approved_quotations' => Quotation::query()
                 ->where('status', 'approved')
                 ->count(),
 
-        'delivery_orders' =>
-            DeliveryOrder::query()->count(),
+            'delivery_orders' => DeliveryOrder::query()->count(),
 
-        'draft_delivery_orders' =>
-            DeliveryOrder::query()
+            'draft_delivery_orders' => DeliveryOrder::query()
                 ->where('status', 'draft')
                 ->count(),
 
-        'delayed_projects' =>
-            Project::query()
+            'delayed_projects' => Project::query()
                 ->whereNotNull('end_date')
                 ->whereDate('end_date', '<', today())
                 ->whereNotIn(
@@ -142,8 +127,7 @@ class Dashboard extends Component
                 )
                 ->count(),
 
-        'overdue_invoices' =>
-            Invoice::query()
+            'overdue_invoices' => Invoice::query()
                 ->whereNotNull('due_date')
                 ->whereDate('due_date', '<', today())
                 ->whereIn(
@@ -160,14 +144,12 @@ class Dashboard extends Component
                 )
                 ->count(),
 
-        'project_issues' =>
-            DailyReport::query()
+            'project_issues' => DailyReport::query()
                 ->whereNotNull('obstacles')
                 ->where('obstacles', '!=', '')
                 ->count(),
 
-        'pending_delivery_orders' =>
-            DeliveryOrder::query()
+            'pending_delivery_orders' => DeliveryOrder::query()
                 ->whereIn(
                     'status',
                     [
@@ -176,290 +158,248 @@ class Dashboard extends Component
                     ]
                 )
                 ->count(),
-    ];
+        ];
 
-    $chartProjects = Project::query()
-    ->whereNotIn(
-        'status',
-        [
-            'completed',
-            'cancelled',
-        ]
-    )
-    ->orderByDesc('updated_at')
-    ->limit(8)
-    ->get([
-        'id',
-        'project_code',
-        'project_name',
-        'progress',
-        'status',
-    ]);
+        $chartProjects = Project::query()
+            ->whereNotIn(
+                'status',
+                [
+                    'completed',
+                    'cancelled',
+                ]
+            )
+            ->orderByDesc('updated_at')
+            ->limit(8)
+            ->get([
+                'id',
+                'project_code',
+                'project_name',
+                'progress',
+                'status',
+            ]);
 
-    $pipelineProjects = Project::query()
-    ->with([
-        'client:id,company_name,city',
-        'mandor:id,name',
-    ])
-    ->withCount([
-        'tasks',
+        $pipelineProjects = Project::query()
+            ->with([
+                'client:id,company_name,city',
+                'mandor:id,name',
+            ])
+            ->withCount([
+                'tasks',
 
-        'tasks as completed_tasks_count' =>
-            fn ($query) => $query
-                ->where('status', 'completed'),
-    ])
-    ->orderByRaw(
-        "
-        CASE status
-            WHEN 'in_progress' THEN 1
-            WHEN 'ongoing' THEN 1
-            WHEN 'planning' THEN 2
-            WHEN 'on_hold' THEN 3
-            WHEN 'completed' THEN 4
-            WHEN 'cancelled' THEN 5
-            ELSE 6
-        END
-        "
-    )
-    ->orderBy('end_date')
-    ->orderByDesc('updated_at')
-    ->limit(8)
-    ->get();
+                'tasks as completed_tasks_count' => fn ($query) => $query
+                    ->where('status', 'completed'),
+            ])
+            ->orderByRaw(
+                "
+    CASE status
+        WHEN 'on_progress' THEN 1
+        WHEN 'planning' THEN 2
+        WHEN 'completed' THEN 3
+        WHEN 'cancelled' THEN 4
+        ELSE 5
+    END
+    "
+            )
+            ->orderBy('end_date')
+            ->orderByDesc('updated_at')
+            ->limit(8)
+            ->get();
 
-    $recentActivities = collect();
+        $recentActivities = collect();
 
-    Client::query()
-        ->latest('updated_at')
-        ->limit(4)
-        ->get([
-            'id',
-            'company_name',
-            'status',
-            'created_at',
-            'updated_at',
-        ])
-        ->each(function (
-            Client $client
-        ) use ($recentActivities): void {
-            $recentActivities->push([
-                'key' =>
-                    'client-'.$client->id,
+        Client::query()
+            ->latest('updated_at')
+            ->limit(4)
+            ->get([
+                'id',
+                'company_name',
+                'status',
+                'created_at',
+                'updated_at',
+            ])
+            ->each(function (
+                Client $client
+            ) use ($recentActivities): void {
+                $recentActivities->push([
+                    'key' => 'client-'.$client->id,
 
-                'title' =>
-                    'Client '.$client->company_name,
+                    'title' => 'Client '.$client->company_name,
 
-                'description' =>
-                    'Data Client ditambahkan atau diperbarui.',
+                    'description' => 'Data Client ditambahkan atau diperbarui.',
 
-                'type' =>
-                    'client',
+                    'type' => 'client',
 
-                'occurred_at' =>
-                    $client->updated_at,
+                    'occurred_at' => $client->updated_at,
 
-                'href' =>
-                    route(
+                    'href' => route(
                         'owner.clients.show',
                         [
                             'client' => $client->id,
                         ]
                     ),
-            ]);
-        });
+                ]);
+            });
 
-    Project::query()
-        ->latest('updated_at')
-        ->limit(4)
-        ->get([
-            'id',
-            'project_code',
-            'project_name',
-            'progress',
-            'created_at',
-            'updated_at',
-        ])
-        ->each(function (
-            Project $project
-        ) use ($recentActivities): void {
-            $recentActivities->push([
-                'key' =>
-                    'project-'.$project->id,
+        Project::query()
+            ->latest('updated_at')
+            ->limit(4)
+            ->get([
+                'id',
+                'project_code',
+                'project_name',
+                'progress',
+                'created_at',
+                'updated_at',
+            ])
+            ->each(function (
+                Project $project
+            ) use ($recentActivities): void {
+                $recentActivities->push([
+                    'key' => 'project-'.$project->id,
 
-                'title' =>
-                    $project->project_name,
+                    'title' => $project->project_name,
 
-                'description' =>
-                    sprintf(
+                    'description' => sprintf(
                         '%s • Progress %d%%',
                         $project->project_code,
                         (int) $project->progress
                     ),
 
-                'type' =>
-                    'project',
+                    'type' => 'project',
 
-                'occurred_at' =>
-                    $project->updated_at,
+                    'occurred_at' => $project->updated_at,
 
-                'href' =>
-                    route(
+                    'href' => route(
                         'owner.monitoring.show',
                         [
                             'project' => $project->id,
                         ]
                     ),
-            ]);
-        });
+                ]);
+            });
 
-    Invoice::query()
-        ->latest('updated_at')
-        ->limit(4)
-        ->get([
-            'id',
-            'invoice_number',
-            'client_name',
-            'status',
-            'payment_status',
-            'created_at',
-            'updated_at',
-        ])
-        ->each(function (
-            Invoice $invoice
-        ) use ($recentActivities): void {
-            $paymentText = match (
-                $invoice->payment_status
-            ) {
-                'paid' =>
-                    'Lunas',
+        Invoice::query()
+            ->latest('updated_at')
+            ->limit(4)
+            ->get([
+                'id',
+                'invoice_number',
+                'client_name',
+                'status',
+                'payment_status',
+                'created_at',
+                'updated_at',
+            ])
+            ->each(function (
+                Invoice $invoice
+            ) use ($recentActivities): void {
+                $paymentText = match (
+                    $invoice->payment_status
+                ) {
+                    'paid' => 'Lunas',
 
-                'partial' =>
-                    'Dibayar Sebagian',
+                    'partial' => 'Dibayar Sebagian',
 
-                default =>
-                    'Belum Dibayar',
-            };
+                    default => 'Belum Dibayar',
+                };
 
-            $recentActivities->push([
-                'key' =>
-                    'invoice-'.$invoice->id,
+                $recentActivities->push([
+                    'key' => 'invoice-'.$invoice->id,
 
-                'title' =>
-                    'Invoice '.$invoice->invoice_number,
+                    'title' => 'Invoice '.$invoice->invoice_number,
 
-                'description' =>
-                    sprintf(
+                    'description' => sprintf(
                         '%s • %s',
                         $invoice->client_name,
                         $paymentText
                     ),
 
-                'type' =>
-                    'invoice',
+                    'type' => 'invoice',
 
-                'occurred_at' =>
-                    $invoice->updated_at,
+                    'occurred_at' => $invoice->updated_at,
 
-                'href' =>
-                    route(
+                    'href' => route(
                         'owner.invoices.show',
                         [
                             'invoice' => $invoice->id,
                         ]
                     ),
-            ]);
-        });
+                ]);
+            });
 
-    DeliveryOrder::query()
-        ->latest('updated_at')
-        ->limit(4)
-        ->get([
-            'id',
-            'delivery_number',
-            'receiver_name',
-            'status',
-            'created_at',
-            'updated_at',
-        ])
-        ->each(function (
-            DeliveryOrder $deliveryOrder
-        ) use ($recentActivities): void {
-            $statusText = match (
-                $deliveryOrder->status
-            ) {
-                'sent' =>
-                    'Dikirim',
+        DeliveryOrder::query()
+            ->latest('updated_at')
+            ->limit(4)
+            ->get([
+                'id',
+                'delivery_number',
+                'receiver_name',
+                'status',
+                'created_at',
+                'updated_at',
+            ])
+            ->each(function (
+                DeliveryOrder $deliveryOrder
+            ) use ($recentActivities): void {
+                $statusText = match (
+                    $deliveryOrder->status
+                ) {
+                    'sent' => 'Dikirim',
 
-                'received' =>
-                    'Diterima',
+                    'received' => 'Diterima',
 
-                'cancelled' =>
-                    'Dibatalkan',
+                    'cancelled' => 'Dibatalkan',
 
-                default =>
-                    'Draft',
-            };
+                    default => 'Draft',
+                };
 
-            $recentActivities->push([
-                'key' =>
-                    'delivery-order-'.$deliveryOrder->id,
+                $recentActivities->push([
+                    'key' => 'delivery-order-'.$deliveryOrder->id,
 
-                'title' =>
-                    'Surat Jalan '
-                    .$deliveryOrder->delivery_number,
+                    'title' => 'Surat Jalan '
+                        .$deliveryOrder->delivery_number,
 
-                'description' =>
-                    sprintf(
+                    'description' => sprintf(
                         '%s • %s',
                         $deliveryOrder->receiver_name,
                         $statusText
                     ),
 
-                'type' =>
-                    'delivery_order',
+                    'type' => 'delivery_order',
 
-                'occurred_at' =>
-                    $deliveryOrder->updated_at,
+                    'occurred_at' => $deliveryOrder->updated_at,
 
-                'href' =>
-                    route(
+                    'href' => route(
                         'owner.delivery-orders.show',
                         [
-                            'deliveryOrder' =>
-                                $deliveryOrder->id,
+                            'deliveryOrder' => $deliveryOrder->id,
                         ]
                     ),
-            ]);
-        });
+                ]);
+            });
 
-    $recentActivities = $recentActivities
-        ->filter(
-            fn (array $activity): bool =>
-                $activity['occurred_at'] !== null
-        )
-        ->sortByDesc(
-            fn (array $activity): int =>
-                $activity['occurred_at']->timestamp
-        )
-        ->take(6)
-        ->values();
+        $recentActivities = $recentActivities
+            ->filter(
+                fn (array $activity): bool => $activity['occurred_at'] !== null
+            )
+            ->sortByDesc(
+                fn (array $activity): int => $activity['occurred_at']->timestamp
+            )
+            ->take(6)
+            ->values();
 
         return view(
             'livewire.owner.dashboard',
             [
-                'statistics' =>
-                    $statistics,
+                'statistics' => $statistics,
 
-                'summary' =>
-                    $summary,
+                'summary' => $summary,
 
-                'chartProjects' =>
-                    $chartProjects,
+                'chartProjects' => $chartProjects,
 
-                'recentActivities' =>
-                    $recentActivities,
+                'recentActivities' => $recentActivities,
 
-                'pipelineProjects' =>
-                    $pipelineProjects,
+                'pipelineProjects' => $pipelineProjects,
             ]
         );
     }

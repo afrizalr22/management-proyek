@@ -6,54 +6,47 @@
 
 @php
     $statusConfiguration = [
-        'pending' => [
-            'text' => 'Belum Dimulai',
-            'badge' => 'bg-gray-100 text-gray-600',
-            'dot' => 'bg-gray-300 ring-gray-100',
-            'title' => 'text-gray-700',
-        ],
+    'assigned' => [
+        'text' => 'Belum Dimulai',
+        'badge' => 'bg-gray-100 text-gray-600',
+        'dot' => 'bg-gray-300 ring-gray-100',
+        'title' => 'text-gray-700',
+    ],
 
-        'todo' => [
-            'text' => 'Belum Dimulai',
-            'badge' => 'bg-gray-100 text-gray-600',
-            'dot' => 'bg-gray-300 ring-gray-100',
-            'title' => 'text-gray-700',
-        ],
+    'in_progress' => [
+        'text' => 'Sedang Dikerjakan',
+        'badge' => 'bg-blue-50 text-blue-700',
+        'dot' => 'bg-blue-600 ring-blue-100',
+        'title' => 'text-gray-900',
+    ],
 
-        'in_progress' => [
-            'text' => 'Sedang Dikerjakan',
-            'badge' => 'bg-blue-50 text-blue-700',
-            'dot' => 'bg-blue-600 ring-blue-100',
-            'title' => 'text-gray-900',
-        ],
+    'submitted' => [
+        'text' => 'Menunggu Pemeriksaan',
+        'badge' => 'bg-amber-50 text-amber-700',
+        'dot' => 'bg-amber-500 ring-amber-100',
+        'title' => 'text-gray-900',
+    ],
 
-        'submitted' => [
-            'text' => 'Menunggu Pemeriksaan',
-            'badge' => 'bg-amber-50 text-amber-700',
-            'dot' => 'bg-amber-500 ring-amber-100',
-            'title' => 'text-gray-900',
-        ],
+    'revision' => [
+        'text' => 'Perlu Revisi',
+        'badge' => 'bg-orange-50 text-orange-700',
+        'dot' => 'bg-orange-500 ring-orange-100',
+        'title' => 'text-gray-900',
+    ],
 
-        'completed' => [
-            'text' => 'Selesai',
-            'badge' => 'bg-green-50 text-green-700',
-            'dot' => 'bg-green-500 ring-green-100',
-            'title' => 'text-gray-900',
-        ],
+    'completed' => [
+        'text' => 'Selesai',
+        'badge' => 'bg-green-50 text-green-700',
+        'dot' => 'bg-green-500 ring-green-100',
+        'title' => 'text-gray-900',
+    ],
 
-        'approved' => [
-            'text' => 'Disetujui',
-            'badge' => 'bg-green-50 text-green-700',
-            'dot' => 'bg-green-500 ring-green-100',
-            'title' => 'text-gray-900',
-        ],
-
-        'cancelled' => [
-            'text' => 'Dibatalkan',
-            'badge' => 'bg-red-50 text-red-700',
-            'dot' => 'bg-red-500 ring-red-100',
-            'title' => 'text-gray-500',
-        ],
+    'cancelled' => [
+        'text' => 'Dibatalkan',
+        'badge' => 'bg-red-50 text-red-700',
+        'dot' => 'bg-red-500 ring-red-100',
+        'title' => 'text-gray-500',
+    ],
     ];
 
     $latestProgress = $progresses->first();
@@ -173,16 +166,7 @@
 
                         {{-- Titik --}}
                         <div class="relative mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ring-4 {{ $configuration['dot'] }}">
-                            @if (
-                                in_array(
-                                    $task->status,
-                                    [
-                                        'completed',
-                                        'approved',
-                                    ],
-                                    true
-                                )
-                            )
+                            @if ($task->status === 'completed')
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 20 20"

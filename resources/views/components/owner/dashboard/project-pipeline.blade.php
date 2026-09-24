@@ -104,28 +104,16 @@
                                         'yellow',
                                     ],
 
-                                    in_array(
-                                        $project->status,
-                                        [
-                                            'in_progress',
-                                            'ongoing',
-                                        ],
-                                        true
-                                    ) => [
-                                        'Berjalan',
-                                        'blue',
-                                    ],
+                                    $project->status ===
+    'on_progress' => [
+    'Berjalan',
+    'blue',
+],
 
                                     $project->status ===
                                         'completed' => [
                                         'Selesai',
                                         'green',
-                                    ],
-
-                                    $project->status ===
-                                        'on_hold' => [
-                                        'Ditunda',
-                                        'yellow',
                                     ],
 
                                     $project->status ===

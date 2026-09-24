@@ -75,7 +75,6 @@
                     $task->status,
                     [
                         'completed',
-                        'approved',
                         'cancelled',
                     ],
                     true

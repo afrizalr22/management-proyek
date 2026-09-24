@@ -21,18 +21,15 @@
             'Perencanaan',
             'yellow',
         ],
-        'ongoing', 'in_progress' => [
-            'Berjalan',
-            'blue',
-        ],
+        'on_progress' => [
+    'Berjalan',
+    'blue',
+],
         'completed' => [
             'Selesai',
             'green',
         ],
-        'on_hold' => [
-            'Ditunda',
-            'gray',
-        ],
+
         'cancelled' => [
             'Dibatalkan',
             'red',

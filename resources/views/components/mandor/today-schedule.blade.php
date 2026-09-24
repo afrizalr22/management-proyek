@@ -4,48 +4,21 @@
 
 @php
     $statusConfiguration = [
-        'pending' => [
-            'text' => 'Belum Dimulai',
-            'badge' => 'bg-gray-100 text-gray-600',
-            'progress' => 'bg-gray-400',
-        ],
+    'draft' => [
+        'text' => 'Draft',
+        'class' => 'bg-gray-100 text-gray-600',
+    ],
 
-        'todo' => [
-            'text' => 'Belum Dimulai',
-            'badge' => 'bg-gray-100 text-gray-600',
-            'progress' => 'bg-gray-400',
-        ],
+    'submitted' => [
+        'text' => 'Menunggu Pemeriksaan',
+        'class' => 'bg-amber-50 text-amber-700',
+    ],
 
-        'in_progress' => [
-            'text' => 'Sedang Dikerjakan',
-            'badge' => 'bg-blue-50 text-blue-700',
-            'progress' => 'bg-blue-600',
-        ],
-
-        'submitted' => [
-            'text' => 'Menunggu Pemeriksaan',
-            'badge' => 'bg-amber-50 text-amber-700',
-            'progress' => 'bg-amber-500',
-        ],
-
-        'completed' => [
-            'text' => 'Selesai',
-            'badge' => 'bg-green-50 text-green-700',
-            'progress' => 'bg-green-500',
-        ],
-
-        'approved' => [
-            'text' => 'Disetujui',
-            'badge' => 'bg-green-50 text-green-700',
-            'progress' => 'bg-green-500',
-        ],
-
-        'cancelled' => [
-            'text' => 'Dibatalkan',
-            'badge' => 'bg-red-50 text-red-700',
-            'progress' => 'bg-red-500',
-        ],
-    ];
+    'revision' => [
+        'text' => 'Perlu Revisi',
+        'class' => 'bg-orange-50 text-orange-700',
+    ],
+];
 
     $priorityConfiguration = [
         'low' => [
