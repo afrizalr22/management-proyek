@@ -50,74 +50,88 @@ class Show extends Component
         $this->project->load([
             'client',
 
-            'workerAssignments' =>
-                fn ($query) => $query
-                    ->with([
-                        'worker:id,name,email,phone,photo,status',
-                    ])
-                    ->where(
-                        'status',
-                        'active'
-                    )
-                    ->oldest('id'),
+            'workerAssignments' => fn ($query) => $query
+                ->with([
+                    'worker:id,name,email,phone,photo,status',
+                ])
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->oldest('id'),
 
-            'tasks' =>
-                fn ($query) => $query
-                    ->with([
-                        'worker:id,name,email',
-                    ])
-                    ->orderBy('start_at')
-                    ->orderBy('id'),
+            'tasks' => fn ($query) => $query
+                ->with([
+                    'worker:id,name,email',
+                ])
+                ->orderBy('start_at')
+                ->orderBy('id'),
 
-            'progresses' =>
-                fn ($query) => $query
-                    ->with([
-                        'user:id,name',
-                    ])
-                    ->latest('created_at')
-                    ->latest('id'),
+            'progresses' => fn ($query) => $query
+                ->with([
+                    'user:id,name',
+                ])
+                ->latest('created_at')
+                ->latest('id'),
 
-            'dailyReports' =>
-                fn ($query) => $query
-                    ->with([
-                        'user:id,name',
-                        'task:id,title',
-                        'documentations:id,daily_report_id,photo',
-                    ])
-                    ->latest('report_date')
-                    ->latest('id'),
+            'dailyReports' => fn ($query) => $query
+                ->with([
+                    'user:id,name',
+                    'task:id,title',
+                    'documentations:id,daily_report_id,photo',
+                ])
+                ->latest('report_date')
+                ->latest('id'),
 
-            'documentations' =>
-                fn ($query) => $query
-                    ->with([
-                        'user:id,name',
-                        'task:id,title',
-                    ])
-                    ->latest('documentation_date')
-                    ->latest('id'),
+            'documentations' => fn ($query) => $query
+                ->with([
+                    'user:id,name',
+                    'task:id,title',
+                ])
+                ->whereNotNull(
+                    'daily_report_id'
+                )
+                ->whereHas(
+                    'dailyReport',
+                    fn ($reportQuery) => $reportQuery
+                        ->where(
+                            'status',
+                            'approved'
+                        )
+                )
+                ->latest('documentation_date')
+                ->latest('id'),
         ]);
 
         $this->project->loadCount([
             'tasks',
+
             'dailyReports',
-            'documentations',
 
-            'tasks as completed_tasks_count' =>
-                fn ($query) => $query
-                    ->whereIn(
-                        'status',
-                        [
-                            'completed',
-                            'approved',
-                        ]
-                    ),
+            'documentations as documentations_count' => fn ($query) => $query
+                ->whereNotNull(
+                    'daily_report_id'
+                )
+                ->whereHas(
+                    'dailyReport',
+                    fn ($reportQuery) => $reportQuery
+                        ->where(
+                            'status',
+                            'approved'
+                        )
+                ),
 
-            'workerAssignments as active_workers_count' =>
-                fn ($query) => $query
-                    ->where(
-                        'status',
-                        'active'
-                    ),
+            'tasks as completed_tasks_count' => fn ($query) => $query
+                ->where(
+                    'status',
+                    'completed'
+                ),
+
+            'workerAssignments as active_workers_count' => fn ($query) => $query
+                ->where(
+                    'status',
+                    'active'
+                ),
         ]);
     }
 
@@ -144,7 +158,7 @@ class Show extends Component
         $isDelayed =
             $remainingDays !== null
             && $remainingDays < 0
-            && !in_array(
+            && ! in_array(
                 $this->project->status,
                 [
                     'completed',
@@ -154,48 +168,40 @@ class Show extends Component
             );
 
         return [
-            'progress' =>
-                $progress,
+            'progress' => $progress,
 
-            'remaining_days' =>
-                $remainingDays,
+            'remaining_days' => $remainingDays,
 
-            'is_delayed' =>
-                $isDelayed,
+            'is_delayed' => $isDelayed,
 
-            'active_workers' =>
-                (int) (
-                    $this->project
-                        ->active_workers_count
-                    ?? 0
-                ),
+            'active_workers' => (int) (
+                $this->project
+                    ->active_workers_count
+                ?? 0
+            ),
 
-            'total_tasks' =>
-                (int) (
-                    $this->project->tasks_count
-                    ?? 0
-                ),
+            'total_tasks' => (int) (
+                $this->project->tasks_count
+                ?? 0
+            ),
 
-            'completed_tasks' =>
-                (int) (
-                    $this->project
-                        ->completed_tasks_count
-                    ?? 0
-                ),
+            'completed_tasks' => (int) (
+                $this->project
+                    ->completed_tasks_count
+                ?? 0
+            ),
 
-            'daily_reports' =>
-                (int) (
-                    $this->project
-                        ->daily_reports_count
-                    ?? 0
-                ),
+            'daily_reports' => (int) (
+                $this->project
+                    ->daily_reports_count
+                ?? 0
+            ),
 
-            'documentations' =>
-                (int) (
-                    $this->project
-                        ->documentations_count
-                    ?? 0
-                ),
+            'documentations' => (int) (
+                $this->project
+                    ->documentations_count
+                ?? 0
+            ),
         ];
     }
 
@@ -206,29 +212,24 @@ class Show extends Component
         return view(
             'livewire.mandor.projects.show',
             [
-                'summary' =>
-                    $this->summary(),
+                'summary' => $this->summary(),
 
-                'workers' =>
-                    $this->project
+                'workers' => $this->project
+                    ->workerAssignments,
 
-                        ->workerAssignments,
+                'tasks' => $this->project
+                    ->tasks,
 
-                'tasks' =>
-                    $this->project->tasks,
+                'progresses' => $this->project
+                    ->progresses,
 
-                'progresses' =>
-                    $this->project->progresses,
+                'recentReports' => $this->project
+                    ->dailyReports
+                    ->take(3),
 
-                'recentReports' =>
-                    $this->project
-                        ->dailyReports
-                        ->take(3),
-
-                'latestDocumentations' =>
-                    $this->project
-                        ->documentations
-                        ->take(5),
+                'latestDocumentations' => $this->project
+                    ->documentations
+                    ->take(5),
             ]
         );
     }
