@@ -3,6 +3,7 @@
 namespace Tests\Feature\Mandor;
 
 use App\Livewire\Mandor\WorkProgress\Index;
+use App\Livewire\Mandor\WorkProgress\Projects as WorkProgressProjects;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\ProjectWorker;
@@ -111,8 +112,21 @@ class ProjectTaskWorkflowTest extends TestCase
                 )
             )
             ->assertOk()
-            ->assertSee($this->project->project_name)
-            ->assertSee('Buat Task');
+            ->assertSee(
+                $this->project->project_name
+            )
+            ->assertSee(
+                'Buat Task'
+            )
+            ->assertSee(
+                'Kembali ke Daftar Progress'
+            )
+            ->assertSee(
+                route(
+                    'mandor.work-progress.index'
+                ),
+                false
+            );
     }
 
     public function test_other_mandor_cannot_open_work_progress_page(): void
@@ -130,6 +144,128 @@ class ProjectTaskWorkflowTest extends TestCase
                     [
                         'project' => $this->project,
                     ]
+                )
+            )
+            ->assertForbidden();
+    }
+
+    public function test_mandor_can_open_global_work_progress_and_only_see_own_projects(): void
+    {
+        $ownCompletedProject = $this->createProject(
+            $this->mandor,
+            'completed',
+            2
+        );
+
+        $otherMandor = User::factory()->create([
+            'name' => 'Mandor Lain',
+            'status' => 'active',
+        ]);
+
+        $otherMandor->assignRole('mandor');
+
+        $otherProject = $this->createProject(
+            $otherMandor,
+            'planning',
+            3
+        );
+
+        $this->actingAs($this->mandor)
+            ->get(
+                route(
+                    'mandor.work-progress.index'
+                )
+            )
+            ->assertOk()
+            ->assertSee(
+                'Progress Pekerjaan'
+            )
+            ->assertSee(
+                $this->project->project_name
+            )
+            ->assertSee(
+                $ownCompletedProject->project_name
+            )
+            ->assertDontSee(
+                $otherProject->project_name
+            )
+            ->assertSee(
+                route(
+                    'mandor.projects.work-progress.index',
+                    [
+                        'project' => $this->project,
+                    ]
+                ),
+                false
+            )
+            ->assertSee(
+                'Lihat Progress'
+            );
+    }
+
+    public function test_global_work_progress_can_filter_projects_by_search_and_status(): void
+    {
+        $completedProject = $this->createProject(
+            $this->mandor,
+            'completed',
+            2
+        );
+
+        $onProgressProject = $this->createProject(
+            $this->mandor,
+            'on_progress',
+            3
+        );
+
+        Livewire::actingAs($this->mandor)
+            ->test(
+                WorkProgressProjects::class
+            )
+            ->set(
+                'search',
+                $completedProject->project_code
+            )
+            ->assertSee(
+                $completedProject->project_name
+            )
+            ->assertDontSee(
+                $this->project->project_name
+            )
+            ->assertDontSee(
+                $onProgressProject->project_name
+            )
+            ->call(
+                'resetFilters'
+            )
+            ->set(
+                'status',
+                'on_progress'
+            )
+            ->assertSee(
+                $onProgressProject->project_name
+            )
+            ->assertDontSee(
+                $this->project->project_name
+            )
+            ->assertDontSee(
+                $completedProject->project_name
+            );
+    }
+
+    public function test_non_mandor_user_cannot_open_global_work_progress_page(): void
+    {
+        $this->actingAs($this->owner)
+            ->get(
+                route(
+                    'mandor.work-progress.index'
+                )
+            )
+            ->assertForbidden();
+
+        $this->actingAs($this->worker)
+            ->get(
+                route(
+                    'mandor.work-progress.index'
                 )
             )
             ->assertForbidden();

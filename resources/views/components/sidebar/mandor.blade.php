@@ -1,67 +1,3 @@
-@php
-    $authenticatedMandor = auth()->user();
-
-    /*
-     * Mengambil Project dari URL ketika Mandor sedang
-     * membuka detail, progress, atau dokumentasi.
-     */
-    $routeProject = request()->route('project');
-
-    $routeProjectId = $routeProject instanceof \App\Models\Project
-        ? $routeProject->id
-        : (
-            is_numeric($routeProject)
-                ? (int) $routeProject
-                : null
-        );
-
-    /*
-     * Project dari URL hanya digunakan jika memang
-     * menjadi milik Mandor yang sedang login.
-     */
-    $selectedProjectId = null;
-
-    if ($authenticatedMandor && $routeProjectId) {
-        $selectedProjectId = $authenticatedMandor
-            ->managedProjects()
-            ->whereKey($routeProjectId)
-            ->value('id');
-    }
-
-    /*
-     * Jika belum berada di halaman Project tertentu,
-     * gunakan Project aktif pertama milik Mandor.
-     */
-    if (
-        !$selectedProjectId
-        && $authenticatedMandor
-    ) {
-        $selectedProjectId = $authenticatedMandor
-            ->managedProjects()
-            ->whereIn('status', [
-                'planning',
-                'on_progress',
-                'in_progress',
-                'ongoing',
-            ])
-            ->oldest('id')
-            ->value('id');
-    }
-
-    /*
-     * Jika Mandor belum memiliki Project, arahkan
-     * menu terkait Project ke halaman Proyek Saya.
-     */
-    $workProgressHref = $selectedProjectId
-        ? route(
-            'mandor.projects.work-progress.index',
-            [
-                'project' => $selectedProjectId,
-            ]
-        )
-        : route('mandor.projects.index');
-@endphp
-
 <div class="flex h-full min-h-0 flex-col overflow-hidden bg-white">
     {{-- Logo --}}
     <x-sidebar.logo
@@ -135,8 +71,9 @@
 
             {{-- Progress Pekerjaan --}}
             <x-sidebar.item
-                :href="$workProgressHref"
+                :href="route('mandor.work-progress.index')"
                 :active="request()->routeIs(
+                    'mandor.work-progress.*',
                     'mandor.projects.work-progress.*'
                 )"
             >

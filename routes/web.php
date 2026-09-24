@@ -58,6 +58,7 @@ use App\Livewire\Mandor\Projects\Index as MandorProjectsIndex;
 use App\Livewire\Mandor\Projects\Show as MandorProjectsShow;
 
 use App\Livewire\Mandor\WorkProgress\Index as MandorWorkProgressIndex;
+use App\Livewire\Mandor\WorkProgress\Projects as MandorWorkProgressProjects;
 
 use App\Livewire\Mandor\Documentations\Index as MandorDocumentationsIndex;
 
@@ -332,6 +333,11 @@ Route::middleware([
         '/projects/{project}',
         MandorProjectsShow::class
     )->name('mandor.projects.show');
+
+    Route::get(
+        '/mandor/work-progress',
+        MandorWorkProgressProjects::class
+    )->name('mandor.work-progress.index');
 
     Route::get(
         '/projects/{project}/work-progress',

@@ -22,11 +22,11 @@
             aria-label="Breadcrumb"
         >
             <a
-                href="{{ route('mandor.projects.index') }}"
+                href="{{ route('mandor.work-progress.index') }}"
                 wire:navigate
                 class="font-medium text-blue-600 transition hover:text-blue-700"
             >
-                Proyek Saya
+                Progress Pekerjaan
             </a>
 
             <svg
@@ -66,7 +66,7 @@
             </svg>
 
             <span class="font-medium text-gray-500">
-                Progress Pekerjaan
+                Detail Progress
             </span>
         </nav>
 
@@ -90,7 +90,30 @@
         </div>
     </div>
 
-    <div class="flex flex-col items-stretch gap-2 sm:items-end">
+    <div class="flex flex-col items-stretch gap-3 sm:items-end">
+
+        <a
+            href="{{ route('mandor.work-progress.index') }}"
+            wire:navigate
+            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-600 shadow-sm transition hover:border-blue-400 hover:bg-gray-50 hover:text-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-100"
+        >
+            <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19 12H5M11 18l-6-6 6-6"
+                />
+            </svg>
+
+            Kembali ke Daftar Progress
+        </a>
+
         <button
             type="button"
             wire:click="openTaskForm"
@@ -136,6 +159,7 @@
                 {{ $activeWorkerCount }} pekerja aktif tersedia
             </p>
         @endif
+
     </div>
 
 </div>
