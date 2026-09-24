@@ -20,6 +20,11 @@ class Dashboard extends Component
         'revision',
     ];
 
+    private const ACTIVE_PROJECT_STATUSES = [
+        'planning',
+        'on_progress',
+    ];
+
     private function worker(): User
     {
         $worker = Auth::user();
@@ -41,6 +46,26 @@ class Dashboard extends Component
             ->where(
                 'worker_id',
                 $workerId
+            );
+    }
+
+    private function activeTaskQuery(
+        int $workerId
+    ): Builder {
+        return $this->taskQuery(
+            $workerId
+        )
+            ->whereIn(
+                'status',
+                self::ACTIVE_TASK_STATUSES
+            )
+            ->whereHas(
+                'project',
+                fn (Builder $query) => $query
+                    ->whereIn(
+                        'status',
+                        self::ACTIVE_PROJECT_STATUSES
+                    )
             );
     }
 
@@ -87,27 +112,23 @@ class Dashboard extends Component
             ->count();
 
         return [
-            'active_tasks' =>
-                (clone $taskQuery)
-                    ->whereIn(
-                        'status',
-                        self::ACTIVE_TASK_STATUSES
-                    )
-                    ->count(),
+            'active_tasks' => $this->activeTaskQuery(
+                $workerId
+            )
+                ->count(),
 
-            'new_tasks' =>
-                (clone $taskQuery)
-                    ->where(
-                        'status',
-                        'assigned'
-                    )
-                    ->count(),
+            'new_tasks' => $this->activeTaskQuery(
+                $workerId
+            )
+                ->where(
+                    'status',
+                    'assigned'
+                )
+                ->count(),
 
-            'completed_tasks' =>
-                $completedTasks,
+            'completed_tasks' => $completedTasks,
 
-            'completion_rate' =>
-                $totalTasks > 0
+            'completion_rate' => $totalTasks > 0
                     ? (int) round(
                         $completedTasks
                         / $totalTasks
@@ -115,72 +136,64 @@ class Dashboard extends Component
                     )
                     : 0,
 
-            'documentations' =>
-                $this->documentationQuery(
-                    $workerId
-                )->count(),
+            'documentations' => $this->documentationQuery(
+                $workerId
+            )->count(),
 
-            'photos_today' =>
-                $this->documentationQuery(
-                    $workerId
+            'photos_today' => $this->documentationQuery(
+                $workerId
+            )
+                ->whereDate(
+                    'created_at',
+                    today()
                 )
-                    ->whereDate(
-                        'created_at',
-                        today()
-                    )
-                    ->count(),
+                ->count(),
 
-            'submitted_reports' =>
-                $this->reportQuery(
-                    $workerId
+            'submitted_reports' => $this->reportQuery(
+                $workerId
+            )
+                ->whereIn(
+                    'status',
+                    [
+                        'submitted',
+                        'revision',
+                        'approved',
+                    ]
                 )
-                    ->whereIn(
-                        'status',
-                        [
-                            'submitted',
-                            'revision',
-                            'approved',
-                        ]
-                    )
-                    ->count(),
+                ->count(),
 
-            'reports_this_month' =>
-                $this->reportQuery(
-                    $workerId
+            'reports_this_month' => $this->reportQuery(
+                $workerId
+            )
+                ->whereIn(
+                    'status',
+                    [
+                        'submitted',
+                        'revision',
+                        'approved',
+                    ]
                 )
-                    ->whereIn(
-                        'status',
-                        [
-                            'submitted',
-                            'revision',
-                            'approved',
-                        ]
-                    )
-                    ->whereYear(
-                        'report_date',
-                        today()->year
-                    )
-                    ->whereMonth(
-                        'report_date',
-                        today()->month
-                    )
-                    ->count(),
+                ->whereYear(
+                    'report_date',
+                    today()->year
+                )
+                ->whereMonth(
+                    'report_date',
+                    today()->month
+                )
+                ->count(),
         ];
     }
 
     private function priorityTasks(
         int $workerId
     ): Collection {
-        return $this->taskQuery(
+        return $this->activeTaskQuery(
             $workerId
         )
             ->with([
                 'project:id,project_code,project_name,location,status',
             ])
-            ->whereIn(
-                'status',
-                self::ACTIVE_TASK_STATUSES
-            )
             ->orderByRaw(
                 "
                     CASE priority
@@ -222,61 +235,45 @@ class Dashboard extends Component
                     $statusLabel = match (
                         $task->status
                     ) {
-                        'assigned' =>
-                            'ditugaskan',
+                        'assigned' => 'ditugaskan',
 
-                        'in_progress' =>
-                            'sedang dikerjakan',
+                        'in_progress' => 'sedang dikerjakan',
 
-                        'submitted' =>
-                            'menunggu pemeriksaan',
+                        'submitted' => 'menunggu pemeriksaan',
 
-                        'revision' =>
-                            'memerlukan revisi',
+                        'revision' => 'memerlukan revisi',
 
-                        'completed' =>
-                            'telah selesai',
+                        'completed' => 'telah selesai',
 
-                        'cancelled' =>
-                            'dibatalkan',
+                        'cancelled' => 'dibatalkan',
 
-                        default =>
-                            str_replace(
-                                '_',
-                                ' ',
-                                $task->status
-                            ),
+                        default => str_replace(
+                            '_',
+                            ' ',
+                            $task->status
+                        )
                     };
 
                     return [
-                        'type' =>
-                            'task',
+                        'type' => 'task',
 
-                        'title' =>
-                            'Task Diperbarui',
+                        'title' => 'Task Diperbarui',
 
-                        'description' =>
-                            $task->title
+                        'description' => $task->title
                             .' berstatus '
                             .$statusLabel.'.',
 
-                        'occurred_at' =>
-                            $task->updated_at,
+                        'occurred_at' => $task->updated_at,
 
-                        'color' =>
-                            match ($task->status) {
-                                'completed' =>
-                                    'bg-emerald-500',
+                        'color' => match ($task->status) {
+                            'completed' => 'bg-emerald-500',
 
-                                'revision' =>
-                                    'bg-amber-500',
+                            'revision' => 'bg-amber-500',
 
-                                'cancelled' =>
-                                    'bg-red-500',
+                            'cancelled' => 'bg-red-500',
 
-                                default =>
-                                    'bg-blue-500',
-                            },
+                            default => 'bg-blue-500',
+                        },
                     ];
                 }
             );
@@ -319,14 +316,11 @@ class Dashboard extends Component
                     };
 
                     return [
-                        'type' =>
-                            'report',
+                        'type' => 'report',
 
-                        'title' =>
-                            $title,
+                        'title' => $title,
 
-                        'description' =>
-                            'Laporan '
+                        'description' => 'Laporan '
                             .(
                                 $report->report_number
                                 ?: 'pekerjaan'
@@ -338,11 +332,9 @@ class Dashboard extends Component
                             )
                             .'.',
 
-                        'occurred_at' =>
-                            $report->updated_at,
+                        'occurred_at' => $report->updated_at,
 
-                        'color' =>
-                            $color,
+                        'color' => $color,
                     ];
                 }
             );
@@ -361,17 +353,14 @@ class Dashboard extends Component
                     fn (
                         Documentation $documentation
                     ): array => [
-                        'type' =>
-                            'documentation',
+                        'type' => 'documentation',
 
-                        'title' =>
-                            'Dokumentasi Diunggah',
+                        'title' => 'Dokumentasi Diunggah',
 
-                        'description' =>
-                            (
-                                $documentation->title
-                                ?: 'Dokumentasi pekerjaan'
-                            )
+                        'description' => (
+                            $documentation->title
+                            ?: 'Dokumentasi pekerjaan'
+                        )
                             .' untuk '
                             .(
                                 $documentation
@@ -381,11 +370,9 @@ class Dashboard extends Component
                             )
                             .'.',
 
-                        'occurred_at' =>
-                            $documentation->created_at,
+                        'occurred_at' => $documentation->created_at,
 
-                        'color' =>
-                            'bg-cyan-500',
+                        'color' => 'bg-cyan-500',
                     ]
                 );
 
@@ -397,14 +384,12 @@ class Dashboard extends Component
                 $documentationActivities
             )
             ->filter(
-                fn (array $activity): bool =>
-                    $activity['occurred_at']
+                fn (array $activity): bool => $activity['occurred_at']
                     !== null
             )
             ->sortByDesc(
-                fn (array $activity): int =>
-                    $activity['occurred_at']
-                        ->getTimestamp()
+                fn (array $activity): int => $activity['occurred_at']
+                    ->getTimestamp()
             )
             ->take(6)
             ->values();
@@ -418,12 +403,7 @@ class Dashboard extends Component
             ->activeWorkerProjects()
             ->whereIn(
                 'projects.status',
-                [
-                    'planning',
-                    'on_progress',
-                    'in_progress',
-                    'ongoing',
-                ]
+                self::ACTIVE_PROJECT_STATUSES
             )
             ->orderBy(
                 'projects.end_date'
@@ -433,26 +413,21 @@ class Dashboard extends Component
         return view(
             'livewire.pekerja.dashboard',
             [
-                'worker' =>
-                    $worker->fresh(),
+                'worker' => $worker->fresh(),
 
-                'activeProjects' =>
-                    $activeProjects,
+                'activeProjects' => $activeProjects,
 
-                'statistics' =>
-                    $this->statistics(
-                        $worker->id
-                    ),
+                'statistics' => $this->statistics(
+                    $worker->id
+                ),
 
-                'priorityTasks' =>
-                    $this->priorityTasks(
-                        $worker->id
-                    ),
+                'priorityTasks' => $this->priorityTasks(
+                    $worker->id
+                ),
 
-                'recentActivities' =>
-                    $this->recentActivities(
-                        $worker->id
-                    ),
+                'recentActivities' => $this->recentActivities(
+                    $worker->id
+                ),
             ]
         );
     }
