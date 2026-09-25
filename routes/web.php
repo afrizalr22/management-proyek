@@ -133,18 +133,24 @@ Route::prefix('owner/projects')
         Route::get(
             '/quotation/{quotation}/create',
             ProjectCreate::class
-        )->name('create-from-quotation');
+        )
+            ->whereNumber('quotation')
+            ->name('create-from-quotation');
 
         Route::get('/{project}/edit', ProjectEdit::class)
+            ->whereNumber('project')
             ->name('edit');
 
         Route::get('/{project}/delete', ProjectsDelete::class)
+            ->whereNumber('project')
             ->name('delete');
 
-            Route::get('/{project}/cancel', ProjectsCancel::class)
-    ->name('cancel');
+        Route::get('/{project}/cancel', ProjectsCancel::class)
+            ->whereNumber('project')
+            ->name('cancel');
 
         Route::get('/{project}', ProjectsShow::class)
+            ->whereNumber('project')
             ->name('show');
     });
 
@@ -160,7 +166,9 @@ Route::prefix('quotations')
                 QuotationPdfController::class,
                 'preview',
             ]
-        )->name('preview');
+        )
+            ->whereNumber('quotation')
+            ->name('preview');
 
         Route::get(
             '/{quotation}/pdf/download',
@@ -168,7 +176,9 @@ Route::prefix('quotations')
                 QuotationPdfController::class,
                 'download',
             ]
-        )->name('download');
+        )
+            ->whereNumber('quotation')
+            ->name('download');
 
         Route::get('/create', QuotationsCreate::class)
             ->name('create');
@@ -274,8 +284,13 @@ Route::prefix('invoices')
 
     Route::prefix('monitoring')->name('owner.monitoring.')->group(function () {
             Route::get('', MonitoringIndex::class)->name('index');
-            Route::get('/projects/{project}', MonitoringShow::class)->name('show');
-            Route::get('/{project}/documentation', MonitoringDocumentation::class)->name('documentation');
+            Route::get('/projects/{project}', MonitoringShow::class)
+                ->whereNumber('project')
+                ->name('show');
+
+            Route::get('/{project}/documentation', MonitoringDocumentation::class)
+                ->whereNumber('project')
+                ->name('documentation');
         });
 
     Route::prefix('users')
@@ -297,12 +312,6 @@ Route::prefix('invoices')
     });
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Mandor Routes
-|--------------------------------------------------------------------------
-*/
 
 /*
 |--------------------------------------------------------------------------
@@ -332,7 +341,9 @@ Route::middleware([
     Route::get(
         '/projects/{project}',
         MandorProjectsShow::class
-    )->name('mandor.projects.show');
+    )
+        ->whereNumber('project')
+        ->name('mandor.projects.show');
 
     Route::get(
         '/mandor/work-progress',
@@ -342,7 +353,9 @@ Route::middleware([
     Route::get(
         '/projects/{project}/work-progress',
         MandorWorkProgressIndex::class
-    )->name('mandor.projects.work-progress.index');
+    )
+        ->whereNumber('project')
+        ->name('mandor.projects.work-progress.index');
 
     Route::get(
         '/mandor/documentations',
@@ -352,7 +365,9 @@ Route::middleware([
     Route::get(
         '/projects/{project}/documentations',
         MandorDocumentationsIndex::class
-    )->name('mandor.projects.documentations.index');
+    )
+        ->whereNumber('project')
+        ->name('mandor.projects.documentations.index');
 
     Route::get(
         '/daily-reports',
@@ -362,12 +377,16 @@ Route::middleware([
     Route::get(
         '/daily-reports/{report}',
         MandorDailyReportsShow::class
-    )->name('mandor.daily-reports.show');
+    )
+        ->whereNumber('report')
+        ->name('mandor.daily-reports.show');
 
     Route::get(
         '/daily-reports/{report}/validate',
         MandorDailyReportsValidation::class
-    )->name('mandor.daily-reports.validate');
+    )
+        ->whereNumber('report')
+        ->name('mandor.daily-reports.validate');
 });
 
 
