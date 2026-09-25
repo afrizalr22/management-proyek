@@ -3,15 +3,16 @@
 namespace App\Livewire\Owner\Clients;
 
 use App\Models\Client;
-use Livewire\Component;
-use Livewire\WithPagination;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class Index extends Component
 {
     use WithPagination;
+
     public bool $showDeleteModal = false;
 
     public ?int $selectedClientId = null;
@@ -109,108 +110,108 @@ class Index extends Component
     }
 
     public function confirmDelete(int $clientId): void
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    abort_unless(
-        $user instanceof User && $user->can('delete clients'),
-        403
-    );
+        abort_unless(
+            $user instanceof User && $user->can('delete clients'),
+            403
+        );
 
-    $client = Client::query()
-        ->withCount([
-            'projects',
-            'quotations',
-        ])
-        ->findOrFail($clientId);
+        $client = Client::query()
+            ->withCount([
+                'projects',
+                'quotations',
+            ])
+            ->findOrFail($clientId);
 
-    $this->selectedClientId = $client->id;
-    $this->selectedClientName = $client->company_name;
-    $this->selectedProjectsCount = $client->projects_count;
-    $this->selectedQuotationsCount = $client->quotations_count;
-    $this->showDeleteModal = true;
-}
-
-public function cancelDelete(): void
-{
-    $this->resetDeleteModal();
-}
-
-public function deleteClient(): void
-{
-    $user = Auth::user();
-
-    abort_unless(
-        $user instanceof User && $user->can('delete clients'),
-        403
-    );
-
-    if ($this->selectedClientId === null) {
-        $this->resetDeleteModal();
-
-        return;
+        $this->selectedClientId = $client->id;
+        $this->selectedClientName = $client->company_name;
+        $this->selectedProjectsCount = $client->projects_count;
+        $this->selectedQuotationsCount = $client->quotations_count;
+        $this->showDeleteModal = true;
     }
 
-    $client = Client::query()
-        ->withCount([
-            'projects',
-            'quotations',
-        ])
-        ->find($this->selectedClientId);
-
-    if (!$client) {
+    public function cancelDelete(): void
+    {
         $this->resetDeleteModal();
-
-        session()->flash('notification', [
-            'type' => 'error',
-            'message' => 'Data client tidak ditemukan.',
-        ]);
-
-        return;
     }
 
-    if (
-        $client->projects_count > 0 ||
-        $client->quotations_count > 0
-    ) {
-        $this->resetDeleteModal();
+    public function deleteClient(): void
+    {
+        $user = Auth::user();
 
-        session()->flash('notification', [
-            'type' => 'error',
-            'message' => 'Client tidak dapat dihapus karena sudah memiliki quotation atau proyek.',
-        ]);
+        abort_unless(
+            $user instanceof User && $user->can('delete clients'),
+            403
+        );
 
-        return;
+        if ($this->selectedClientId === null) {
+            $this->resetDeleteModal();
+
+            return;
+        }
+
+        $client = Client::query()
+            ->withCount([
+                'projects',
+                'quotations',
+            ])
+            ->find($this->selectedClientId);
+
+        if (! $client) {
+            $this->resetDeleteModal();
+
+            session()->flash('notification', [
+                'type' => 'error',
+                'message' => 'Data client tidak ditemukan.',
+            ]);
+
+            return;
+        }
+
+        if (
+            $client->projects_count > 0 ||
+            $client->quotations_count > 0
+        ) {
+            $this->resetDeleteModal();
+
+            session()->flash('notification', [
+                'type' => 'error',
+                'message' => 'Client tidak dapat dihapus karena sudah memiliki quotation atau proyek.',
+            ]);
+
+            return;
+        }
+
+        try {
+            $companyName = $client->company_name;
+
+            $client->delete();
+
+            $this->resetDeleteModal();
+            $this->resetPage();
+
+            session()->flash('notification', [
+                'type' => 'delete',
+                'message' => "Client {$companyName} berhasil dihapus.",
+            ]);
+        } catch (QueryException) {
+            $this->resetDeleteModal();
+
+            session()->flash('notification', [
+                'type' => 'error',
+                'message' => 'Client tidak dapat dihapus karena masih digunakan oleh data lain.',
+            ]);
+        }
     }
 
-    try {
-        $companyName = $client->company_name;
-
-        $client->delete();
-
-        $this->resetDeleteModal();
-        $this->resetPage();
-
-        session()->flash('notification', [
-            'type' => 'delete',
-            'message' => "Client {$companyName} berhasil dihapus.",
-        ]);
-    } catch (QueryException) {
-        $this->resetDeleteModal();
-
-        session()->flash('notification', [
-            'type' => 'error',
-            'message' => 'Client tidak dapat dihapus karena masih digunakan oleh data lain.',
-        ]);
+    private function resetDeleteModal(): void
+    {
+        $this->showDeleteModal = false;
+        $this->selectedClientId = null;
+        $this->selectedClientName = '';
+        $this->selectedProjectsCount = 0;
+        $this->selectedQuotationsCount = 0;
     }
-}
-
-private function resetDeleteModal(): void
-{
-    $this->showDeleteModal = false;
-    $this->selectedClientId = null;
-    $this->selectedClientName = '';
-    $this->selectedProjectsCount = 0;
-    $this->selectedQuotationsCount = 0;
-}
 }
