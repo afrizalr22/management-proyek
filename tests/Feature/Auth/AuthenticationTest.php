@@ -42,6 +42,49 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_owner_can_login_with_remember_me(): void
+    {
+        $user = $this->createOwner();
+
+        $user->forceFill([
+            'remember_token' => null,
+        ])->save();
+
+        $this->assertNull(
+            $user->fresh()->remember_token
+        );
+
+        Volt::test('pages.auth.login')
+            ->set(
+                'form.email',
+                $user->email
+            )
+            ->set(
+                'form.password',
+                'password'
+            )
+            ->set(
+                'form.remember',
+                true
+            )
+            ->call('login')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route(
+                    'owner.dashboard',
+                    absolute: false
+                )
+            );
+
+        $this->assertAuthenticatedAs(
+            $user
+        );
+
+        $this->assertNotNull(
+            $user->fresh()->remember_token
+        );
+    }
+
     public function test_user_cannot_authenticate_with_invalid_password(): void
     {
         $user = $this->createOwner();
