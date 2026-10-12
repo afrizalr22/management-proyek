@@ -188,4 +188,14 @@ class User extends Authenticatable
             EmergencyContact::class
         )->orderBy('priority');
     }
+
+    public function tasks(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Task::class,
+            'task_workers',
+            'worker_id',
+            'task_id'
+        )->withTimestamps();
+    }
 }
