@@ -438,6 +438,7 @@ new #[Layout('layouts.login')] class extends Component
             wire:model="form.password"
             id="password"
             name="password"
+            type="password"
             x-bind:type="showPassword ? 'text' : 'password'"
             required
             autocomplete="current-password"

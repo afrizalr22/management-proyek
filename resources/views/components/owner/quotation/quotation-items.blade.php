@@ -24,7 +24,7 @@
                 wire:click="addItem"
                 wire:loading.attr="disabled"
                 wire:target="addItem"
-                class="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -32,7 +32,7 @@
                     viewBox="0 0 24 24"
                     stroke-width="2"
                     stroke="currentColor"
-                    class="h-5 w-5"
+                    class="h-4 w-4"
                 >
                     <path
                         stroke-linecap="round"
@@ -69,14 +69,14 @@
                 >
                     {{-- Header item --}}
                     <div class="mb-6 flex items-start justify-between gap-4">
-                        <div>
-                            <h3 class="font-semibold text-gray-900">
-                                Item #{{ $index + 1 }}
-                            </h3>
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+                                {{ $index + 1 }}
+                            </span>
 
-                            <p class="mt-1 text-sm text-gray-500">
-                                Masukkan detail pekerjaan atau material.
-                            </p>
+                            <h3 class="font-semibold text-gray-800">
+                                Item Quotation
+                            </h3>
                         </div>
 
                         <button
