@@ -209,7 +209,7 @@
                                 <span>
                                     Pekerja:
                                     <strong class="font-semibold text-gray-700">
-                                        {{ $task->worker?->name ?? 'Tidak tersedia' }}
+                                        {{ $task->workers->pluck('name')->join(', ') ?: 'Tidak tersedia' }}
                                     </strong>
                                 </span>
 

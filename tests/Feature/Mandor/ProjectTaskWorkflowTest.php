@@ -281,8 +281,8 @@ class ProjectTaskWorkflowTest extends TestCase
                 ]
             )
             ->set(
-                'workerId',
-                $this->worker->id
+                'workerIds',
+                [$this->worker->id]
             )
             ->set(
                 'title',
@@ -296,10 +296,7 @@ class ProjectTaskWorkflowTest extends TestCase
                 'location',
                 'Area Lantai Satu'
             )
-            ->set(
-                'priority',
-                'high'
-            )
+
             ->set(
                 'startAt',
                 '2026-09-21T08:00'
@@ -308,10 +305,7 @@ class ProjectTaskWorkflowTest extends TestCase
                 'dueAt',
                 '2026-09-25T17:00'
             )
-            ->set(
-                'weight',
-                '25.00'
-            )
+
             ->set(
                 'mandorNotes',
                 'Gunakan perlengkapan keselamatan.'
@@ -320,6 +314,11 @@ class ProjectTaskWorkflowTest extends TestCase
             ->assertHasNoErrors();
 
         $task = Task::query()->sole();
+
+        $this->assertDatabaseHas('task_workers', [
+            'task_id' => $task->id,
+            'worker_id' => $this->worker->id,
+        ]);
 
         $this->assertSame(
             $this->project->id,
@@ -342,7 +341,7 @@ class ProjectTaskWorkflowTest extends TestCase
         );
 
         $this->assertSame(
-            '25.00',
+            '1.00',
             $task->weight
         );
     }
@@ -376,9 +375,8 @@ class ProjectTaskWorkflowTest extends TestCase
             $otherWorker
         )
             ->call('createTask')
-            ->assertHasErrors([
-                'workerId',
-            ]);
+            ->assertHasErrors('workerIds.0');
+
 
         $this->assertSame(
             0,
@@ -396,9 +394,7 @@ class ProjectTaskWorkflowTest extends TestCase
             $this->worker
         )
             ->call('createTask')
-            ->assertHasErrors([
-                'workerId',
-            ]);
+->assertHasErrors('workerIds');
 
         $this->assertSame(
             0,
@@ -426,9 +422,7 @@ class ProjectTaskWorkflowTest extends TestCase
             $this->worker
         )
             ->call('createTask')
-            ->assertHasErrors([
-                'workerId',
-            ]);
+            ->assertHasErrors('workerIds.0');
 
         $this->assertSame(
             0,
@@ -460,9 +454,7 @@ class ProjectTaskWorkflowTest extends TestCase
                 $project
             )
                 ->call('createTask')
-                ->assertHasErrors([
-                    'task',
-                ]);
+->assertHasErrors('task');
         }
 
         $this->assertSame(
@@ -492,64 +484,75 @@ class ProjectTaskWorkflowTest extends TestCase
             ]);
     }
 
-    public function test_total_active_task_weight_cannot_exceed_one_hundred(): void
-    {
-        Task::query()->create([
-            'project_id' => $this->project->id,
-            'mandor_id' => $this->mandor->id,
-            'worker_id' => $this->worker->id,
-            'task_code' => 'TSK-WEIGHT-EXISTING',
-            'title' => 'Task Bobot Awal',
-            'priority' => 'medium',
-            'status' => 'assigned',
-            'start_at' => '2026-09-20 08:00:00',
-            'due_at' => '2026-09-25 17:00:00',
-            'progress' => 0,
-            'weight' => 80,
-        ]);
+    public function test_legacy_weight_does_not_limit_new_task_creation(): void
+{
+    Task::query()->create([
+        'project_id' => $this->project->id,
+        'mandor_id' => $this->mandor->id,
+        'worker_id' => $this->worker->id,
+        'task_code' => 'TSK-LEGACY-WEIGHT',
+        'title' => 'Task dengan Bobot Lama',
+        'priority' => 'medium',
+        'status' => 'assigned',
+        'start_at' => '2026-09-20 08:00:00',
+        'due_at' => '2026-09-25 17:00:00',
+        'progress' => 0,
+        'weight' => 100,
+    ]);
 
-        $this->taskForm(
-            $this->worker,
-            weight: '20.01'
-        )
-            ->call('createTask')
-            ->assertHasErrors([
-                'weight',
-            ]);
+    $this->taskForm($this->worker)
+        ->call('createTask')
+        ->assertHasNoErrors();
 
-        $this->assertSame(
-            1,
-            Task::query()->count()
-        );
+    $this->assertDatabaseCount('tasks', 2);
+
+    $newTask = Task::query()
+        ->where('task_code', '!=', 'TSK-LEGACY-WEIGHT')
+        ->sole();
+
+    $this->assertSame('assigned', $newTask->status);
+
+    $this->assertDatabaseHas('task_workers', [
+        'task_id' => $newTask->id,
+        'worker_id' => $this->worker->id,
+    ]);
     }
 
-    public function test_cancelled_task_weight_does_not_count_toward_active_weight(): void
+    public function test_cancelled_tasks_are_excluded_from_actual_progress(): void
     {
         Task::query()->create([
             'project_id' => $this->project->id,
             'mandor_id' => $this->mandor->id,
             'worker_id' => $this->worker->id,
-            'task_code' => 'TSK-WEIGHT-CANCELLED',
+            'task_code' => 'TSK-ACTIVE-PROGRESS',
+            'title' => 'Task Masih Berjalan',
+            'priority' => 'medium',
+            'status' => 'in_progress',
+            'start_at' => '2026-09-20 08:00:00',
+            'due_at' => '2026-09-25 17:00:00',
+            'progress' => 40,
+            'weight' => 10,
+        ]);
+
+        Task::query()->create([
+            'project_id' => $this->project->id,
+            'mandor_id' => $this->mandor->id,
+            'worker_id' => $this->worker->id,
+            'task_code' => 'TSK-CANCELLED-PROGRESS',
             'title' => 'Task Dibatalkan',
             'priority' => 'medium',
             'status' => 'cancelled',
             'start_at' => '2026-09-20 08:00:00',
             'due_at' => '2026-09-25 17:00:00',
-            'progress' => 0,
+            'progress' => 100,
             'weight' => 90,
         ]);
 
-        $this->taskForm(
-            $this->worker,
-            weight: '100.00'
-        )
-            ->call('createTask')
-            ->assertHasNoErrors();
-
-        $this->assertSame(
-            2,
-            Task::query()->count()
-        );
+        Livewire::actingAs($this->mandor)
+            ->test(Index::class, [
+                'project' => $this->project,
+            ])
+            ->assertViewHas('actualProgress', 40);
     }
 
     public function test_task_due_date_cannot_be_before_start_date(): void
@@ -643,7 +646,7 @@ class ProjectTaskWorkflowTest extends TestCase
             )
             ->assertViewHas(
                 'actualProgress',
-                70
+                75
             )
             ->assertViewHas(
                 'plannedProgress',
@@ -651,7 +654,7 @@ class ProjectTaskWorkflowTest extends TestCase
             )
             ->assertViewHas(
                 'progressVariance',
-                69
+                74
             )
             ->assertViewHas(
                 'taskStatistics',
@@ -663,56 +666,93 @@ class ProjectTaskWorkflowTest extends TestCase
             );
     }
 
-    private function taskForm(
+    public function test_task_can_be_created_for_multiple_active_workers(): void
+{
+    $otherWorker = User::factory()->create([
+        'status' => 'active',
+    ]);
+
+    $otherWorker->assignRole('pekerja');
+
+    $this->assignWorker($this->project, $otherWorker);
+
+    $this->taskForm($this->worker)
+        ->set('workerIds', [
+            $this->worker->id,
+            $otherWorker->id,
+        ])
+        ->call('createTask')
+        ->assertHasNoErrors();
+
+    $task = Task::query()->sole();
+
+    $this->assertEqualsCanonicalizing(
+        [$this->worker->id, $otherWorker->id],
+        $task->workers()->pluck('users.id')->all()
+    );
+
+    $this->assertSame('1.00', $task->weight);
+    $this->assertSame('assigned', $task->status);
+    $this->assertDatabaseCount('task_workers', 2);
+}
+
+public function test_task_requires_at_least_one_worker(): void
+{
+    $this->taskForm($this->worker)
+        ->set('workerIds', [])
+        ->call('createTask')
+        ->assertHasErrors('workerIds');
+
+    $this->assertDatabaseCount('tasks', 0);
+    $this->assertDatabaseCount('task_workers', 0);
+}
+
+public function test_duplicate_worker_selection_is_rejected(): void
+{
+    $this->taskForm($this->worker)
+        ->set('workerIds', [
+            $this->worker->id,
+            $this->worker->id,
+        ])
+        ->call('createTask')
+        ->assertHasErrors('workerIds.0');
+
+    $this->assertDatabaseCount('tasks', 0);
+    $this->assertDatabaseCount('task_workers', 0);
+}
+
+public function test_invalid_member_rejects_entire_task_creation(): void
+{
+    // Assignment tersedia, tetapi akun ini bukan role Pekerja.
+    $this->assignWorker($this->project, $this->owner);
+
+    $this->taskForm($this->worker)
+        ->set('workerIds', [
+            $this->worker->id,
+            $this->owner->id,
+        ])
+        ->call('createTask')
+        ->assertHasErrors('workerIds');
+
+    $this->assertDatabaseCount('tasks', 0);
+    $this->assertDatabaseCount('task_workers', 0);
+    }
+
+        private function taskForm(
         User $worker,
-        ?Project $project = null,
-        string $weight = '10.00'
+        ?Project $project = null
     ) {
-        return Livewire::actingAs(
-            $this->mandor
-        )
-            ->test(
-                Index::class,
-                [
-                    'project' => $project ?? $this->project,
-                ]
-            )
-            ->set(
-                'workerId',
-                $worker->id
-            )
-            ->set(
-                'title',
-                'Pekerjaan Pengujian'
-            )
-            ->set(
-                'description',
-                'Deskripsi pekerjaan pengujian.'
-            )
-            ->set(
-                'location',
-                'Lokasi Pengujian'
-            )
-            ->set(
-                'priority',
-                'medium'
-            )
-            ->set(
-                'startAt',
-                '2026-09-21T08:00'
-            )
-            ->set(
-                'dueAt',
-                '2026-09-25T17:00'
-            )
-            ->set(
-                'weight',
-                $weight
-            )
-            ->set(
-                'mandorNotes',
-                'Catatan pengujian.'
-            );
+        return Livewire::actingAs($this->mandor)
+            ->test(Index::class, [
+                'project' => $project ?? $this->project,
+            ])
+            ->set('workerIds', [$worker->id])
+            ->set('title', 'Pekerjaan Pengujian')
+            ->set('description', 'Deskripsi pekerjaan pengujian.')
+            ->set('location', 'Lokasi Pengujian')
+            ->set('startAt', '2026-09-21T08:00')
+            ->set('dueAt', '2026-09-25T17:00')
+            ->set('mandorNotes', 'Catatan pengujian.');
     }
 
     private function createProject(

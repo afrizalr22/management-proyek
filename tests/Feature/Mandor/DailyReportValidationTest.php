@@ -425,130 +425,61 @@ class DailyReportValidationTest extends TestCase
         );
     }
 
-    public function test_project_progress_is_calculated_from_multiple_task_weights(): void
+    public function test_project_progress_uses_equal_task_contributions_and_ignores_cancelled_tasks(): void
     {
-        /*
-        * Task A:
-        * Weight   = 60
-        * Progress awal = 20
-        * Setelah laporan disetujui = 50
-        *
-        * Task B:
-        * Weight   = 40
-        * Progress = 100
-        *
-        * Expected:
-        * ((50 × 60) + (100 × 40)) / 100
-        * = 70
-        */
+        // Bobot lama sengaja berbeda untuk memastikan tidak digunakan.
+        $taskA = $this->createTask('TSK-AVERAGE-A', 20, 60);
 
-        $taskA = $this->createTask(
-            'TSK-WEIGHT-A',
-            20,
-            60
-        );
-
-        $taskB = $this->createTask(
-            'TSK-WEIGHT-B',
-            100,
-            40
-        );
-
+        $taskB = $this->createTask('TSK-AVERAGE-B', 100, 40);
         $taskB->update([
             'status' => 'completed',
             'completed_at' => now(),
         ]);
 
+        $cancelledTask = $this->createTask('TSK-AVERAGE-CANCELLED', 0, 90);
+        $cancelledTask->update([
+            'status' => 'cancelled',
+        ]);
+
         $report = $this->createReport(
             $taskA,
-            'RPT-WEIGHT-001',
+            'RPT-AVERAGE-001',
             50
         );
 
         Livewire::actingAs($this->mandor)
-            ->test(
-                Edit::class,
-                [
-                    'report' => $report,
-                ]
-            )
-            ->set(
-                'reviewNotes',
-                'Progress Task A telah diperiksa.'
-            )
+            ->test(Edit::class, [
+                'report' => $report,
+            ])
             ->call('approveReport')
             ->assertHasNoErrors()
             ->assertRedirect(
-                route(
-                    'mandor.daily-reports.show',
-                    $report->id
-                )
+                route('mandor.daily-reports.show', $report->id)
             );
 
-        $report->refresh();
-        $taskA->refresh();
-        $taskB->refresh();
-        $this->project->refresh();
+        $this->assertSame('approved', $report->fresh()->status);
+        $this->assertSame(50, $taskA->fresh()->progress);
+        $this->assertSame('in_progress', $taskA->fresh()->status);
+        $this->assertNull($taskA->fresh()->completed_at);
+
+        $this->assertSame(100, $taskB->fresh()->progress);
+        $this->assertSame('completed', $taskB->fresh()->status);
+
+        // (50 + 100) / 2 = 75. Task cancelled tidak dihitung.
+        $this->assertSame(75, $this->project->fresh()->progress);
+        $this->assertSame('on_progress', $this->project->fresh()->status);
+
+        $this->assertDatabaseHas('project_progress', [
+            'project_id' => $this->project->id,
+            'user_id' => $this->mandor->id,
+            'progress_percentage' => 75,
+        ]);
 
         $this->assertSame(
-            'approved',
-            $report->status
-        );
-
-        $this->assertSame(
-            50,
-            $taskA->progress
-        );
-
-        $this->assertSame(
-            'in_progress',
-            $taskA->status
-        );
-
-        $this->assertSame(
-            100,
-            $taskB->progress
-        );
-
-        $this->assertSame(
-            'completed',
-            $taskB->status
-        );
-
-        $this->assertSame(
-            70,
-            $this->project->progress
-        );
-
-        $this->assertSame(
-            'on_progress',
-            $this->project->status
-        );
-
-        $this->assertDatabaseHas(
-            'project_progress',
-            [
-                'project_id' => $this->project->id,
-                'user_id' => $this->mandor->id,
-                'progress_percentage' => 70,
-            ]
-        );
-
-        $progressHistory = ProjectProgress::query()
-            ->where(
-                'project_id',
-                $this->project->id
-            )
-            ->latest('id')
-            ->first();
-
-        $this->assertNotNull(
-            $progressHistory
-        );
-
-        $this->assertSame(
-            70,
-            $progressHistory->progress_percentage
+            1,
+            ProjectProgress::query()
+                ->where('project_id', $this->project->id)
+                ->count()
         );
     }
 

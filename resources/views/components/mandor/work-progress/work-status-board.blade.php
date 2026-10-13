@@ -280,7 +280,7 @@
                                     </svg>
 
                                     <span class="truncate">
-                                        {{ $task->worker?->name ?? 'Pekerja tidak tersedia' }}
+                                        {{ $task->workers->pluck('name')->join(', ') ?: 'Pekerja tidak tersedia' }}
                                     </span>
                                 </div>
 

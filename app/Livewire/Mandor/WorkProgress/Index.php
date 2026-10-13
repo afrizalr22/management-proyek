@@ -4,6 +4,7 @@ namespace App\Livewire\Mandor\WorkProgress;
 
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,7 @@ class Index extends Component
 
     public bool $showTaskForm = false;
 
-    public ?int $workerId = null;
+    public array $workerIds = [];
 
     public string $title = '';
 
@@ -32,13 +33,10 @@ class Index extends Component
 
     public string $dueAt = '';
 
-    public string $weight = '1.00';
-
     public string $mandorNotes = '';
 
-    public function mount(
-        Project $project
-    ): void {
+    public function mount(Project $project): void
+    {
         $this->authorizeProject($project);
 
         $this->project = $project;
@@ -50,9 +48,7 @@ class Index extends Component
     {
         $this->project->refresh();
 
-        $this->authorizeProject(
-            $this->project
-        );
+        $this->authorizeProject($this->project);
 
         $this->resetValidation();
 
@@ -83,9 +79,7 @@ class Index extends Component
     {
         $this->project->refresh();
 
-        $this->authorizeProject(
-            $this->project
-        );
+        $this->authorizeProject($this->project);
 
         if (! $this->projectCanReceiveTasks()) {
             $this->addError(
@@ -101,134 +95,80 @@ class Index extends Component
         $result = DB::transaction(
             function () use ($validated): array {
                 $project = Project::query()
-                    ->whereKey(
-                        $this->project->id
-                    )
+                    ->whereKey($this->project->id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                $this->authorizeProject(
-                    $project
-                );
+                $this->authorizeProject($project);
 
-                if (
-                    ! in_array(
-                        $project->status,
-                        [
-                            'planning',
-                            'on_progress',
-                        ],
-                        true
-                    )
-                ) {
+                if (! in_array(
+                    $project->status,
+                    ['planning', 'on_progress'],
+                    true
+                )) {
                     return [
                         'field' => 'task',
                         'message' => 'Task hanya dapat dibuat pada Project tahap perencanaan atau berjalan.',
                     ];
                 }
 
-                $workerIsAvailable =
-                    $project
-                        ->workerAssignments()
-                        ->where(
-                            'worker_id',
-                            $validated['workerId']
-                        )
-                        ->where(
-                            'status',
-                            'active'
-                        )
-                        ->whereHas(
-                            'worker',
-                            fn ($query) => $query
-                                ->where(
-                                    'status',
-                                    'active'
-                                )
-                        )
-                        ->exists();
+                $workerIds = collect($validated['workerIds'])
+                    ->map(fn ($id): int => (int) $id)
+                    ->sort()
+                    ->values()
+                    ->all();
 
-                if (! $workerIsAvailable) {
+                $availableWorkerIds = User::query()
+                    ->role('pekerja')
+                    ->where('status', 'active')
+                    ->whereIn('id', $workerIds)
+                    ->whereHas(
+                        'projectAssignments',
+                        fn ($query) => $query
+                            ->where('project_id', $project->id)
+                            ->where('status', 'active')
+                    )
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->pluck('id')
+                    ->map(fn ($id): int => (int) $id)
+                    ->all();
+
+                if ($availableWorkerIds !== $workerIds) {
                     return [
-                        'field' => 'workerId',
-                        'message' => 'Pekerja tidak aktif atau tidak terdaftar pada proyek ini.',
+                        'field' => 'workerIds',
+                        'message' => 'Semua anggota harus merupakan Pekerja aktif yang terdaftar aktif pada Project ini.',
                     ];
                 }
 
-                $totalExistingWeight = (float) (
-                    $project
-                        ->tasks()
-                        ->where(
-                            'status',
-                            '!=',
-                            'cancelled'
-                        )
-                        ->lockForUpdate()
-                        ->get([
-                            'id',
-                            'weight',
-                        ])
-                        ->sum('weight')
-                );
-
-                $newTotalWeight =
-                    $totalExistingWeight
-                    + (float) $validated['weight'];
-
-                if ($newTotalWeight > 100) {
-                    $remainingWeight = max(
-                        0,
-                        100 - $totalExistingWeight
-                    );
-
-                    return [
-                        'field' => 'weight',
-                        'message' => 'Total bobot Task aktif tidak boleh melebihi 100. '
-                            .'Sisa bobot proyek saat ini '
-                            .number_format(
-                                $remainingWeight,
-                                2,
-                                ',',
-                                '.'
-                            )
-                            .'.',
-                    ];
-                }
-
-                Task::query()->create([
+                $task = Task::query()->create([
                     'project_id' => $project->id,
                     'mandor_id' => $project->mandor_id,
-                    'worker_id' => $validated['workerId'],
+
+                    // Kompatibilitas sementara dengan kode lama.
+                    // Seluruh anggota disimpan di task_workers; tidak ada PIC.
+                    'worker_id' => $workerIds[0],
+
                     'task_code' => $this->generateTaskCode(),
                     'title' => trim($validated['title']),
-                    'description' => filled(
-                        $validated['description']
-                    )
-                            ? trim(
-                                $validated['description']
-                            )
-                            : null,
-                    'location' => filled(
-                        $validated['location']
-                    )
-                            ? trim(
-                                $validated['location']
-                            )
-                            : null,
-                    'priority' => $validated['priority'],
+                    'description' => filled($validated['description'])
+                        ? trim($validated['description'])
+                        : null,
+                    'location' => filled($validated['location'])
+                        ? trim($validated['location'])
+                        : null,
+                    'priority' => 'medium',
                     'status' => 'assigned',
                     'start_at' => $validated['startAt'],
                     'due_at' => $validated['dueAt'],
                     'progress' => 0,
-                    'weight' => $validated['weight'],
-                    'mandor_notes' => filled(
-                        $validated['mandorNotes']
-                    )
-                            ? trim(
-                                $validated['mandorNotes']
-                            )
-                            : null,
+                    'weight' => 1,
+                    'mandor_notes' => filled($validated['mandorNotes'])
+                        ? trim($validated['mandorNotes'])
+                        : null,
                 ]);
+
+                $task->workers()->attach($workerIds);
 
                 return [];
             }
@@ -242,13 +182,14 @@ class Index extends Component
 
             return;
         }
+
         $this->showTaskForm = false;
 
         $this->resetTaskForm();
 
         session()->flash(
             'success',
-            'Task berhasil dibuat dan diberikan kepada pekerja.'
+            'Task berhasil dibuat dan diberikan kepada Pekerja yang dipilih.'
         );
     }
 
@@ -259,7 +200,7 @@ class Index extends Component
         $this->project->load([
             'tasks' => fn ($query) => $query
                 ->with([
-                    'worker:id,name,email,status',
+                    'workers:id,name,email,status',
                 ])
                 ->orderBy('start_at')
                 ->orderBy('due_at')
@@ -267,6 +208,12 @@ class Index extends Component
 
             'workerAssignments' => fn ($query) => $query
                 ->where('status', 'active')
+                ->whereHas(
+                    'worker',
+                    fn ($workerQuery) => $workerQuery
+                        ->where('status', 'active')
+                        ->role('pekerja')
+                )
                 ->with([
                     'worker:id,name,email,status',
                 ])
@@ -276,100 +223,84 @@ class Index extends Component
 
         $tasks = $this->project->tasks;
 
-        $actualProgress = $this->calculateActualProgress(
-            $tasks
-        );
+        $actualProgress = $this->calculateActualProgress($tasks);
 
         $plannedProgress = $this->calculatePlannedProgress();
 
-        return view(
-            'livewire.mandor.work-progress.index',
-            [
-                'tasks' => $tasks,
+        return view('livewire.mandor.work-progress.index', [
+            'tasks' => $tasks,
 
-                'assignedTasks' => $tasks
+            'assignedTasks' => $tasks
+                ->where('status', 'assigned')
+                ->values(),
+
+            'activeTasks' => $tasks
+                ->whereIn('status', [
+                    'in_progress',
+                    'submitted',
+                    'revision',
+                ])
+                ->values(),
+
+            'completedTasks' => $tasks
+                ->where('status', 'completed')
+                ->values(),
+
+            'cancelledTasks' => $tasks
+                ->where('status', 'cancelled')
+                ->values(),
+
+            'activeWorkers' => $this->activeWorkers(),
+
+            'actualProgress' => $actualProgress,
+
+            'plannedProgress' => $plannedProgress,
+
+            'progressVariance' => $actualProgress - $plannedProgress,
+
+            'taskStatistics' => [
+                'total' => $tasks->count(),
+
+                'assigned' => $tasks
                     ->where('status', 'assigned')
-                    ->values(),
+                    ->count(),
 
-                'activeTasks' => $tasks
-                    ->whereIn(
-                        'status',
-                        [
-                            'in_progress',
-                            'submitted',
-                            'revision',
-                        ]
-                    )
-                    ->values(),
+                'active' => $tasks
+                    ->whereIn('status', [
+                        'in_progress',
+                        'submitted',
+                        'revision',
+                    ])
+                    ->count(),
 
-                'completedTasks' => $tasks
+                'completed' => $tasks
                     ->where('status', 'completed')
-                    ->values(),
+                    ->count(),
 
-                'cancelledTasks' => $tasks
+                'cancelled' => $tasks
                     ->where('status', 'cancelled')
-                    ->values(),
-
-                'activeWorkers' => $this->activeWorkers(),
-
-                'actualProgress' => $actualProgress,
-
-                'plannedProgress' => $plannedProgress,
-
-                'progressVariance' => $actualProgress
-                    - $plannedProgress,
-
-                'taskStatistics' => [
-                    'total' => $tasks->count(),
-
-                    'assigned' => $tasks
-                        ->where('status', 'assigned')
-                        ->count(),
-
-                    'active' => $tasks
-                        ->whereIn(
-                            'status',
-                            [
-                                'in_progress',
-                                'submitted',
-                                'revision',
-                            ]
-                        )
-                        ->count(),
-
-                    'completed' => $tasks
-                        ->where('status', 'completed')
-                        ->count(),
-
-                    'cancelled' => $tasks
-                        ->where('status', 'cancelled')
-                        ->count(),
-                ],
-            ]
-        );
+                    ->count(),
+            ],
+        ]);
     }
 
     protected function rules(): array
     {
         return [
-            'workerId' => [
+            'workerIds' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+
+            'workerIds.*' => [
                 'required',
                 'integer',
-
-                Rule::exists(
-                    'project_workers',
-                    'worker_id'
-                )->where(
-                    fn ($query) => $query
-                        ->where(
-                            'project_id',
-                            $this->project->id
-                        )
-                        ->where(
-                            'status',
-                            'active'
-                        )
-                ),
+                'distinct',
+                Rule::exists('project_workers', 'worker_id')
+                    ->where(fn ($query) => $query
+                        ->where('project_id', $this->project->id)
+                        ->where('status', 'active')),
             ],
 
             'title' => [
@@ -391,17 +322,6 @@ class Index extends Component
                 'max:255',
             ],
 
-            'priority' => [
-                'required',
-
-                Rule::in([
-                    'low',
-                    'medium',
-                    'high',
-                    'urgent',
-                ]),
-            ],
-
             'startAt' => [
                 'required',
                 'date',
@@ -411,13 +331,6 @@ class Index extends Component
                 'required',
                 'date',
                 'after_or_equal:startAt',
-            ],
-
-            'weight' => [
-                'required',
-                'numeric',
-                'min:0.01',
-                'max:100',
             ],
 
             'mandorNotes' => [
@@ -431,41 +344,27 @@ class Index extends Component
     protected function messages(): array
     {
         return [
-            'workerId.required' => 'Pekerja wajib dipilih.',
-
-            'workerId.exists' => 'Pekerja tidak aktif atau tidak terdaftar pada proyek ini.',
+            'workerIds.required' => 'Pilih minimal satu Pekerja.',
+            'workerIds.array' => 'Pilihan Pekerja tidak valid.',
+            'workerIds.min' => 'Pilih minimal satu Pekerja.',
+            'workerIds.*.required' => 'Pilihan Pekerja tidak valid.',
+            'workerIds.*.integer' => 'Pilihan Pekerja tidak valid.',
+            'workerIds.*.distinct' => 'Pekerja yang sama tidak boleh dipilih dua kali.',
+            'workerIds.*.exists' => 'Pekerja tidak terdaftar aktif pada Project ini.',
 
             'title.required' => 'Judul Task wajib diisi.',
-
             'title.min' => 'Judul Task minimal 3 karakter.',
-
             'title.max' => 'Judul Task maksimal 255 karakter.',
 
             'description.max' => 'Deskripsi maksimal 5.000 karakter.',
-
             'location.max' => 'Lokasi maksimal 255 karakter.',
 
-            'priority.required' => 'Prioritas wajib dipilih.',
-
-            'priority.in' => 'Prioritas Task tidak valid.',
-
             'startAt.required' => 'Waktu mulai wajib diisi.',
-
             'startAt.date' => 'Waktu mulai tidak valid.',
 
             'dueAt.required' => 'Tenggat waktu wajib diisi.',
-
             'dueAt.date' => 'Tenggat waktu tidak valid.',
-
             'dueAt.after_or_equal' => 'Tenggat waktu tidak boleh sebelum waktu mulai.',
-
-            'weight.required' => 'Bobot Task wajib diisi.',
-
-            'weight.numeric' => 'Bobot Task harus berupa angka.',
-
-            'weight.min' => 'Bobot Task minimal 0,01.',
-
-            'weight.max' => 'Bobot Task maksimal 100.',
 
             'mandorNotes.max' => 'Catatan Mandor maksimal 2.000 karakter.',
         ];
@@ -475,20 +374,15 @@ class Index extends Component
     {
         return in_array(
             $this->project->status,
-            [
-                'planning',
-                'on_progress',
-            ],
+            ['planning', 'on_progress'],
             true
         );
     }
 
-    private function authorizeProject(
-        Project $project
-    ): void {
+    private function authorizeProject(Project $project): void
+    {
         abort_unless(
-            (int) $project->mandor_id
-                === (int) Auth::id(),
+            (int) $project->mandor_id === (int) Auth::id(),
             403
         );
     }
@@ -507,53 +401,24 @@ class Index extends Component
             ->values();
     }
 
-    private function calculateActualProgress(
-        Collection $tasks
-    ): int {
-        if ($tasks->isEmpty()) {
-            return max(
-                0,
-                min(
-                    100,
-                    (int) $this->project->progress
-                )
-            );
-        }
+    private function calculateActualProgress(Collection $tasks): int
+    {
+        $activeTasks = $tasks
+            ->reject(fn (Task $task) => $task->status === 'cancelled')
+            ->values();
 
-        $totalWeight = (float) $tasks->sum(
-            fn (Task $task) => max(
-                0.01,
-                (float) $task->weight
-            )
-        );
-
-        if ($totalWeight <= 0) {
+        if ($activeTasks->isEmpty()) {
             return 0;
         }
 
-        $weightedProgress = $tasks->sum(
+        $averageProgress = $activeTasks->avg(
             fn (Task $task) => max(
                 0,
-                min(
-                    100,
-                    (int) $task->progress
-                )
+                min(100, (int) $task->progress)
             )
-                * max(
-                    0.01,
-                    (float) $task->weight
-                )
         );
 
-        return max(
-            0,
-            min(
-                100,
-                (int) round(
-                    $weightedProgress / $totalWeight
-                )
-            )
-        );
+        return (int) round($averageProgress);
     }
 
     private function calculatePlannedProgress(): int
@@ -585,21 +450,17 @@ class Index extends Component
 
         $totalDuration = max(
             1,
-            $startDate->diffInSeconds(
-                $endDate
-            )
+            $startDate->diffInSeconds($endDate)
         );
 
-        $elapsedDuration = $startDate
-            ->diffInSeconds($today);
+        $elapsedDuration = $startDate->diffInSeconds($today);
 
         return max(
             0,
             min(
                 100,
                 (int) round(
-                    ($elapsedDuration / $totalDuration)
-                    * 100
+                    ($elapsedDuration / $totalDuration) * 100
                 )
             )
         );
@@ -616,16 +477,11 @@ class Index extends Component
                     '0',
                     STR_PAD_LEFT
                 ),
-                Str::upper(
-                    Str::random(8)
-                )
+                Str::upper(Str::random(8))
             );
         } while (
             Task::query()
-                ->where(
-                    'task_code',
-                    $taskCode
-                )
+                ->where('task_code', $taskCode)
                 ->exists()
         );
 
@@ -634,12 +490,10 @@ class Index extends Component
 
     private function resetTaskForm(): void
     {
-        $this->workerId = null;
+        $this->workerIds = [];
         $this->title = '';
         $this->description = '';
         $this->location = '';
-        $this->priority = 'medium';
-        $this->weight = '1.00';
         $this->mandorNotes = '';
 
         $this->setDefaultTaskDates();
@@ -687,12 +541,7 @@ class Index extends Component
                 ->addHour();
         }
 
-        $this->startAt = $defaultStart->format(
-            'Y-m-d\TH:i'
-        );
-
-        $this->dueAt = $defaultDue->format(
-            'Y-m-d\TH:i'
-        );
+        $this->startAt = $defaultStart->format('Y-m-d\TH:i');
+        $this->dueAt = $defaultDue->format('Y-m-d\TH:i');
     }
 }

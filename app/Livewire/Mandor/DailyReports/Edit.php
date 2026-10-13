@@ -432,59 +432,27 @@ class Edit extends Component
         DailyReport $report
     ): void {
         $tasks = $project
-            ->tasks()
-            ->where(
-                'status',
-                '!=',
-                'cancelled'
-            )
-            ->get([
-                'id',
-                'project_id',
-                'status',
-                'progress',
-                'weight',
-            ]);
+    ->tasks()
+    ->where('status', '!=', 'cancelled')
+    ->get([
+        'id',
+        'project_id',
+        'status',
+        'progress',
+    ]);
 
-        if ($tasks->isEmpty()) {
-            return;
-        }
+    if ($tasks->isEmpty()) {
+        return;
+    }
 
-        $totalWeight = (float) $tasks->sum(
-            fn (Task $task) => max(
-                0.01,
-                (float) $task->weight
-            )
-        );
-
-        if ($totalWeight <= 0) {
-            return;
-        }
-
-        $weightedProgress = $tasks->sum(
+    $projectProgress = (int) round(
+        $tasks->avg(
             fn (Task $task) => max(
                 0,
-                min(
-                    100,
-                    (int) $task->progress
-                )
+                min(100, (int) $task->progress)
             )
-                * max(
-                    0.01,
-                    (float) $task->weight
-                )
-        );
-
-        $projectProgress = max(
-            0,
-            min(
-                100,
-                (int) round(
-                    $weightedProgress
-                    / $totalWeight
-                )
-            )
-        );
+        )
+    );
 
         $projectData = [
             'progress' => $projectProgress,
