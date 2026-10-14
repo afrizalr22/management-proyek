@@ -296,34 +296,33 @@ class ManageWorkers extends Component
                      * masih memiliki tugas aktif.
                      */
                     $workerWithActiveTask = Task::query()
-                        ->with('worker:id,name')
-                        ->where(
-                            'project_id',
-                            $project->id
+                        ->where('project_id', $project->id)
+                        ->whereNotIn('status', [
+                            'completed',
+                            'cancelled',
+                        ])
+                        ->whereHas(
+                            'workers',
+                            fn ($query) => $query->whereIn(
+                                'users.id',
+                                $workerIdsToDeactivate
+                            )
                         )
-                        ->whereIn(
-                            'worker_id',
-                            $workerIdsToDeactivate
-                        )
-                        ->whereNotIn(
-                            'status',
-                            [
-                                'completed',
-                                'cancelled',
-                            ]
-                        )
+                        ->with([
+                            'workers' => fn ($query) => $query
+                                ->whereIn('users.id', $workerIdsToDeactivate)
+                                ->select('users.id', 'users.name'),
+                        ])
                         ->lockForUpdate()
                         ->first();
 
                     if ($workerWithActiveTask) {
-                        $workerName =
-                            $workerWithActiveTask
-                                ->worker?->name
-                            ?? 'Pekerja';
+                        $workerName = $workerWithActiveTask
+                            ->workers
+                            ->first()?->name ?? 'Pekerja';
 
                         throw new RuntimeException(
-                            'worker_has_active_tasks:'
-                            .$workerName
+                            'worker_has_active_tasks:'.$workerName
                         );
                     }
 
@@ -553,27 +552,23 @@ class ManageWorkers extends Component
         /*
          * Mengambil tugas aktif pada Project ini.
          */
-        $activeTaskCounts = Task::query()
-            ->where(
-                'project_id',
-                $this->projectId
-            )
-            ->whereNotNull('worker_id')
-            ->whereNotIn(
-                'status',
-                [
-                    'completed',
-                    'cancelled',
-                ]
-            )
-            ->selectRaw(
-                'worker_id, COUNT(*) as total'
-            )
-            ->groupBy('worker_id')
-            ->pluck(
-                'total',
-                'worker_id'
-            );
+        $activeTaskCounts = DB::table('task_workers')
+    ->join(
+        'tasks',
+        'tasks.id',
+        '=',
+        'task_workers.task_id'
+    )
+    ->where('tasks.project_id', $this->projectId)
+    ->whereNotIn('tasks.status', [
+        'completed',
+        'cancelled',
+    ])
+    ->selectRaw(
+        'task_workers.worker_id, COUNT(DISTINCT tasks.id) as total'
+    )
+    ->groupBy('task_workers.worker_id')
+    ->pluck('total', 'task_workers.worker_id');
 
         /*
          * Mengambil penempatan aktif pekerja

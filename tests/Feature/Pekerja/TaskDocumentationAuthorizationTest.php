@@ -92,12 +92,12 @@ class TaskDocumentationAuthorizationTest extends TestCase
     }
 
     private function createTask(
-        User $worker,
-        string $code,
-        string $title,
-        string $status = 'in_progress'
+    User $worker,
+    string $code,
+    string $title,
+    string $status = 'in_progress'
     ): Task {
-        return Task::query()->create([
+        $task = Task::query()->create([
             'project_id' => $this->project->id,
             'mandor_id' => $this->mandor->id,
             'worker_id' => $worker->id,
@@ -111,6 +111,10 @@ class TaskDocumentationAuthorizationTest extends TestCase
             'progress' => 25,
             'weight' => 1,
         ]);
+
+        $task->workers()->attach($worker->id);
+
+        return $task;
     }
 
     private function createDocumentation(
@@ -243,6 +247,146 @@ class TaskDocumentationAuthorizationTest extends TestCase
                 'status' => 'assigned',
             ]
         );
+    }
+
+    public function test_all_task_members_can_see_shared_task_and_statistics(): void
+{
+    $firstWorker = $this->createWorker('shared-first@example.com');
+    $secondWorker = $this->createWorker('shared-second@example.com');
+    $outsider = $this->createWorker('shared-outsider@example.com');
+
+    $task = $this->createTask(
+        $firstWorker,
+        'TSK-SHARED-VIEW',
+        'Pekerjaan Bersama',
+        'assigned'
+    );
+
+    $task->workers()->attach($secondWorker->id);
+
+    foreach ([$firstWorker, $secondWorker] as $member) {
+        Livewire::actingAs($member)
+            ->test(TaskIndex::class)
+            ->assertSee('TSK-SHARED-VIEW')
+            ->assertSee('Pekerjaan Bersama')
+            ->assertViewHas(
+                'statistics',
+                fn (array $statistics): bool =>
+                    $statistics['total'] === 1
+                    && $statistics['assigned'] === 1
+                    && $statistics['active'] === 0
+            );
+    }
+
+    Livewire::actingAs($outsider)
+        ->test(TaskIndex::class)
+        ->assertDontSee('TSK-SHARED-VIEW')
+        ->assertViewHas(
+            'statistics',
+            fn (array $statistics): bool => $statistics['total'] === 0
+        );
+}
+
+public function test_second_member_can_start_shared_task(): void
+{
+    $firstWorker = $this->createWorker('start-first@example.com');
+    $secondWorker = $this->createWorker('start-second@example.com');
+
+    $task = $this->createTask(
+        $firstWorker,
+        'TSK-SHARED-START',
+        'Task Dimulai Anggota Kedua',
+        'assigned'
+    );
+
+    $task->workers()->attach($secondWorker->id);
+
+    Livewire::actingAs($secondWorker)
+        ->test(TaskIndex::class)
+        ->call('startTask', $task->id)
+        ->assertHasNoErrors();
+
+    $this->assertSame('in_progress', $task->fresh()->status);
+    $this->assertNotNull($task->fresh()->started_at);
+    $this->assertDatabaseCount('tasks', 1);
+    $this->assertDatabaseCount('task_workers', 2);
+
+    Livewire::actingAs($firstWorker)
+        ->test(TaskIndex::class)
+        ->assertViewHas(
+            'statistics',
+            fn (array $statistics): bool =>
+                $statistics['assigned'] === 0
+                && $statistics['active'] === 1
+        );
+}
+
+    public function test_shared_task_cannot_be_started_again_by_another_member(): void
+    {
+        $firstWorker = $this->createWorker('repeat-first@example.com');
+        $secondWorker = $this->createWorker('repeat-second@example.com');
+
+        $task = $this->createTask(
+            $firstWorker,
+            'TSK-SHARED-REPEAT',
+            'Task Hanya Dimulai Sekali',
+            'assigned'
+        );
+
+        $task->workers()->attach($secondWorker->id);
+
+        // Kedua anggota telah membuka halaman sebelum Task dimulai.
+        $secondComponent = Livewire::actingAs($secondWorker)
+            ->test(TaskIndex::class);
+
+        Livewire::actingAs($firstWorker)
+            ->test(TaskIndex::class)
+            ->call('startTask', $task->id)
+            ->assertHasNoErrors();
+
+        $startedAt = $task->fresh()->started_at->toDateTimeString();
+
+        $this->actingAs($secondWorker);
+
+        $secondComponent
+            ->call('startTask', $task->id)
+            ->assertStatus(409);
+
+        $this->assertSame('in_progress', $task->fresh()->status);
+        $this->assertSame(
+            $startedAt,
+            $task->fresh()->started_at->toDateTimeString()
+        );
+    }
+
+    public function test_task_member_with_inactive_project_assignment_cannot_start_task(): void
+    {
+        $worker = $this->createWorker('inactive-assignment@example.com');
+
+        $task = $this->createTask(
+            $worker,
+            'TSK-INACTIVE-ASSIGNMENT',
+            'Task Penugasan Tidak Aktif',
+            'assigned'
+        );
+
+        $component = Livewire::actingAs($worker)
+            ->test(TaskIndex::class);
+
+        ProjectWorker::query()
+            ->where('project_id', $this->project->id)
+            ->where('worker_id', $worker->id)
+            ->update([
+                'status' => 'inactive',
+                'ended_at' => now(),
+            ]);
+
+        $component
+            ->call('startTask', $task->id)
+            ->assertStatus(403);
+
+        $this->assertSame('assigned', $task->fresh()->status);
+        $this->assertNull($task->fresh()->started_at);
     }
 
     public function test_worker_only_sees_own_documentations(): void

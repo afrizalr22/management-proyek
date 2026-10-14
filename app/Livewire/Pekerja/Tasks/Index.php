@@ -60,58 +60,62 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function startTask(
-        int $taskId
-    ): void {
+    public function startTask(int $taskId): void
+    {
         $worker = $this->worker();
 
-        DB::transaction(
-            function () use (
-                $taskId,
-                $worker
-            ): void {
-                $task = Task::query()
-                    ->with('project')
-                    ->whereKey($taskId)
-                    ->where(
-                        'worker_id',
-                        $worker->id
-                    )
-                    ->lockForUpdate()
-                    ->firstOrFail();
+        DB::transaction(function () use ($taskId, $worker): void {
+            $task = $this->taskQuery($worker->id)
+                ->whereKey($taskId)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-                abort_unless(
-                    $task->project
-                        && in_array(
-                            $task->project->status,
-                            [
-                                'planning',
-                                'on_progress',
-                            ],
-                            true
-                        ),
+            $project = $task->project()
+                ->lockForUpdate()
+                ->first();
+
+            abort_unless(
+                $project
+                    && in_array(
+                        $project->status,
+                        ['planning', 'on_progress'],
+                        true
+                    ),
+                409,
+                'Task tidak dapat dimulai karena Project telah selesai atau dibatalkan.'
+            );
+
+            $hasActiveAssignment = $project
+                ->workerAssignments()
+                ->where('worker_id', $worker->id)
+                ->where('status', 'active')
+                ->exists();
+
+            abort_unless(
+                $hasActiveAssignment,
+                403,
+                'Anda tidak memiliki penugasan aktif pada Project ini.'
+            );
+
+            if ($task->status !== 'assigned') {
+                abort(
                     409,
-                    'Task tidak dapat dimulai karena Project telah selesai atau dibatalkan.'
+                    'Task sudah dimulai oleh pekerja lain.'
                 );
-
-                abort_unless(
-                    $task->status === 'assigned',
-                    409
-                );
-
-                $task->update([
-                    'status' => 'in_progress',
-
-                    'started_at' => $task->started_at
-                        ?? now(),
-                ]);
             }
-        );
+
+            $task->update([
+                'status' => 'in_progress',
+                'started_at' => $task->started_at ?? now(),
+            ]);
+        });
 
         session()->flash(
             'success',
             'Task berhasil dimulai.'
         );
+
+        $this->resetPage();
     }
 
     private function worker(): User
@@ -128,13 +132,15 @@ class Index extends Component
         return $worker;
     }
 
-    private function taskQuery(
-        int $workerId
-    ): Builder {
+    private function taskQuery(int $workerId): Builder
+    {
         return Task::query()
-            ->where(
-                'worker_id',
-                $workerId
+            ->whereHas(
+                'workers',
+                fn (Builder $query) => $query->where(
+                    'users.id',
+                    $workerId
+                )
             );
     }
 

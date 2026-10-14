@@ -556,6 +556,147 @@ class ProjectWorkerAssignmentTest extends TestCase
             ProjectWorker::query()->count()
         );
     }
+    public function test_active_task_counts_include_all_members_and_only_current_project(): void
+    {
+        $secondWorker = User::factory()->create([
+            'name' => 'Pekerja Kedua',
+            'status' => 'active',
+        ]);
+        $secondWorker->assignRole('pekerja');
+
+        $this->createAssignment($this->project, $this->worker);
+        $this->createAssignment($this->project, $secondWorker);
+
+        $task = $this->createTask(
+            $this->project,
+            $this->worker,
+            'in_progress',
+            100
+        );
+        $task->workers()->attach($secondWorker->id);
+
+        // Task selesai dan dibatalkan tidak dihitung.
+        foreach (['completed', 'cancelled'] as $index => $status) {
+            $closedTask = $this->createTask(
+                $this->project,
+                $this->worker,
+                $status,
+                101 + $index
+            );
+            $closedTask->workers()->attach($secondWorker->id);
+        }
+
+        // Task dari Project lain tidak masuk hitungan modal ini.
+        $otherProject = $this->createProject('on_progress', 100);
+
+        $otherTask = $this->createTask(
+            $otherProject,
+            $secondWorker,
+            'assigned',
+            103
+        );
+
+        $this->manageWorkersComponent()
+            ->call('openModal', $this->project->id)
+            ->assertViewHas(
+                'activeTaskCounts',
+                fn ($counts): bool =>
+                    (int) $counts->get($this->worker->id, 0) === 1
+                    && (int) $counts->get($secondWorker->id, 0) === 1
+                    && $counts->count() === 2
+            );
+    }
+
+    public function test_second_member_cannot_be_removed_when_shared_task_becomes_active(): void
+    {
+        $secondWorker = User::factory()->create([
+            'name' => 'Pekerja Kedua Dilindungi',
+            'status' => 'active',
+        ]);
+        $secondWorker->assignRole('pekerja');
+
+        $this->createAssignment($this->project, $this->worker);
+        $this->createAssignment($this->project, $secondWorker);
+
+        // Modal dibuka sebelum Task dibuat.
+        $component = $this->manageWorkersComponent()
+            ->call('openModal', $this->project->id)
+            ->set('selectedWorkerIds', [$this->worker->id]);
+
+        $task = $this->createTask(
+            $this->project,
+            $this->worker,
+            'assigned',
+            110
+        );
+        $task->workers()->attach($secondWorker->id);
+
+        $component
+            ->call('saveWorkers')
+            ->assertHasErrors('workers');
+
+        foreach ([$this->worker, $secondWorker] as $member) {
+            $this->assertDatabaseHas('project_workers', [
+                'project_id' => $this->project->id,
+                'worker_id' => $member->id,
+                'status' => 'active',
+                'ended_at' => null,
+            ]);
+        }
+
+        $this->assertDatabaseHas('task_workers', [
+            'task_id' => $task->id,
+            'worker_id' => $secondWorker->id,
+        ]);
+    }
+
+    public function test_second_member_can_be_removed_after_shared_tasks_are_closed(): void
+    {
+        $secondWorker = User::factory()->create([
+            'name' => 'Pekerja Kedua Selesai',
+            'status' => 'active',
+        ]);
+        $secondWorker->assignRole('pekerja');
+
+        $this->createAssignment($this->project, $this->worker);
+        $this->createAssignment($this->project, $secondWorker);
+
+        foreach (['completed', 'cancelled'] as $index => $status) {
+            $task = $this->createTask(
+                $this->project,
+                $this->worker,
+                $status,
+                120 + $index
+            );
+            $task->workers()->attach($secondWorker->id);
+        }
+
+        $this->manageWorkersComponent()
+            ->call('openModal', $this->project->id)
+            ->set('selectedWorkerIds', [$this->worker->id])
+            ->call('saveWorkers')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('project_workers', [
+            'project_id' => $this->project->id,
+            'worker_id' => $secondWorker->id,
+            'status' => 'inactive',
+        ]);
+
+        $this->assertDatabaseHas('project_workers', [
+            'project_id' => $this->project->id,
+            'worker_id' => $this->worker->id,
+            'status' => 'active',
+        ]);
+
+        // Riwayat keanggotaan Task tetap dipertahankan.
+        $this->assertSame(
+            2,
+            $secondWorker->tasks()
+                ->where('tasks.project_id', $this->project->id)
+                ->count()
+        );
+    }
 
     private function manageWorkersComponent()
     {
@@ -606,31 +747,28 @@ class ProjectWorkerAssignmentTest extends TestCase
     }
 
     private function createTask(
-        Project $project,
-        User $worker,
-        string $status,
-        int $sequence
+    Project $project,
+    User $worker,
+    string $status,
+    int $sequence
     ): Task {
-        return Task::query()->create([
+        $task = Task::query()->create([
             'project_id' => $project->id,
             'mandor_id' => $this->mandor->id,
             'worker_id' => $worker->id,
-            'task_code' => sprintf(
-                'TSK-WORKER-%03d',
-                $sequence
-            ),
+            'task_code' => sprintf('TSK-WORKER-%03d', $sequence),
             'title' => 'Task Penempatan '.$sequence,
             'priority' => 'medium',
             'status' => $status,
             'start_at' => '2026-09-21 08:00:00',
             'due_at' => '2026-09-30 17:00:00',
-            'completed_at' => $status === 'completed'
-                    ? now()
-                    : null,
-            'progress' => $status === 'completed'
-                    ? 100
-                    : 0,
-            'weight' => 10,
+            'completed_at' => $status === 'completed' ? now() : null,
+            'progress' => $status === 'completed' ? 100 : 0,
+            'weight' => 1,
         ]);
+
+        $task->workers()->attach($worker->id);
+
+        return $task;
     }
 }

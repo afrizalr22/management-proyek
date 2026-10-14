@@ -269,7 +269,10 @@
             Aksi
         </p>
 
-        @if ($task->status === 'assigned')
+        @if (
+            $task->status === 'assigned'
+            && $task->workers->contains(auth()->id())
+        )
     <div
         x-data="{ showStartConfirmation: false }"
         class="w-full"
@@ -372,7 +375,6 @@
                     <button
                         type="button"
                         x-on:click="
-                            showStartConfirmation = false;
                             $wire.startTask({{ $task->id }});
                         "
                         wire:loading.attr="disabled"
