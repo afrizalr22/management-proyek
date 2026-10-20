@@ -300,11 +300,7 @@ class Index extends Component
                 'mandor:id,name',
 
                 'dailyReports' => fn ($query) => $query
-                    ->where(
-                        'user_id',
-                        $worker->id
-                    )
-                    ->latest('id'),
+                 ->latest('id'),
             ])
             ->when(
                 $search !== '',

@@ -809,4 +809,89 @@ public function test_second_member_can_start_shared_task(): void
             $task->fresh()->status
         );
     }
+
+    public function test_all_task_members_can_access_revision_from_task_page(): void
+{
+    $firstWorker = $this->createWorker(
+        'revision-button-first@example.com'
+    );
+
+    $secondWorker = $this->createWorker(
+        'revision-button-second@example.com'
+    );
+
+    $outsider = $this->createWorker(
+        'revision-button-outsider@example.com'
+    );
+
+    $task = $this->createTask(
+        $firstWorker,
+        'TSK-SHARED-REVISION-BUTTON',
+        'Task Bersama Perlu Perbaikan',
+        'revision'
+    );
+
+    $task->workers()->attach($secondWorker->id);
+
+    $report = \App\Models\DailyReport::query()->create([
+        'project_id' => $this->project->id,
+        'task_id' => $task->id,
+        'user_id' => $firstWorker->id,
+        'report_number' => 'RPT-SHARED-REVISION-BUTTON',
+        'report_date' => now('Asia/Jakarta')->toDateString(),
+        'reported_progress' => 50,
+        'work_status' => 'in_progress',
+        'activities' => 'Pekerjaan bersama yang perlu diperbaiki.',
+        'status' => 'revision',
+        'submitted_at' => now(),
+        'reviewed_by' => $this->mandor->id,
+        'reviewed_at' => now(),
+        'review_notes' => 'Lengkapi keterangan hasil pekerjaan.',
+    ]);
+
+    foreach ([$firstWorker, $secondWorker] as $member) {
+        Livewire::actingAs($member)
+            ->test(TaskIndex::class)
+            ->assertSee($task->task_code)
+            ->assertSee('Perbaiki Laporan')
+            ->assertSee(
+                route('pekerja.report.show', [
+                    'report' => $report->id,
+                ]),
+                false
+            );
+    }
+
+    // Detail laporan menyediakan tombol menuju form perbaikan.
+    $this->actingAs($secondWorker)
+        ->get(route('pekerja.report.show', [
+            'report' => $report->id,
+        ]))
+        ->assertOk()
+        ->assertSee('Perbaiki Laporan')
+        ->assertSee(
+            route('pekerja.report.edit', [
+                'report' => $report->id,
+            ]),
+            false
+        );
+
+    $this->actingAs($secondWorker)
+        ->get(route('pekerja.report.edit', [
+            'report' => $report->id,
+        ]))
+        ->assertOk();
+
+    // Pekerja di proyek yang sama tetapi bukan anggota Task tidak mendapat akses.
+    Livewire::actingAs($outsider)
+        ->test(TaskIndex::class)
+        ->assertDontSee($task->task_code)
+        ->assertDontSee('Perbaiki Laporan');
+
+    $this->actingAs($outsider)
+        ->get(route('pekerja.report.edit', [
+            'report' => $report->id,
+        ]))
+        ->assertNotFound();
+}
 }
