@@ -51,13 +51,20 @@
         'lg:items-center lg:gap-5 lg:px-6',
     ]) }}
 >
-    <div>
+    <div class="min-w-0">
         <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
             Nomor Laporan
         </p>
 
-        <p class="text-sm font-bold text-slate-900">
+        <p class="break-words text-sm font-bold text-slate-900">
             {{ $report->report_number ?? 'Belum tersedia' }}
+        </p>
+
+        <p class="mt-2 text-xs leading-5 text-slate-500">
+            Dibuat oleh:
+            <span class="break-words font-semibold text-slate-700">
+                {{ $report->user?->name ?? 'Pengguna tidak tersedia' }}
+            </span>
         </p>
     </div>
 

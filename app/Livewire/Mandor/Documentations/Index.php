@@ -175,10 +175,14 @@ class Index extends Component
                     ->whereHas(
                         'dailyReport',
                         fn (Builder $reportQuery) => $reportQuery
-                            ->where(
-                                'status',
-                                'approved'
-                            )
+                            ->whereIn(
+                            'status',
+                            [
+                                'submitted',
+                                'revision',
+                                'approved',
+                            ]
+                        )
                     )
             )
             ->orderBy('project_name')
@@ -207,10 +211,11 @@ class Index extends Component
                     ->whereHas(
                         'dailyReport',
                         fn (Builder $reportQuery) => $reportQuery
-                            ->where(
-                                'status',
-                                'approved'
-                            )
+                        ->whereIn('status', [
+                            'submitted',
+                            'revision',
+                            'approved',
+                        ])
                     )
             )
             ->when(
@@ -259,24 +264,20 @@ class Index extends Component
     private function documentationQuery(): Builder
     {
         return Documentation::query()
-            ->whereNotNull(
-                'daily_report_id'
-            )
+            ->whereNotNull('daily_report_id')
             ->whereHas(
                 'dailyReport',
                 fn (Builder $query) => $query
-                    ->where(
-                        'status',
-                        'approved'
-                    )
+                    ->whereIn('status', [
+                        'submitted',
+                        'revision',
+                        'approved',
+                    ])
             )
             ->whereHas(
                 'project',
                 fn (Builder $query) => $query
-                    ->where(
-                        'mandor_id',
-                        Auth::id()
-                    )
+                    ->where('mandor_id', Auth::id())
             );
     }
 

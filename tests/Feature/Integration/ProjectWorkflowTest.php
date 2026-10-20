@@ -155,6 +155,7 @@ class ProjectWorkflowTest extends TestCase
             'progress' => 20,
             'weight' => 1,
         ]);
+        $this->task->workers()->attach($this->worker->id);
     }
 
     protected function tearDown(): void
@@ -1770,7 +1771,7 @@ class ProjectWorkflowTest extends TestCase
             'task_id' => $this->task->id,
             'daily_report_id' => $submittedReport->id,
             'user_id' => $this->worker->id,
-            'title' => 'Foto Submitted Tidak Boleh Tampil',
+            'title' => 'Foto Menunggu Pemeriksaan',
             'category' => 'progress',
             'photo' => $submittedPhotoPath,
             'original_name' => 'gallery-submitted.jpg',
@@ -1815,7 +1816,7 @@ class ProjectWorkflowTest extends TestCase
             'task_id' => $this->task->id,
             'daily_report_id' => $revisionReport->id,
             'user_id' => $this->worker->id,
-            'title' => 'Foto Revision Tidak Boleh Tampil',
+            'title' => 'Foto Perlul Revisi',
             'category' => 'progress',
             'photo' => $revisionPhotoPath,
             'original_name' => 'gallery-revision.jpg',
@@ -1861,6 +1862,7 @@ class ProjectWorkflowTest extends TestCase
             'progress' => 10,
             'weight' => 1,
         ]);
+        $secondTask->workers()->attach($this->worker->id);
 
         $secondReport = DailyReport::query()->create([
             'project_id' => $secondProject->id,
@@ -1943,6 +1945,7 @@ class ProjectWorkflowTest extends TestCase
             'progress' => 10,
             'weight' => 1,
         ]);
+        $otherTask->workers()->attach($this->worker->id);
 
         $otherReport = DailyReport::query()->create([
             'project_id' => $otherProject->id,
@@ -2003,42 +2006,57 @@ class ProjectWorkflowTest extends TestCase
 
         Livewire::actingAs($this->mandor)
             ->test(MandorDocumentationsIndex::class)
-            ->assertSee(
-                $mainDocumentation->title
-            )
-            ->assertSee(
-                $secondDocumentation->title
-            )
-            ->assertDontSee(
-                $standaloneDocumentation->title
-            )
+            ->assertSee($mainDocumentation->title)
+            ->assertSee($secondDocumentation->title)
+            ->assertSee($submittedDocumentation->title)
+            ->assertSee($revisionDocumentation->title)
+            ->assertSee('Menunggu Pemeriksaan')
+            ->assertSee('Perlu Revisi')
+            ->assertSee('Disetujui')
+            ->assertDontSee($standaloneDocumentation->title)
+            ->assertDontSee($otherDocumentation->title)
+            ->assertSee($this->project->project_name)
+            ->assertSee($this->project->project_code)
+            ->assertSee($this->task->title)
+            ->assertSee($this->task->task_code)
+            ->assertViewHas('totalDocumentations', 4)
+            ->assertViewHas(
+                'documentations',
+                function ($documentations) use (
+                    $mainDocumentation,
+                    $secondDocumentation,
+                    $submittedDocumentation,
+                    $revisionDocumentation
+                ): bool {
+                    $actualIds = $documentations->getCollection()
+                        ->pluck('id')
+                        ->sort()
+                        ->values()
+                        ->all();
 
-            ->assertDontSee(
-                $submittedDocumentation->title
-            )
-            ->assertDontSee(
-                $revisionDocumentation->title
-            )
-            ->assertDontSee(
-                $otherDocumentation->title
-            )
-            ->assertSee(
-                $this->project->project_name
-            )
-            ->assertSee(
-                $this->project->project_code
-            )
-            ->assertSee(
-                $this->task->title
-            )
-            ->assertSee(
-                $this->task->task_code
+                    $expectedIds = collect([
+                        $mainDocumentation->id,
+                        $secondDocumentation->id,
+                        $submittedDocumentation->id,
+                        $revisionDocumentation->id,
+                    ])
+                        ->sort()
+                        ->values()
+                        ->all();
+
+                    return $actualIds === $expectedIds;
+                }
             )
             ->assertViewHas(
-                'totalDocumentations',
-                2
+                'projects',
+                fn ($projects): bool => ! $projects
+                    ->contains('id', $otherProject->id)
+            )
+            ->assertViewHas(
+                'tasks',
+                fn ($tasks): bool => ! $tasks
+                    ->contains('id', $otherTask->id)
             );
-
         /*
         |--------------------------------------------------------------------------
         | Filter Project
@@ -2047,20 +2065,14 @@ class ProjectWorkflowTest extends TestCase
 
         Livewire::actingAs($this->mandor)
             ->test(MandorDocumentationsIndex::class)
-            ->set(
-                'projectFilter',
-                (string) $this->project->id
-            )
-            ->assertSee(
-                $mainDocumentation->title
-            )
-            ->assertDontSee(
-                $secondDocumentation->title
-            )
-            ->assertViewHas(
-                'filteredDocumentations',
-                1
-            );
+            ->set('projectFilter', (string) $this->project->id)
+            ->assertSee($mainDocumentation->title)
+            ->assertSee($submittedDocumentation->title)
+            ->assertSee($revisionDocumentation->title)
+            ->assertDontSee($secondDocumentation->title)
+            ->assertDontSee($standaloneDocumentation->title)
+            ->assertDontSee($otherDocumentation->title)
+            ->assertViewHas('filteredDocumentations', 3);
 
         /*
         |--------------------------------------------------------------------------
@@ -2088,6 +2100,31 @@ class ProjectWorkflowTest extends TestCase
                 'filteredDocumentations',
                 1
             );
+
+            /*
+            * Pencarian tetap dibatasi pada dokumentasi milik Mandor.
+            */
+            Livewire::actingAs($this->mandor)
+                ->test(MandorDocumentationsIndex::class)
+                ->set('search', $submittedDocumentation->title)
+                ->assertSee($submittedDocumentation->title)
+                ->assertViewHas('filteredDocumentations', 1);
+
+            Livewire::actingAs($this->mandor)
+                ->test(MandorDocumentationsIndex::class)
+                ->set('search', $otherDocumentation->title)
+                ->assertDontSee($otherDocumentation->title)
+                ->assertViewHas('filteredDocumentations', 0);
+
+            /*
+            * Manipulasi filter tidak boleh membuka dokumentasi Mandor lain.
+            */
+            Livewire::actingAs($this->mandor)
+                ->test(MandorDocumentationsIndex::class)
+                ->set('projectFilter', (string) $otherProject->id)
+                ->set('taskFilter', (string) $otherTask->id)
+                ->assertDontSee($otherDocumentation->title)
+                ->assertViewHas('filteredDocumentations', 0);
 
         /*
         |--------------------------------------------------------------------------

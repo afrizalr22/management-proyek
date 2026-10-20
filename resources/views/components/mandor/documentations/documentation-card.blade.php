@@ -48,6 +48,21 @@
     $taskCode = $documentation->task?->task_code;
 
     $reportNumber = $documentation->dailyReport?->report_number;
+    $reportStatus = $documentation->dailyReport?->status;
+
+    $reportStatusLabel = match ($reportStatus) {
+        'submitted' => 'Menunggu Pemeriksaan',
+        'revision' => 'Perlu Revisi',
+        'approved' => 'Disetujui',
+        default => 'Status Tidak Tersedia',
+    };
+
+    $reportStatusClass = match ($reportStatus) {
+        'submitted' => 'bg-amber-100 text-amber-900',
+        'revision' => 'bg-red-100 text-red-800',
+        'approved' => 'bg-emerald-100 text-emerald-800',
+        default => 'bg-gray-100 text-gray-700',
+    };
 
     $location = $documentation->task?->location;
 
@@ -115,9 +130,15 @@
             </div>
         @endif
 
-        <span class="absolute left-3 top-3 max-w-[70%] truncate rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
-            {{ $category }}
-        </span>
+        <div class="absolute left-3 right-3 top-3 flex flex-wrap items-start gap-2">
+            <span class="rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+                {{ $category }}
+            </span>
+
+            <span class="rounded-lg px-3 py-1.5 text-[10px] font-bold tracking-wide shadow-sm {{ $reportStatusClass }}">
+                {{ $reportStatusLabel }}
+            </span>
+        </div>
 
         @if ($documentation->photo_exists)
             <button

@@ -2,6 +2,10 @@
 
 namespace App\Livewire\Pekerja\Report;
 
+use App\Models\Project;
+use App\Models\ProjectWorker;
+use App\Models\Task;
+use Illuminate\Database\Eloquent\Builder;
 use App\Models\DailyReport;
 use App\Models\Documentation;
 use App\Models\User;
@@ -221,6 +225,15 @@ class Edit extends Component
                 'mimes:jpg,jpeg,png,webp',
                 'max:5120',
             ],
+
+            'removedDocumentationIds' => [
+                'array',
+            ],
+
+            'removedDocumentationIds.*' => [
+                'integer',
+                'distinct',
+            ],
         ];
     }
 
@@ -370,10 +383,17 @@ class Edit extends Component
 
     public function resubmitReport(): void
     {
+        $worker = $this->authenticatedWorker();
+
+        $this->resetValidation('submit');
+
+        $this->activities = trim($this->activities);
+        $this->obstacles = trim($this->obstacles);
+        $this->notes = trim($this->notes);
+
         $validated = $this->validate();
 
-        $reportedProgress =
-            (int) $validated['reportedProgress'];
+        $reportedProgress = (int) $validated['reportedProgress'];
 
         if (
             $validated['workStatus'] === 'completed'
@@ -406,301 +426,312 @@ class Edit extends Component
             DB::transaction(
                 function () use (
                     $validated,
+                    $worker,
                     $reportedProgress,
                     &$storedPaths,
                     &$pathsToDelete
                 ): void {
-                    $report = DailyReport::query()
-                        ->where(
-                            'user_id',
-                            Auth::id()
+                    /*
+                    * Ambil identitas Task dari database,
+                    * bukan dari properti formulir.
+                    */
+                    $reportReference = DailyReport::query()
+                        ->where(function (Builder $query) use ($worker): void {
+                            $query
+                                ->where('user_id', $worker->id)
+                                ->orWhereHas(
+                                    'task.workers',
+                                    fn (Builder $workerQuery) => $workerQuery
+                                        ->where('users.id', $worker->id)
+                                );
+                        })
+                        ->findOrFail($this->reportId);
+
+                    $task = Task::query()
+                        ->whereKey($reportReference->task_id)
+                        ->whereHas(
+                            'workers',
+                            fn (Builder $query) => $query
+                                ->where('users.id', $worker->id)
                         )
-                        ->with([
-                            'task',
-                            'project',
-                        ])
                         ->lockForUpdate()
-                        ->findOrFail(
-                            $this->reportId
+                        ->first();
+
+                    if (! $task) {
+                        throw new RuntimeException(
+                            'Task tidak tersedia atau Anda bukan anggota Task ini.'
                         );
+                    }
+
+                    $project = Project::query()
+                        ->whereKey($task->project_id)
+                        ->lockForUpdate()
+                        ->first();
 
                     if (
-                        $report->status
-                        !== 'revision'
+                        ! $project
+                        || ! in_array(
+                            $project->status,
+                            ['planning', 'on_progress'],
+                            true
+                        )
                     ) {
+                        throw new RuntimeException(
+                            'Project sudah selesai atau dibatalkan. Perbaikan laporan tidak dapat dikirim.'
+                        );
+                    }
+
+                    $assignment = ProjectWorker::query()
+                        ->where('project_id', $project->id)
+                        ->where('worker_id', $worker->id)
+                        ->where('status', 'active')
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $assignment) {
+                        throw new RuntimeException(
+                            'Penugasan Anda pada Project ini sudah tidak aktif.'
+                        );
+                    }
+
+                    $report = DailyReport::query()
+                        ->whereKey($this->reportId)
+                        ->where('task_id', $task->id)
+                        ->where('project_id', $project->id)
+                        ->lockForUpdate()
+                        ->firstOrFail();
+
+                    /*
+                    * Pemeriksaan dilakukan kembali setelah penguncian.
+                    * Form lama tidak boleh menimpa pengiriman anggota lain.
+                    */
+                    if ($report->status !== 'revision') {
                         throw new RuntimeException(
                             'Laporan sudah tidak dapat diperbaiki.'
                         );
                     }
 
-                    if (! $report->task) {
-                        throw new RuntimeException(
-                            'Task laporan tidak tersedia.'
-                        );
-                    }
-
-                    if (
-                        $report->task->status
-                        !== 'revision'
-                    ) {
+                    if ($task->status !== 'revision') {
                         throw new RuntimeException(
                             'Task sudah tidak berstatus revisi.'
                         );
                     }
 
-                    if (
-                        $reportedProgress
-                        < (int) $report->task->progress
-                    ) {
+                    $otherPendingReportExists = DailyReport::query()
+                        ->where('task_id', $task->id)
+                        ->where('id', '!=', $report->id)
+                        ->whereIn('status', [
+                            'draft',
+                            'submitted',
+                            'revision',
+                        ])
+                        ->exists();
+
+                    if ($otherPendingReportExists) {
+                        throw new RuntimeException(
+                            'Task masih memiliki laporan lain yang belum selesai diperiksa.'
+                        );
+                    }
+
+                    if ($reportedProgress < (int) $task->progress) {
                         throw new RuntimeException(
                             'Progres laporan tidak boleh lebih rendah dari progres Task saat ini.'
+                        );
+                    }
+
+                    /*
+                    * Semua foto pada laporan ini dapat dikelola anggota Task.
+                    * ID dari formulir harus benar-benar milik laporan ini.
+                    */
+                    $removedIds = collect(
+                        $validated['removedDocumentationIds'] ?? []
+                    )
+                        ->map(fn ($id): int => (int) $id)
+                        ->unique()
+                        ->values();
+
+                    $documentations = Documentation::query()
+                        ->where('daily_report_id', $report->id)
+                        ->lockForUpdate()
+                        ->get();
+
+                    if (
+                        $removedIds
+                            ->diff($documentations->pluck('id'))
+                            ->isNotEmpty()
+                    ) {
+                        throw new RuntimeException(
+                            'Pilihan foto yang dihapus tidak valid.'
+                        );
+                    }
+
+                    $remainingPhotoCount = $documentations->count()
+                        - $removedIds->count();
+
+                    if (
+                        $remainingPhotoCount
+                        + count($validated['photos'] ?? []) > 5
+                    ) {
+                        throw new RuntimeException(
+                            'Maksimal lima foto dalam satu laporan. Hapus foto lama sebelum menambahkan foto pengganti.'
                         );
                     }
 
                     $submittedAt = now();
 
                     $report->update([
-                        'reported_progress' =>
-                            $reportedProgress,
-
-                        'work_status' =>
-                            $validated['workStatus'],
-
-                        'activities' =>
-                            trim(
-                                $validated['activities']
-                            ),
-
-                        'obstacles' =>
-                            filled(
-                                $validated['obstacles']
-                                ?? null
-                            )
-                                ? trim(
-                                    $validated['obstacles']
-                                )
-                                : null,
-
-                        'notes' =>
-                            filled(
-                                $validated['notes']
-                                ?? null
-                            )
-                                ? trim(
-                                    $validated['notes']
-                                )
-                                : null,
-
-                        'status' =>
-                            'submitted',
-
-                        'submitted_at' =>
-                            $submittedAt,
-
-                        'reviewed_by' =>
-                            null,
-
-                        'reviewed_at' =>
-                            null,
-
-                        'review_notes' =>
-                            null,
+                        'reported_progress' => $reportedProgress,
+                        'work_status' => $validated['workStatus'],
+                        'activities' => $validated['activities'],
+                        'obstacles' => filled($validated['obstacles'] ?? null)
+                            ? $validated['obstacles']
+                            : null,
+                        'notes' => filled($validated['notes'] ?? null)
+                            ? $validated['notes']
+                            : null,
+                        'status' => 'submitted',
+                        'submitted_at' => $submittedAt,
+                        'reviewed_by' => null,
+                        'reviewed_at' => null,
+                        'review_notes' => null,
                     ]);
 
-                    $documentationsToRemove =
-                        Documentation::query()
-                            ->where(
-                                'daily_report_id',
-                                $report->id
-                            )
-                            ->where(
-                                'user_id',
-                                Auth::id()
-                            )
-                            ->whereIn(
-                                'id',
-                                $this->removedDocumentationIds
-                            )
-                            ->lockForUpdate()
-                            ->get();
+                    foreach ($documentations as $documentation) {
+                        if (! $removedIds->contains((int) $documentation->id)) {
+                            continue;
+                        }
 
-                    foreach (
-                        $documentationsToRemove
-                        as $documentation
-                    ) {
-                        if (
-                            filled(
-                                $documentation->photo
-                            )
-                        ) {
-                            $pathsToDelete[] =
-                                $documentation->photo;
+                        if (filled($documentation->photo)) {
+                            $pathsToDelete[] = $documentation->photo;
                         }
 
                         $documentation->delete();
                     }
 
-                    $storageDirectory =
-                        'documentations/'
-                        . Auth::id()
-                        . '/'
-                        . str_replace(
-                            '-',
-                            '/',
-                            substr(
-                                $this->reportDate,
-                                0,
-                                7
-                            )
-                        );
+                    $storageDirectory = 'documentations/'
+                        .$worker->id
+                        .'/'
+                        .$report->report_date->format('Y/m');
 
-                    foreach (
-                        $validated['photos'] ?? []
-                        as $photo
-                    ) {
+                    foreach ($validated['photos'] ?? [] as $photo) {
                         $storedPath = $photo->store(
                             $storageDirectory,
                             'public'
                         );
 
-                        if (! is_string($storedPath)) {
+                        if (! is_string($storedPath) || $storedPath === '') {
                             throw new RuntimeException(
                                 'Foto dokumentasi gagal disimpan.'
                             );
                         }
 
-                        $storedPaths[] =
-                            $storedPath;
+                        $storedPaths[] = $storedPath;
 
-                        Documentation::query()
-                            ->create([
-                                'project_id' =>
-                                    $report->project_id,
-
-                                'task_id' =>
-                                    $report->task_id,
-
-                                'daily_report_id' =>
-                                    $report->id,
-
-                                'user_id' =>
-                                    Auth::id(),
-
-                                'title' =>
-                                    $report->task->title,
-
-                                'category' =>
-                                    'progress',
-
-                                'photo' =>
-                                    $storedPath,
-
-                                'original_name' =>
-                                    $photo
-                                        ->getClientOriginalName(),
-
-                                'mime_type' =>
-                                    $photo->getMimeType()
-                                    ?: null,
-
-                                'file_size' =>
-                                    $photo->getSize()
-                                    ?: null,
-
-                                'description' =>
-                                    trim(
-                                        $validated['activities']
-                                    ),
-
-                                'documentation_date' =>
-                                    $report
-                                        ->report_date
-                                        ->toDateString(),
-
-                                'taken_at' =>
-                                    $submittedAt,
-                            ]);
+                        Documentation::query()->create([
+                            'project_id' => $project->id,
+                            'task_id' => $task->id,
+                            'daily_report_id' => $report->id,
+                            'user_id' => $worker->id,
+                            'title' => $task->title,
+                            'category' => 'progress',
+                            'photo' => $storedPath,
+                            'original_name' => $photo->getClientOriginalName(),
+                            'mime_type' => $photo->getMimeType() ?: null,
+                            'file_size' => $photo->getSize() ?: null,
+                            'description' => $validated['activities'],
+                            'documentation_date' => $report->report_date
+                                ->toDateString(),
+                            'taken_at' => $submittedAt,
+                        ]);
                     }
 
-                    $report->task->update([
-                        'status' =>
-                            'submitted',
-
-                        'submitted_at' =>
-                            $submittedAt,
+                    $task->update([
+                        'status' => 'submitted',
+                        'submitted_at' => $submittedAt,
                     ]);
                 }
             );
-
-            foreach (
-                array_unique(
-                    $pathsToDelete
-                )
-                as $pathToDelete
-            ) {
-                Storage::disk('public')
-                    ->delete(
-                        $pathToDelete
-                    );
-            }
-
-            session()->flash(
-                'success',
-                'Perbaikan laporan berhasil dikirim kembali kepada Mandor.'
-            );
-
-            $this->redirectRoute(
-                'pekerja.report.index',
-                navigate: true
-            );
         } catch (Throwable $exception) {
-            foreach (
-                $storedPaths
-                as $storedPath
-            ) {
-                Storage::disk('public')
-                    ->delete(
-                        $storedPath
-                    );
+            /*
+            * Transaksi gagal: hapus hanya foto baru.
+            * Foto lama belum dihapus dari penyimpanan.
+            */
+            foreach ($storedPaths as $storedPath) {
+                try {
+                    Storage::disk('public')->delete($storedPath);
+                } catch (Throwable $cleanupException) {
+                    report($cleanupException);
+                }
             }
 
-            report(
-                $exception
-            );
-
-            $message =
-                $exception instanceof RuntimeException
-                    ? $exception->getMessage()
-                    : 'Perbaikan laporan gagal dikirim. Silakan coba kembali.';
+            report($exception);
 
             $this->addError(
                 'submit',
-                $message
+                $exception instanceof RuntimeException
+                    ? $exception->getMessage()
+                    : 'Perbaikan laporan gagal dikirim. Silakan coba kembali.'
             );
+
+            return;
         }
+
+        /*
+        * Database berhasil disimpan.
+        * Kegagalan menghapus file lama tidak boleh menghapus foto baru
+        * yang sekarang sudah digunakan laporan.
+        */
+        foreach (array_unique($pathsToDelete) as $pathToDelete) {
+            try {
+                $stillUsed = Documentation::query()
+                    ->where('photo', $pathToDelete)
+                    ->exists();
+
+                if (
+                    ! $stillUsed
+                    && ! Storage::disk('public')->delete($pathToDelete)
+                ) {
+                    report(new RuntimeException(
+                        'File foto lama gagal dihapus setelah revisi laporan.'
+                    ));
+                }
+            } catch (Throwable $exception) {
+                report($exception);
+            }
+        }
+
+        session()->flash(
+            'success',
+            'Perbaikan laporan berhasil dikirim kembali kepada Mandor.'
+        );
+
+        $this->redirectRoute(
+            'pekerja.report.index',
+            navigate: true
+        );
     }
 
     private function findRevisionReport(): DailyReport
     {
+        $worker = $this->authenticatedWorker();
+
         $report = DailyReport::query()
-            ->where(
-                'user_id',
-                Auth::id()
-            )
+            ->where(function (Builder $query) use ($worker): void {
+                $query
+                    ->where('user_id', $worker->id)
+                    ->orWhereHas(
+                        'task.workers',
+                        fn (Builder $workerQuery) => $workerQuery
+                            ->where('users.id', $worker->id)
+                    );
+            })
             ->with([
                 'project:id,project_name,location',
                 'task:id,project_id,task_code,title,location,status,progress',
-                'documentations' => fn ($query) =>
-                    $query
-                        ->where(
-                            'user_id',
-                            Auth::id()
-                        )
-                        ->orderBy('id'),
+                'documentations' => fn ($query) => $query
+                    ->orderBy('id'),
             ])
-            ->findOrFail(
-                $this->reportId
-            );
+            ->findOrFail($this->reportId);
 
         abort_unless(
             $report->status === 'revision',

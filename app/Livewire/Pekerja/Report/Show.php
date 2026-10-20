@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Illuminate\Database\Eloquent\Builder;
 
 class Show extends Component
 {
@@ -70,29 +71,29 @@ class Show extends Component
 
     private function findReport(): DailyReport
     {
+        $workerId = $this->authenticatedWorker()->id;
+
         return DailyReport::query()
-            ->where(
-                'user_id',
-                Auth::id()
-            )
+            ->where(function (Builder $query) use ($workerId): void {
+                $query
+                    ->where('user_id', $workerId)
+                    ->orWhereHas(
+                        'task.workers',
+                        fn (Builder $workerQuery) => $workerQuery
+                            ->where('users.id', $workerId)
+                    );
+            })
             ->with([
                 'project:id,mandor_id,project_code,project_name,location',
                 'project.mandor:id,name',
                 'task:id,project_id,task_code,title,description,location,status,progress',
                 'user:id,name,email,status',
                 'reviewer:id,name',
-                'documentations' => fn ($query) =>
-                    $query
-                        ->where(
-                            'user_id',
-                            Auth::id()
-                        )
-                        ->orderBy('taken_at')
-                        ->orderBy('id'),
+                'documentations' => fn ($query) => $query
+                    ->orderBy('taken_at')
+                    ->orderBy('id'),
             ])
-            ->findOrFail(
-                $this->reportId
-            );
+            ->findOrFail($this->reportId);
     }
 
     private function authenticatedWorker(): User

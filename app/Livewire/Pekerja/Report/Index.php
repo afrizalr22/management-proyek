@@ -65,6 +65,7 @@ class Index extends Component
             ->with([
                 'task:id,project_id,task_code,title,location',
                 'project:id,project_code,project_name,location',
+                'user:id,name,email',
             ])
             ->when(
                 $this->sort === 'oldest',
@@ -118,11 +119,18 @@ class Index extends Component
 
     private function reportQuery(): Builder
     {
+        $workerId = $this->authenticatedWorker()->id;
+
         return DailyReport::query()
-            ->where(
-                'user_id',
-                $this->authenticatedWorker()->id
-            );
+            ->where(function (Builder $query) use ($workerId): void {
+                $query
+                    ->where('user_id', $workerId)
+                    ->orWhereHas(
+                        'task.workers',
+                        fn (Builder $workerQuery) => $workerQuery
+                            ->where('users.id', $workerId)
+                    );
+            });
     }
 
     private function authenticatedWorker(): User
