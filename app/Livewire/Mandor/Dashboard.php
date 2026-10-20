@@ -136,7 +136,7 @@ class Dashboard extends Component
         return Task::query()
             ->with([
                 'project:id,project_code,project_name,location',
-                'worker:id,name',
+                'workers:id,name',
             ])
             ->whereIn(
                 'project_id',

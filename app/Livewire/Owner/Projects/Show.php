@@ -138,14 +138,17 @@ foreach ($this->project->workers as $worker) {
  * Tugas dibuat, dikirim, atau diselesaikan.
  */
 foreach ($this->project->tasks as $task) {
+    $workerNames = $task->workers
+    ->pluck('name')
+    ->implode(', ');
     $activities->push([
         'type' => 'task',
         'title' => 'Tugas Dibuat',
         'description' => sprintf(
             'Tugas "%s" dibuat%s.',
             $task->title,
-            $task->worker
-                ? ' untuk '.$task->worker->name
+            $workerNames !== ''
+                ? ' untuk '.$workerNames
                 : ''
         ),
         'actor' => $task->mandor?->name
@@ -162,8 +165,7 @@ foreach ($this->project->tasks as $task) {
                 'Pekerjaan "%s" telah dikirim untuk diperiksa Mandor.',
                 $task->title
             ),
-            'actor' => $task->worker?->name
-                ?? 'Pekerja',
+            'actor' => 'Anggota Task',
             'occurred_at' => $task->submitted_at,
         ]);
     }
@@ -191,7 +193,7 @@ foreach ($this->project->dailyReports as $report) {
         'type' => 'report',
         'title' => 'Laporan Harian Dibuat',
         'description' => sprintf(
-            'Laporan %s telah dikirim%s.',
+            'Laporan %s dibuat%s.',
             $report->report_number,
             $report->task
                 ? ' untuk tugas "'.$report->task->title.'"'
@@ -199,8 +201,7 @@ foreach ($this->project->dailyReports as $report) {
         ),
         'actor' => $report->user?->name
             ?? 'Pekerja',
-        'occurred_at' => $report->submitted_at
-            ?? $report->created_at,
+        'occurred_at' => $report->created_at,
     ]);
 
     if ($report->reviewed_at) {
@@ -299,9 +300,9 @@ $activities = $activities
 private function loadProjectData(): void
 {
     $this->project->load([
-    'client',
-    'mandor',
-    'cancelledBy:id,name,email',
+        'client',
+        'mandor',
+        'cancelledBy:id,name,email',
 
         'workers' => fn ($query) => $query
             ->orderBy('name'),
@@ -319,7 +320,7 @@ private function loadProjectData(): void
 
         'tasks' => fn ($query) => $query
             ->with([
-                'worker:id,name,email',
+                'workers:id,name,email',
                 'mandor:id,name,email',
             ])
             ->orderByDesc('id'),

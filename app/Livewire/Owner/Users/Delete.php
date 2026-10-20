@@ -182,7 +182,12 @@ class Delete extends Component
                 'column' => 'mandor_id',
             ],
             [
-                'label' => 'Task sebagai Pekerja',
+                'label' => 'Keanggotaan Task',
+                'table' => 'task_workers',
+                'column' => 'worker_id',
+            ],
+            [
+                'label' => 'Referensi pekerja pada Task lama',
                 'table' => 'tasks',
                 'column' => 'worker_id',
             ],

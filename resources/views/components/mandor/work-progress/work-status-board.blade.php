@@ -385,7 +385,7 @@
                         </h4>
 
                         <p class="mt-2 text-xs text-gray-500">
-                            {{ $task->worker?->name ?? 'Pekerja tidak tersedia' }}
+                            {{ $task->workers->pluck('name')->implode(', ') ?: 'Pekerja tidak tersedia' }}
                         </p>
                     </article>
                 @endforeach

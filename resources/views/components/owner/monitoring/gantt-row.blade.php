@@ -6,6 +6,13 @@
 ])
 
 @php
+$workerNames = $task->workers
+    ->pluck('name')
+    ->implode(', ');
+
+$workerNames = $workerNames !== ''
+    ? $workerNames
+    : 'Pekerja belum tersedia';
     [$statusText, $statusColor] = match ($task->status) {
         'assigned' => [
             'Ditugaskan',
@@ -59,11 +66,13 @@
                 {{ $task->title }}
             </h4>
 
-            <p class="mt-1 truncate text-xs text-gray-500">
+            <p
+                class="mt-1 break-words text-xs leading-5 text-gray-500"
+                title="{{ $workerNames }}"
+            >
                 {{ $task->task_code }}
                 •
-                {{ $task->worker?->name
-                    ?? 'Pekerja belum tersedia' }}
+                {{ $workerNames }}
             </p>
 
             <p class="mt-1 text-xs font-medium text-gray-400">

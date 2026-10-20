@@ -2,9 +2,7 @@
 
 namespace Tests\Feature\Owner;
 
-use App\Livewire\Owner\Monitoring\Documentation as MonitoringDocumentation;
-use App\Livewire\Owner\Monitoring\Index;
-use App\Livewire\Owner\Monitoring\Show;
+use App\Models\DailyReport;
 use App\Models\Client;
 use App\Models\Documentation;
 use App\Models\Project;
@@ -12,6 +10,9 @@ use App\Models\ProjectProgress;
 use App\Models\ProjectWorker;
 use App\Models\Task;
 use App\Models\User;
+use App\Livewire\Owner\Monitoring\Documentation as MonitoringDocumentation;
+use App\Livewire\Owner\Monitoring\Index;
+use App\Livewire\Owner\Monitoring\Show;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
@@ -119,6 +120,150 @@ class MonitoringIntegrationTest extends TestCase
         ]);
     }
 
+    public function test_owner_gantt_displays_all_task_members_without_duplicate_tasks(): void
+    {
+        $secondWorker = User::factory()->create([
+            'name' => 'Anggota Kedua Gantt Owner',
+            'status' => 'active',
+        ]);
+
+        $secondWorker->assignRole('pekerja');
+
+        $task = $this->createTask(
+            $this->project,
+            'TSK-OWNER-SHARED'
+        );
+
+        $task->workers()->attach($secondWorker->id);
+
+        Livewire::actingAs($this->owner)
+            ->test(Show::class, [
+                'project' => $this->project,
+            ])
+            ->assertViewHas(
+                'projectData',
+                function (Project $project) use (
+                    $task,
+                    $secondWorker
+                ): bool {
+                    $displayedTask = $project->tasks
+                        ->firstWhere('id', $task->id);
+
+                    return $project->tasks_count === 1
+                        && $project->tasks->count() === 1
+                        && $displayedTask !== null
+                        && $displayedTask->relationLoaded('workers')
+                        && $displayedTask->workers->count() === 2
+                        && $displayedTask->workers
+                            ->contains('id', $this->worker->id)
+                        && $displayedTask->workers
+                            ->contains('id', $secondWorker->id);
+                }
+            )
+            ->assertSee($this->worker->name)
+            ->assertSee($secondWorker->name);
+    }
+
+    public function test_owner_project_activities_show_members_and_preserve_report_creation_time(): void
+    {
+        $secondWorker = User::factory()->create([
+            'name' => 'Anggota Kedua Aktivitas Owner',
+            'status' => 'active',
+        ]);
+
+        $secondWorker->assignRole('pekerja');
+
+        $task = $this->createTask(
+            $this->project,
+            'TSK-OWNER-ACTIVITY',
+            'submitted',
+            40
+        );
+
+        $task->workers()->attach($secondWorker->id);
+
+        $createdAt = now()->subHour()->startOfSecond();
+        $resubmittedAt = $createdAt->copy()->addMinutes(30);
+
+        $task->update([
+            'submitted_at' => $resubmittedAt,
+        ]);
+
+        $report = DailyReport::query()->create([
+            'project_id' => $this->project->id,
+            'task_id' => $task->id,
+            'user_id' => $this->worker->id,
+            'report_number' => 'RPT-OWNER-ACTIVITY',
+            'report_date' => $createdAt->toDateString(),
+            'reported_progress' => 60,
+            'work_status' => 'in_progress',
+            'activities' => 'Laporan pekerjaan bersama setelah perbaikan.',
+            'status' => 'submitted',
+            'submitted_at' => $resubmittedAt,
+        ]);
+
+        $report->forceFill([
+            'created_at' => $createdAt,
+            'updated_at' => $resubmittedAt,
+        ])->save();
+
+        Livewire::actingAs($this->owner)
+            ->test(\App\Livewire\Owner\Projects\Show::class, [
+                'project' => $this->project,
+            ])
+            ->assertViewHas(
+                'activities',
+                function ($activities) use (
+                    $task,
+                    $report,
+                    $secondWorker,
+                    $createdAt
+                ): bool {
+                    $taskActivity = $activities->first(
+                        fn (array $activity): bool =>
+                            $activity['title'] === 'Tugas Dibuat'
+                            && str_contains(
+                                $activity['description'],
+                                $task->title
+                            )
+                    );
+
+                    $submissionActivity = $activities->firstWhere(
+                        'title',
+                        'Tugas Dikirim untuk Diperiksa'
+                    );
+
+                    $reportActivity = $activities->first(
+                        fn (array $activity): bool =>
+                            $activity['title'] === 'Laporan Harian Dibuat'
+                            && str_contains(
+                                $activity['description'],
+                                $report->report_number
+                            )
+                    );
+
+                    return $taskActivity !== null
+                        && str_contains(
+                            $taskActivity['description'],
+                            $this->worker->name
+                        )
+                        && str_contains(
+                            $taskActivity['description'],
+                            $secondWorker->name
+                        )
+                        && $submissionActivity !== null
+                        && $submissionActivity['actor'] === 'Anggota Task'
+                        && $reportActivity !== null
+                        && $reportActivity['actor'] === $this->worker->name
+                        && $reportActivity['occurred_at']->equalTo($createdAt)
+                        && str_contains(
+                            $reportActivity['description'],
+                            'dibuat'
+                        );
+                }
+            );
+    }
+
     private function createProject(
         string $code,
         string $name,
@@ -141,12 +286,12 @@ class MonitoringIntegrationTest extends TestCase
     }
 
     private function createTask(
-        Project $project,
-        string $code,
-        string $status = 'in_progress',
-        int $progress = 65
+    Project $project,
+    string $code,
+    string $status = 'in_progress',
+    int $progress = 65
     ): Task {
-        return Task::query()->create([
+        $task = Task::query()->create([
             'project_id' => $project->id,
             'mandor_id' => $project->mandor_id,
             'worker_id' => $this->worker->id,
@@ -159,11 +304,15 @@ class MonitoringIntegrationTest extends TestCase
             'started_at' => '2026-09-01 08:00:00',
             'due_at' => '2026-09-30 17:00:00',
             'completed_at' => $status === 'completed'
-                    ? '2026-09-20 16:00:00'
-                    : null,
+                ? '2026-09-20 16:00:00'
+                : null,
             'progress' => $progress,
             'weight' => 1,
         ]);
+
+        $task->workers()->attach($this->worker->id);
+
+        return $task;
     }
 
     private function createDocumentation(

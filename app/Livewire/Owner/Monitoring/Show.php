@@ -28,7 +28,7 @@ class Show extends Component
                 'tasks' => fn ($query) => $query
                     ->with([
                         'mandor:id,name',
-                        'worker:id,name',
+                        'workers:id,name',
                     ])
                     ->orderBy('start_at')
                     ->orderBy('due_at')

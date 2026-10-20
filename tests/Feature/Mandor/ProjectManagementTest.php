@@ -735,49 +735,87 @@ class ProjectManagementTest extends TestCase
         ]);
     }
 
+    public function test_project_timeline_displays_all_shared_task_members_once(): void
+{
+    $secondWorker = User::factory()->create([
+        'name' => 'Anggota Kedua Timeline Bersama',
+        'status' => 'active',
+    ]);
+
+    $secondWorker->assignRole('pekerja');
+
+    $task = $this->createTask(
+        $this->project,
+        $this->worker,
+        'TSK-TIMELINE-SHARED',
+        'Task Timeline Bersama',
+        'in_progress',
+        40
+    );
+
+    $task->workers()->attach($secondWorker->id);
+
+    Livewire::actingAs($this->mandor)
+        ->test(Show::class, [
+            'project' => $this->project,
+        ])
+        ->assertViewHas(
+            'tasks',
+            function ($tasks) use ($task, $secondWorker): bool {
+                $displayedTask = $tasks->firstWhere('id', $task->id);
+
+                return $tasks->count() === 1
+                    && $displayedTask !== null
+                    && $displayedTask->relationLoaded('workers')
+                    && $displayedTask->workers->count() === 2
+                    && $displayedTask->workers
+                        ->contains('id', $this->worker->id)
+                    && $displayedTask->workers
+                        ->contains('id', $secondWorker->id);
+            }
+        )
+        ->assertViewHas(
+            'summary',
+            fn (array $summary): bool =>
+                $summary['total_tasks'] === 1
+        )
+        ->assertSee($secondWorker->name)
+        ->assertSee('Sedang Dikerjakan');
+}
+
     private function createTask(
-        Project $project,
-        User $worker,
-        string $code,
-        string $title,
-        string $status,
-        int $progress
+    Project $project,
+    User $worker,
+    string $code,
+    string $title,
+    string $status,
+    int $progress
     ): Task {
-        return Task::query()->create([
+        $task = Task::query()->create([
             'project_id' => $project->id,
-
             'mandor_id' => $project->mandor_id,
-
             'worker_id' => $worker->id,
-
             'task_code' => $code,
-
             'title' => $title,
-
             'description' => 'Task untuk pengujian Project Mandor.',
-
             'location' => 'Area Project',
-
             'priority' => 'medium',
-
             'status' => $status,
-
             'start_at' => '2026-09-24 08:00:00',
-
             'due_at' => '2026-09-30 17:00:00',
-
             'started_at' => $status === 'assigned'
-                    ? null
-                    : '2026-09-24 08:00:00',
-
+                ? null
+                : '2026-09-24 08:00:00',
             'completed_at' => $status === 'completed'
-                    ? '2026-09-24 12:00:00'
-                    : null,
-
+                ? '2026-09-24 12:00:00'
+                : null,
             'progress' => $progress,
-
             'weight' => 10,
         ]);
+
+        $task->workers()->attach($worker->id);
+
+        return $task;
     }
 
     private function createReport(

@@ -62,7 +62,7 @@ class Show extends Component
 
             'tasks' => fn ($query) => $query
                 ->with([
-                    'worker:id,name,email',
+                    'workers:id,name,email',
                 ])
                 ->orderBy('start_at')
                 ->orderBy('id'),

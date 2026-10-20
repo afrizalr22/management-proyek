@@ -239,9 +239,13 @@ class Create extends Component
      */
     public function save(): void
     {
-        $validated = $this->validate();
-
         $worker = $this->authenticatedWorker();
+
+        $this->resetValidation('save');
+
+        $this->description = trim($this->description);
+
+        $validated = $this->validate();
 
         $storedPaths = [];
 
@@ -252,9 +256,15 @@ class Create extends Component
                     $worker,
                     &$storedPaths
                 ): void {
-                    $task = $this->availableTaskQuery()
+                    $task = Task::query()
+                        ->whereKey($validated['taskId'])
+                        ->whereHas(
+                            'workers',
+                            fn (Builder $query) => $query
+                                ->where('users.id', $worker->id)
+                        )
                         ->lockForUpdate()
-                        ->find($validated['taskId']);
+                        ->first();
 
                     if (! $task) {
                         throw new RuntimeException(
@@ -262,37 +272,67 @@ class Create extends Component
                         );
                     }
 
+                    $project = \App\Models\Project::query()
+                        ->whereKey($task->project_id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (
+                        ! $project
+                        || ! in_array(
+                            $project->status,
+                            ['planning', 'on_progress'],
+                            true
+                        )
+                    ) {
+                        throw new RuntimeException(
+                            'Project sudah selesai atau dibatalkan. Dokumentasi tidak dapat disimpan.'
+                        );
+                    }
+
+                    $assignment = \App\Models\ProjectWorker::query()
+                        ->where('project_id', $project->id)
+                        ->where('worker_id', $worker->id)
+                        ->where('status', 'active')
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $assignment) {
+                        throw new RuntimeException(
+                            'Penugasan Anda pada Project ini sudah tidak aktif.'
+                        );
+                    }
+
+                    if (
+                        ! in_array(
+                            $task->status,
+                            self::DOCUMENTABLE_TASK_STATUSES,
+                            true
+                        )
+                    ) {
+                        throw new RuntimeException(
+                            'Tugas tidak tersedia atau belum dapat didokumentasikan.'
+                        );
+                    }
+
                     $documentedAt = now();
 
-                    $documentationDate = $documentedAt
+                    $localDate = $documentedAt
                         ->copy()
-                        ->timezone('Asia/Jakarta')
-                        ->toDateString();
+                        ->timezone('Asia/Jakarta');
 
                     $storageDirectory = 'documentations/'
-                        . $worker->id
-                        . '/'
-                        . $documentedAt
-                            ->copy()
-                            ->timezone('Asia/Jakarta')
-                            ->format('Y/m');
+                        .$worker->id
+                        .'/'
+                        .$localDate->format('Y/m');
 
                     foreach ($validated['photos'] as $photo) {
-                        $originalName =
-                            $photo->getClientOriginalName();
-
-                        $mimeType =
-                            $photo->getMimeType();
-
-                        $fileSize =
-                            $photo->getSize();
-
                         $storedPath = $photo->store(
                             $storageDirectory,
                             'public'
                         );
 
-                        if (! is_string($storedPath)) {
+                        if (! is_string($storedPath) || $storedPath === '') {
                             throw new RuntimeException(
                                 'Foto dokumentasi gagal disimpan.'
                             );
@@ -301,80 +341,53 @@ class Create extends Component
                         $storedPaths[] = $storedPath;
 
                         Documentation::query()->create([
-                            'project_id' =>
-                                $task->project_id,
-
-                            'task_id' =>
-                                $task->id,
-
-                            'daily_report_id' =>
-                                null,
-
-                            'user_id' =>
-                                $worker->id,
-
-                            'title' =>
-                                $task->title,
-
-                            'category' =>
-                                $validated['category'],
-
-                            'photo' =>
-                                $storedPath,
-
-                            'original_name' =>
-                                $originalName,
-
-                            'mime_type' =>
-                                $mimeType,
-
-                            'file_size' =>
-                                $fileSize,
-
-                            'description' =>
-                                trim(
-                                    $validated['description']
-                                ),
-
-                            'documentation_date' =>
-                                $documentationDate,
-
-                            'taken_at' =>
-                                $documentedAt,
+                            'project_id' => $project->id,
+                            'task_id' => $task->id,
+                            'daily_report_id' => null,
+                            'user_id' => $worker->id,
+                            'title' => $task->title,
+                            'category' => $validated['category'],
+                            'photo' => $storedPath,
+                            'original_name' => $photo->getClientOriginalName(),
+                            'mime_type' => $photo->getMimeType() ?: null,
+                            'file_size' => $photo->getSize() ?: null,
+                            'description' => $validated['description'],
+                            'documentation_date' => $localDate->toDateString(),
+                            'taken_at' => $documentedAt,
                         ]);
                     }
-                },
-                3
-            );
-
-            session()->flash(
-                'success',
-                count($storedPaths)
-                    . ' foto dokumentasi berhasil disimpan.'
-            );
-
-            $this->redirectRoute(
-                'pekerja.documentation.index',
-                navigate: true
+                }
             );
         } catch (Throwable $exception) {
             foreach ($storedPaths as $storedPath) {
-                Storage::disk('public')
-                    ->delete($storedPath);
+                try {
+                    Storage::disk('public')->delete($storedPath);
+                } catch (Throwable $cleanupException) {
+                    report($cleanupException);
+                }
             }
 
             report($exception);
 
-            $message =
-                $exception instanceof RuntimeException
-                    ? $exception->getMessage()
-                    : 'Dokumentasi gagal disimpan. Silakan coba kembali.';
-
             $this->addError(
                 'save',
-                $message
+                $exception instanceof RuntimeException
+                    ? $exception->getMessage()
+                    : 'Dokumentasi gagal disimpan. Silakan coba kembali.'
             );
+
+            return;
         }
+
+        session()->flash(
+            'success',
+            count($storedPaths).' foto dokumentasi berhasil disimpan.'
+        );
+
+        $this->redirectRoute(
+            'pekerja.documentation.index',
+            navigate: true
+        );
     }
 
     /**
@@ -386,17 +399,19 @@ class Create extends Component
 
         $activeProjectIds = $worker
             ->activeWorkerProjects()
+            ->whereIn('projects.status', [
+                'planning',
+                'on_progress',
+            ])
             ->pluck('projects.id');
 
         return Task::query()
-            ->where(
-                'worker_id',
-                $worker->id
+            ->whereHas(
+                'workers',
+                fn (Builder $query) => $query
+                    ->where('users.id', $worker->id)
             )
-            ->whereIn(
-                'project_id',
-                $activeProjectIds
-            )
+            ->whereIn('project_id', $activeProjectIds)
             ->whereIn(
                 'status',
                 self::DOCUMENTABLE_TASK_STATUSES

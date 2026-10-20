@@ -2,14 +2,15 @@
 
 namespace Tests\Feature\Owner;
 
+use App\Models\User;
+use App\Models\Task;
+use App\Models\Client;
+use App\Models\Project;
+use App\Models\ProjectWorker;
 use App\Livewire\Owner\Users\Create;
 use App\Livewire\Owner\Users\Delete;
 use App\Livewire\Owner\Users\Edit;
 use App\Livewire\Owner\Users\Index;
-use App\Models\Client;
-use App\Models\Project;
-use App\Models\ProjectWorker;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
@@ -691,6 +692,104 @@ class UserManagementTest extends TestCase
             )
             ->assertForbidden();
     }
+
+    public function test_task_membership_blocks_deletion_even_after_delete_modal_was_opened(): void
+{
+    $mandor = $this->createUser(
+        'Mandor Task Bersama',
+        'delete-task-mandor@example.com',
+        'mandor'
+    );
+
+    $firstWorker = $this->createUser(
+        'Anggota Pertama',
+        'delete-task-first@example.com',
+        'pekerja'
+    );
+
+    $secondWorker = $this->createUser(
+        'Anggota Kedua',
+        'delete-task-second@example.com',
+        'pekerja'
+    );
+
+    $project = $this->createProject($mandor);
+
+    $task = Task::query()->create([
+        'project_id' => $project->id,
+        'mandor_id' => $mandor->id,
+        'worker_id' => $firstWorker->id,
+        'task_code' => 'TSK-DELETE-MEMBER',
+        'title' => 'Task Perlindungan Anggota',
+        'priority' => 'medium',
+        'status' => 'completed',
+        'progress' => 100,
+        'weight' => 1,
+        'completed_at' => now(),
+    ]);
+
+    $task->workers()->attach($firstWorker->id);
+
+    // Modal dibuka sebelum anggota kedua memiliki relasi.
+    $component = Livewire::actingAs($this->owner)
+        ->test(Delete::class)
+        ->call('openModal', $secondWorker->id)
+        ->assertSet('blockers', []);
+
+    /*
+     * Anggota kedua hanya tercatat pada pivot Task.
+     * Tidak ada penempatan proyek, laporan, atau dokumentasi
+     * yang dapat menjadi penghalang lain.
+     */
+    $task->workers()->attach($secondWorker->id);
+
+    $this->assertDatabaseMissing('tasks', [
+        'worker_id' => $secondWorker->id,
+    ]);
+
+    $this->assertDatabaseMissing('project_workers', [
+        'worker_id' => $secondWorker->id,
+    ]);
+
+    // Penyimpanan wajib memeriksa ulang, bukan percaya isi modal lama.
+    $component
+        ->call('deleteUser')
+        ->assertHasErrors('delete')
+        ->assertSet(
+            'blockers',
+            fn (array $blockers): bool =>
+                count($blockers) === 1
+                && $blockers[0]['label'] === 'Keanggotaan Task'
+                && (int) $blockers[0]['count'] === 1
+        );
+
+    $this->assertDatabaseHas('users', [
+        'id' => $secondWorker->id,
+    ]);
+
+    $this->assertDatabaseHas('task_workers', [
+        'task_id' => $task->id,
+        'worker_id' => $secondWorker->id,
+    ]);
+
+    // Modal yang baru dibuka juga harus langsung menampilkan penghalang.
+    Livewire::actingAs($this->owner)
+        ->test(Delete::class)
+        ->call('openModal', $secondWorker->id)
+        ->assertSet(
+            'blockers',
+            fn (array $blockers): bool => collect($blockers)
+                ->contains(
+                    fn (array $blocker): bool =>
+                        $blocker['label'] === 'Keanggotaan Task'
+                        && (int) $blocker['count'] === 1
+                )
+        );
+
+    $this->assertTrue(
+        $secondWorker->fresh()->hasRole('pekerja')
+    );
+}
 
     private function createUser(
         string $name,

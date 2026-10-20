@@ -834,6 +834,118 @@ class DashboardTest extends TestCase
             );
     }
 
+    public function test_shared_task_members_see_shared_dashboard_data_without_duplicates(): void
+    {
+        $this->assignWorker(
+            $this->project,
+            $this->otherWorker
+        );
+
+        $sharedTask = $this->createTask(
+            $this->project,
+            $this->worker,
+            'TSK-DASH-SHARED',
+            'Task Bersama Dashboard',
+            'in_progress',
+            40,
+            'medium'
+        );
+
+        $sharedTask->workers()->attach($this->otherWorker->id);
+
+        $privateTask = $this->createTask(
+            $this->project,
+            $this->worker,
+            'TSK-DASH-PRIVATE',
+            'Task Khusus Anggota Pertama',
+            'assigned',
+            0,
+            'high'
+        );
+
+        $sharedReport = $this->createReport(
+            $this->project,
+            $sharedTask,
+            $this->worker,
+            'RPT-DASH-SHARED',
+            'submitted',
+            '2026-09-24',
+            50
+        );
+
+        $privateReport = $this->createReport(
+            $this->project,
+            $privateTask,
+            $this->worker,
+            'RPT-DASH-PRIVATE',
+            'submitted',
+            '2026-09-24',
+            20
+        );
+
+        // Anggota pertama adalah pembuat laporan sekaligus anggota Task.
+        // Kondisi OR pada query tidak boleh menggandakan hitungan.
+        Livewire::actingAs($this->worker)
+            ->test(Dashboard::class)
+            ->assertViewHas(
+                'statistics',
+                fn (array $statistics): bool =>
+                    $statistics['active_tasks'] === 2
+                    && $statistics['new_tasks'] === 1
+                    && $statistics['submitted_reports'] === 2
+                    && $statistics['reports_this_month'] === 2
+            );
+
+        // Anggota kedua hanya memperoleh Task dan laporan bersama.
+        Livewire::actingAs($this->otherWorker)
+            ->test(Dashboard::class)
+            ->assertViewHas(
+                'statistics',
+                fn (array $statistics): bool =>
+                    $statistics['active_tasks'] === 1
+                    && $statistics['new_tasks'] === 0
+                    && $statistics['completed_tasks'] === 0
+                    && $statistics['completion_rate'] === 0
+                    && $statistics['submitted_reports'] === 1
+                    && $statistics['reports_this_month'] === 1
+            )
+            ->assertViewHas(
+                'priorityTasks',
+                fn ($tasks): bool =>
+                    $tasks->pluck('id')->all() === [$sharedTask->id]
+            )
+            ->assertViewHas(
+                'recentActivities',
+                function ($activities) use (
+                    $sharedTask,
+                    $sharedReport,
+                    $privateTask,
+                    $privateReport
+                ): bool {
+                    $descriptions = $activities
+                        ->pluck('description')
+                        ->implode(' ');
+
+                    return str_contains(
+                        $descriptions,
+                        $sharedTask->title
+                    )
+                        && str_contains(
+                            $descriptions,
+                            $sharedReport->report_number
+                        )
+                        && ! str_contains(
+                            $descriptions,
+                            $privateTask->title
+                        )
+                        && ! str_contains(
+                            $descriptions,
+                            $privateReport->report_number
+                        );
+                }
+            );
+    }
+
     private function createProject(
         string $status,
         int $sequence,
@@ -894,7 +1006,7 @@ class DashboardTest extends TestCase
         int $progress,
         string $priority
     ): Task {
-        return Task::query()->create([
+        $task = Task::query()->create([
             'project_id' => $project->id,
 
             'mandor_id' => $project->mandor_id,
@@ -929,6 +1041,10 @@ class DashboardTest extends TestCase
 
             'weight' => 10,
         ]);
+
+        $task->workers()->attach($worker->id);
+
+        return $task;
     }
 
     private function createReport(

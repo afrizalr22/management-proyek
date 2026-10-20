@@ -607,4 +607,206 @@ public function test_second_member_can_start_shared_task(): void
             $task->started_at
         );
     }
+
+    public function test_second_member_can_upload_standalone_documentation_for_shared_task(): void
+    {
+        $disk = Storage::fake('public');
+
+        $firstWorker = $this->createWorker(
+            'doc-shared-first@example.com'
+        );
+
+        $secondWorker = $this->createWorker(
+            'doc-shared-second@example.com'
+        );
+
+        $task = $this->createTask(
+            $firstWorker,
+            'TSK-DOC-SHARED',
+            'Dokumentasi Task Bersama'
+        );
+
+        $task->workers()->attach($secondWorker->id);
+
+        Livewire::actingAs($secondWorker)
+            ->test(Create::class)
+            ->assertViewHas(
+                'availableTasks',
+                fn ($tasks): bool => $tasks->contains('id', $task->id)
+            )
+            ->set('taskId', (string) $task->id)
+            ->set('category', 'progress')
+            ->set(
+                'description',
+                'Dokumentasi lapangan oleh anggota kedua.'
+            )
+            ->set('photos', [
+                UploadedFile::fake()->image('shared-one.jpg'),
+                UploadedFile::fake()->image('shared-two.jpg'),
+            ])
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertRedirect(
+                route('pekerja.documentation.index')
+            );
+
+        $photos = Documentation::query()
+            ->where('task_id', $task->id)
+            ->get();
+
+        $this->assertCount(2, $photos);
+
+        foreach ($photos as $photo) {
+            $this->assertSame(
+                $secondWorker->id,
+                $photo->user_id
+            );
+
+            $this->assertSame(
+                $this->project->id,
+                $photo->project_id
+            );
+
+            $this->assertNull($photo->daily_report_id);
+
+            $disk->assertExists($photo->photo);
+        }
+
+        // Dokumentasi mandiri tidak mengubah progres resmi Task.
+        $this->assertSame(
+            'in_progress',
+            $task->fresh()->status
+        );
+
+        $this->assertSame(
+            25,
+            $task->fresh()->progress
+        );
+
+        $this->assertCount(
+            2,
+            $disk->allFiles('documentations')
+        );
+    }
+
+    public function test_standalone_upload_is_rejected_when_project_closes_after_form_is_opened(): void
+    {
+        $disk = Storage::fake('public');
+
+        $worker = $this->createWorker(
+            'doc-closed-project@example.com'
+        );
+
+        $task = $this->createTask(
+            $worker,
+            'TSK-DOC-CLOSED',
+            'Dokumentasi Project Ditutup'
+        );
+
+        foreach (['completed', 'cancelled'] as $status) {
+            $this->project->update([
+                'status' => 'on_progress',
+            ]);
+
+            // Form disiapkan ketika proyek masih aktif.
+            $component = Livewire::actingAs($worker)
+                ->test(Create::class)
+                ->set('taskId', (string) $task->id)
+                ->set('category', 'progress')
+                ->set(
+                    'description',
+                    'Foto disiapkan sebelum Project ditutup.'
+                )
+                ->set('photos', [
+                    UploadedFile::fake()->image('closed-project.jpg'),
+                ]);
+
+            // Proyek ditutup sebelum pekerja menekan Simpan.
+            $this->project->update([
+                'status' => $status,
+            ]);
+
+            $component
+                ->call('save')
+                ->assertHasErrors('save');
+
+            Livewire::actingAs($worker)
+                ->test(Create::class)
+                ->assertViewHas(
+                    'availableTasks',
+                    fn ($tasks): bool => ! $tasks->contains('id', $task->id)
+                );
+        }
+
+        $this->assertDatabaseCount('documentations', 0);
+
+        $this->assertSame(
+            [],
+            $disk->allFiles('documentations')
+        );
+
+        $this->assertSame(
+            'in_progress',
+            $task->fresh()->status
+        );
+    }
+
+    public function test_standalone_upload_is_rejected_when_assignment_becomes_inactive(): void
+    {
+        $disk = Storage::fake('public');
+
+        $worker = $this->createWorker(
+            'doc-inactive-assignment@example.com'
+        );
+
+        $task = $this->createTask(
+            $worker,
+            'TSK-DOC-INACTIVE',
+            'Dokumentasi Penempatan Nonaktif'
+        );
+
+        // Form disiapkan ketika penempatan masih aktif.
+        $component = Livewire::actingAs($worker)
+            ->test(Create::class)
+            ->set('taskId', (string) $task->id)
+            ->set('category', 'progress')
+            ->set(
+                'description',
+                'Foto disiapkan ketika penempatan masih aktif.'
+            )
+            ->set('photos', [
+                UploadedFile::fake()->image('inactive-assignment.jpg'),
+            ]);
+
+        ProjectWorker::query()
+            ->where('project_id', $this->project->id)
+            ->where('worker_id', $worker->id)
+            ->update([
+                'status' => 'inactive',
+                'ended_at' => now(),
+            ]);
+
+        $component
+            ->call('save')
+            ->assertHasErrors('save');
+
+        Livewire::actingAs($worker)
+            ->test(Create::class)
+            ->assertViewHas(
+                'availableTasks',
+                fn ($tasks): bool => ! $tasks->contains('id', $task->id)
+            );
+
+        $this->assertDatabaseCount('documentations', 0);
+
+        $this->assertSame(
+            [],
+            $disk->allFiles('documentations')
+        );
+
+        $this->assertSame(
+            'in_progress',
+            $task->fresh()->status
+        );
+    }
 }

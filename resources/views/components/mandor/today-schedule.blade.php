@@ -3,44 +3,43 @@
 ])
 
 @php
-    $statusConfiguration = [
+   $statusConfiguration = [
     'draft' => [
         'text' => 'Draft',
-        'class' => 'bg-gray-100 text-gray-600',
+        'badge' => 'bg-gray-100 text-gray-600',
+        'progress' => 'bg-gray-400',
     ],
-
+    'assigned' => [
+        'text' => 'Belum Dimulai',
+        'badge' => 'bg-gray-100 text-gray-600',
+        'progress' => 'bg-gray-400',
+    ],
+    'in_progress' => [
+        'text' => 'Sedang Dikerjakan',
+        'badge' => 'bg-blue-50 text-blue-700',
+        'progress' => 'bg-blue-600',
+    ],
     'submitted' => [
         'text' => 'Menunggu Pemeriksaan',
-        'class' => 'bg-amber-50 text-amber-700',
+        'badge' => 'bg-amber-50 text-amber-700',
+        'progress' => 'bg-amber-500',
     ],
-
     'revision' => [
         'text' => 'Perlu Revisi',
-        'class' => 'bg-orange-50 text-orange-700',
+        'badge' => 'bg-orange-50 text-orange-700',
+        'progress' => 'bg-orange-500',
+    ],
+    'completed' => [
+        'text' => 'Selesai',
+        'badge' => 'bg-emerald-50 text-emerald-700',
+        'progress' => 'bg-emerald-500',
+    ],
+    'cancelled' => [
+        'text' => 'Dibatalkan',
+        'badge' => 'bg-red-50 text-red-700',
+        'progress' => 'bg-red-500',
     ],
 ];
-
-    $priorityConfiguration = [
-        'low' => [
-            'text' => 'Rendah',
-            'class' => 'text-gray-500',
-        ],
-
-        'medium' => [
-            'text' => 'Sedang',
-            'class' => 'text-blue-600',
-        ],
-
-        'high' => [
-            'text' => 'Tinggi',
-            'class' => 'text-orange-600',
-        ],
-
-        'urgent' => [
-            'text' => 'Mendesak',
-            'class' => 'text-red-600',
-        ],
-    ];
 @endphp
 
 <x-ui.info-card>
@@ -217,8 +216,7 @@
                                             />
                                         </svg>
 
-                                        {{ $task->worker?->name
-                                            ?? 'Pekerja belum ditentukan' }}
+                                        {{ $task->workers->pluck('name')->implode(', ') ?: 'Pekerja belum ditentukan' }}
                                     </span>
 
                                     <span class="font-medium {{ $priority['class'] }}">

@@ -671,6 +671,53 @@ class DashboardTest extends TestCase
         ]);
     }
 
+    public function test_today_schedule_displays_all_shared_task_members_once(): void
+{
+    $secondWorker = User::factory()->create([
+        'name' => 'Anggota Kedua Jadwal Bersama',
+        'status' => 'active',
+    ]);
+
+    $secondWorker->assignRole('pekerja');
+
+    $task = $this->createTask(
+        $this->project,
+        $this->worker,
+        'TSK-SCHEDULE-SHARED',
+        'Task Jadwal Bersama',
+        'assigned',
+        0
+    );
+
+    $task->workers()->attach($secondWorker->id);
+
+    Livewire::actingAs($this->mandor)
+        ->test(\App\Livewire\Mandor\Dashboard::class)
+        ->assertViewHas(
+            'todayTasks',
+            function ($tasks) use ($task, $secondWorker): bool {
+                $displayedTask = $tasks->firstWhere('id', $task->id);
+
+                return $tasks->count() === 1
+                    && $displayedTask !== null
+                    && $displayedTask->relationLoaded('workers')
+                    && $displayedTask->workers->count() === 2
+                    && $displayedTask->workers
+                        ->contains('id', $this->worker->id)
+                    && $displayedTask->workers
+                        ->contains('id', $secondWorker->id);
+            }
+        )
+        ->assertViewHas(
+            'statistics',
+            fn (array $statistics): bool =>
+                $statistics['today_tasks'] === 1
+        )
+        ->assertSee($this->worker->name)
+        ->assertSee($secondWorker->name)
+        ->assertSee('Belum Dimulai');
+}
+
     private function createTask(
         Project $project,
         User $worker,
@@ -679,7 +726,7 @@ class DashboardTest extends TestCase
         string $status,
         int $progress
     ): Task {
-        return Task::query()->create([
+        $task = Task::query()->create([
             'project_id' => $project->id,
 
             'mandor_id' => $project->mandor_id,
@@ -714,6 +761,9 @@ class DashboardTest extends TestCase
 
             'weight' => 10,
         ]);
+        $task->workers()->attach($worker->id);
+
+        return $task;
     }
 
     private function createReport(

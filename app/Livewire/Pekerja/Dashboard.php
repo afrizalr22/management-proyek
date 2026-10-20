@@ -40,12 +40,13 @@ class Dashboard extends Component
     }
 
     private function taskQuery(
-        int $workerId
+    int $workerId
     ): Builder {
         return Task::query()
-            ->where(
-                'worker_id',
-                $workerId
+            ->whereHas(
+                'workers',
+                fn (Builder $query) => $query
+                    ->where('users.id', $workerId)
             );
     }
 
@@ -70,13 +71,18 @@ class Dashboard extends Component
     }
 
     private function reportQuery(
-        int $workerId
+    int $workerId
     ): Builder {
         return DailyReport::query()
-            ->where(
-                'user_id',
-                $workerId
-            );
+            ->where(function (Builder $query) use ($workerId): void {
+                $query
+                    ->where('user_id', $workerId)
+                    ->orWhereHas(
+                        'task.workers',
+                        fn (Builder $workerQuery) => $workerQuery
+                            ->where('users.id', $workerId)
+                    );
+            });
     }
 
     private function documentationQuery(

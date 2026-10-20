@@ -216,8 +216,7 @@
                                 <span>
                                     Pekerja:
                                     <strong class="font-semibold text-gray-700">
-                                        {{ $task->worker?->name
-                                            ?? 'Belum ditentukan' }}
+                                        {{ $task->workers->pluck('name')->implode(', ') ?: 'Belum ditentukan' }}
                                     </strong>
                                 </span>
 
